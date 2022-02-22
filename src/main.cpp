@@ -1,6 +1,7 @@
 ﻿#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <argh.h>
 #include <fmt/color.h>
 #include <fmt/core.h>
 
@@ -45,37 +46,69 @@ void runPrompt()
 }
 
 // Run the file specified by the file path
-void runFile(const char* path)
+void runFile(std::string file)
 {
+	fmt::print("{}", file);
 	// Read and run the contents of the file
-	std::ifstream stream(path);
+	std::ifstream stream(file);
 	std::string source((std::istreambuf_iterator<char>(stream)), (std::istreambuf_iterator<char>()));
 	run(source);
+}
+
+// Print the header
+void printHeader(int argc, const char* argv[])
+{
+  fmt::print("Dauw 0.1.0 -- written by Danae Nova\n");
+}
+
+// Print the usage
+void printUsage(int argc, const char* argv[])
+{
+  fmt::print("Usage: {} [options] [file]\n\n", argv[0]);
+
+  fmt::print("Positional arguments:\n");
+	fmt::print("  file            Evaluate the source code in the specified file.\n");
+	fmt::print("                  If no file has been specified, then run the interactive prompt.\n\n");
+
+	fmt::print("Optional arguments:\n");
+	fmt::print("  -h, --help      Show this help message and exit.\n");
+	fmt::print("  -v, --version   Show version information and exit.\n");
 }
 
 // Main function
 int main(int argc, const char* argv[])
 {
-	// Print the help info
-	fmt::print(fmt::fg(fmt::color::plum), "dauw 0.1.0 -- Written by Danae Nova\n");
+	// Parse the arguments
+	argh::parser cmdl;
+	cmdl.add_params({"-h", "--help"});
+	cmdl.add_params({"-v", "--version"});
+	cmdl.parse(argc, argv, argh::parser::SINGLE_DASH_IS_MULTIFLAG);
 
-  // Check the number of arguments
-	if (argc == 1)
+	// Handle the parsed arguments
+	if (cmdl[{"-h", "--help"}])
 	{
-		// If there are no arguments, then run the REPL
-		runPrompt();
+		// Show this help message and exit
+		printHeader(argc, argv);
+		printUsage(argc, argv);
 		return 0;
 	}
-	else if (argc == 2)
+	else if (cmdl[{"-v", "--version"}])
 	{
-		// If there is one argument, then run the specified file
-		runFile(argv[1]);
+		// Show version information and exit
+		printHeader(argc, argv);
+		return 0;
+	}
+	else if (cmdl(1))
+	{
+		// Evaluate the source code in the specified file
+		runFile(cmdl(1).str());
 		return 0;
 	}
 	else
 	{
-		// Otherwise, invalid usage
-	  fmt::print("Usage: dauw [file]\n");
-	  return 64;
+		// If no file has been specified, then run the interactive prompt
+		printHeader(argc, argv);
+		runPrompt();
+	  return 0;
 	}
 }

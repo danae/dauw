@@ -19,5 +19,8 @@ add_executable (dauw
 )
 
 # Add libraries to the project
-find_package(fmt)
-target_link_libraries(dauw PRIVATE fmt::fmt-header-only)
+add_subdirectory(include/argh)
+target_link_libraries(dauw argh)
+
+add_subdirectory(include/fmt)
+target_link_libraries(dauw fmt::fmt)

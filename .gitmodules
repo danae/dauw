@@ -1,0 +1,6 @@
+[submodule "include/argh"]
+	path = include/argh
+	url = https://github.com/adishavit/argh
+[submodule "include/fmt"]
+	path = include/fmt
+	url = https://github.com/fmtlib/fmt
