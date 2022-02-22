@@ -114,7 +114,7 @@ dauw::Lexer::Lexer()
 std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
 {
   // Reset the state of the lexer
-  dauw::Location location;
+  Location location;
 
   // Initialize a deque to store the tokens
   std::deque<LexerToken> tokens;
@@ -142,24 +142,24 @@ std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
     {
       // Check if the indent is on the first line, because that's an error
       if (location.line == 0)
-        throw dauw::LexerError("The first line should never be indented", location);
+        throw LexerError("The first line should never be indented", location);
 
       // If the indent is bigger than the last indent, then add an indent token
       indents.push_back(indent);
-      tokens.push_back(dauw::LexerToken("indent", location));
+      tokens.push_back(LexerToken("indent", location));
     }
 
     while (indent < indents.back())
     {
       // If the indent is smaller than the last indent, then add as much dedent tokens until the indent matches one on the stack
       indents.pop_back();
-      tokens.push_back(dauw::LexerToken("dedent", location));
+      tokens.push_back(LexerToken("dedent", location));
     }
 
     if (indent != indents.back())
     {
       // If the indent doesn't match the current indentation level, then we have an error
-      throw dauw::LexerError("The indentation does not match any outer indentation level", location);
+      throw LexerError("The indentation does not match any outer indentation level", location);
     }
 
     location.col += indent;
@@ -172,7 +172,7 @@ std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
       if (std::regex_search(line.cbegin() + location.col, line.cend(), commentMatch, _commentPattern, std::regex_constants::match_continuous) && commentMatch.str(1) != "")
       {
         // Add a comment token
-        tokens.push_back(dauw::LexerToken("comment", commentMatch.str(1), location));
+        tokens.push_back(LexerToken("comment", commentMatch.str(1), location));
 
         // Increase the position to past the comment
         location.col += commentMatch.length();
@@ -189,30 +189,28 @@ std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
       }
 
       // Iterate over the rules to see if they match
-      std::vector<std::tuple<int, int, dauw::LexerToken> > tuples;
+      std::vector<std::tuple<LexerToken, int> > tuples;
       for (int i = 0; i < _rules.size(); i ++)
       {
         auto rule = _rules[i];
-
         std::smatch ruleMatch;
         if (std::regex_search(line.cbegin() + location.col, line.cend(), ruleMatch, rule.pattern, std::regex_constants::match_continuous))
-          tuples.push_back(std::make_tuple(-i, ruleMatch.length(), LexerToken(rule.name, rule.replacement(ruleMatch), location)));
+          tuples.push_back(std::make_tuple(LexerToken(rule.name, rule.replacement(ruleMatch), location), ruleMatch.length()));
       }
 
+      // If there are no tuples, then we've encountered a syntax error
       if (tuples.empty())
-        throw dauw::LexerError(fmt::format("Invalid character '{}'", line.substr(location.col, 1)), location);
+        throw LexerError(fmt::format("Invalid character '{}'", line.substr(location.col, 1)), location);
 
-      // Sort the current tuples if there is more than one
+      // if there is more than one tuple, then sort the current tuples
       if (tuples.size() > 1)
       {
-        std::sort(tuples.begin(), tuples.end(), [](std::tuple<int, int, LexerToken> a, std::tuple<int, int, LexerToken> b)->int {
-          auto aRuleIndex = std::get<0>(a);
+        std::sort(tuples.begin(), tuples.end(), [](std::tuple<LexerToken, int> a, std::tuple<LexerToken, int> b)->int {
+          auto aToken = std::get<0>(a);
           auto aLength = std::get<1>(a);
-          auto aToken = std::get<2>(a);
 
-          auto bRuleIndex = std::get<0>(b);
+          auto bToken = std::get<0>(b);
           auto bLength = std::get<1>(b);
-          auto bToken = std::get<2>(b);
 
           if (aToken.location.line != bToken.location.line)
             return aToken.location.line - bToken.location.line;
@@ -220,8 +218,6 @@ std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
             return aToken.location.col - bToken.location.col;
           else if (aLength != bLength)
             return bLength - aLength;
-          else if (aRuleIndex != bRuleIndex)
-            return aRuleIndex - bRuleIndex;
           else
             return 0;
         });
@@ -229,12 +225,12 @@ std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
 
       // Add the first token and increase the position to past the token
       auto tuple = *tuples.begin();
-      tokens.push_back(std::get<2>(tuple));
+      tokens.push_back(std::get<0>(tuple));
       location.col += std::get<1>(tuple);
     }
 
     // Add a newline at the end of the line and pdate the location to the next line
-    tokens.push_back(dauw::LexerToken("newline", location));
+    tokens.push_back(LexerToken("newline", location));
 
     location.line ++;
     location.col = 0;
@@ -244,7 +240,7 @@ std::deque<dauw::LexerToken> dauw::Lexer::tokenize(std::string source)
   while (indents.back() > 0)
   {
     indents.pop_back();
-    tokens.push_back(dauw::LexerToken("dedent", location));
+    tokens.push_back(LexerToken("dedent", location));
   }
 
   // Return the tokens

@@ -18,7 +18,7 @@ void run(std::string source)
 		dauw::Lexer lexer;
 		std::deque<dauw::LexerToken> tokens = lexer.tokenize(source);
 
-		fmt::print(stdout, "Found {} tokens:\n", tokens.size());
+		fmt::print("Found {} tokens:\n", tokens.size());
 	  for (auto token : tokens)
 		  fmt::print(stdout, "- {}\n", formatLexerToken(token));
 	}
