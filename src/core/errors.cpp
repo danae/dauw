@@ -19,15 +19,16 @@ std::string dauw::Error::what()
   return fmt::format("Error: {}", message);
 }
 
-// Print the error to the console
-void dauw::Error::print()
+// Report the error to the console
+void dauw::Error::report()
 {
-  fmt::print(fmt::fg(fmt::color::crimson), "{}\n", what());
+  fmt::print("{}\n", what());
 
-  if (previous != NULL)
+  auto error = previous;
+  while (error != nullptr)
   {
-    fmt::print(fmt::fg(fmt::color::crimson), "Caused by ");
-    previous->print();
+    fmt::print("Caused by {}", error->what());
+    error = error->previous;
   }
 }
 

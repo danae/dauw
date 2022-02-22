@@ -25,7 +25,7 @@ void run(std::string source)
 	}
 	catch (dauw::Error& err)
 	{
-		err.print();
+		err.report();
 	}
 }
 
@@ -48,7 +48,6 @@ void runPrompt()
 // Run the file specified by the file path
 void runFile(std::string file)
 {
-	fmt::print("{}", file);
 	// Read and run the contents of the file
 	std::ifstream stream(file);
 	std::string source((std::istreambuf_iterator<char>(stream)), (std::istreambuf_iterator<char>()));

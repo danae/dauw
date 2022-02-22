@@ -24,7 +24,7 @@ namespace dauw
     // Return the string representation of the error
     virtual std::string what();
 
-    // Print the error to the console
-    void print();
+    // Report the error to the console
+    void report();
   };
 }
