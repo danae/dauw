@@ -1,6 +1,5 @@
 # Ignore build directories
 /[Bb]uild
-/[Ss]cripts
 
 # Ignore CMake files
 CMakeLists.txt.user
