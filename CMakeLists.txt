@@ -1,22 +1,13 @@
 ﻿cmake_minimum_required (VERSION 3.13)
-project ("dauw")
+project(dauw)
+
+# Set language standards
+set(CMAKE_CXX_STANDARD 17)
 
 # Add sources to the project
-add_executable (dauw
-  "src/main.cpp"
-  "src/debug.h"
-  "src/debug.cpp"
-  "src/utils.h"
-  "src/utils.cpp"
-
-  "src/core/errors.h"
-  "src/core/errors.cpp"
-
-  "src/parser/lexer.h"
-  "src/parser/lexer.cpp"
-  "src/parser/location.h"
-  "src/parser/location.cpp"
-)
+file(GLOB_RECURSE DAUW_HEADERS src/*.h)
+file(GLOB_RECURSE DAUW_SOURCES src/*.cpp)
+add_executable(dauw ${DAUW_HEADERS} ${DAUW_SOURCES})
 
 # Add libraries to the project
 add_subdirectory(include/argh)
