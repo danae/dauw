@@ -7,9 +7,56 @@
 #include <fmt/color.h>
 #include <fmt/core.h>
 
+#include "ast.h"
 #include "common.h"
 #include "errors.h"
-#include "source_lexer.h"
+#include "lexer.h"
+#include "parser.h"
+
+
+class Printer : public dauw::ExprVisitor
+{
+  private:
+	  int depth = 0;
+
+	public:
+		void print(dauw::Expr* expr)
+		{
+			expr->accept(*this);
+		}
+
+		void print_depth()
+		{
+			for (int i = 0; i < depth; i ++)
+			  fmt::print("  ");
+		}
+
+		void visit_literal(dauw::LiteralExpr* expr)
+		{
+      fmt::print("{}\n", expr->value());
+		}
+
+		void visit_nested(dauw::NestedExpr* expr)
+		{
+			fmt::print(fmt::fg(fmt::color::orange), "{}\n", expr->name());
+
+
+
+			print_depth();
+			fmt::print("l: ");
+
+			depth ++;
+			print(expr->left());
+			depth --;
+
+			print_depth();
+			fmt::print("r: ");
+
+			depth ++;
+			print(expr->right());
+			depth --;
+		}
+};
 
 
 // Report an error
@@ -35,11 +82,18 @@ void run(std::string source)
 	try
 	{
 		// Convert the source string to a deque of tokens
-		std::deque<dauw::LexerToken> tokens = dauw::tokenize(source);
+		dauw::Lexer lexer;
+		std::deque<dauw::Token> tokens = lexer.tokenize(source);
 
-		fmt::print("Found {} tokens:\n", tokens.size());
-	  for (auto token : tokens)
-		  fmt::print(stdout, "- {}\n", token);
+    // Convert the deque of tokens to an expression
+		dauw::Parser parser;
+    dauw::Expr* expr = parser.parse(tokens);
+
+    // Print the expression
+		Printer printer;
+		printer.print(expr);
+
+		delete expr;
 	}
 	catch (dauw::Error& error)
 	{

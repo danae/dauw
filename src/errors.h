@@ -3,7 +3,7 @@
 #include <string>
 
 #include "common.h"
-#include "source_location.h"
+#include "token.h"
 
 
 namespace dauw
@@ -11,29 +11,30 @@ namespace dauw
   // Class that defines a general error in the execution of the interpreter
   class Error
   {
-    protected:
+    private:
       // The message of the error
-      std::string m_message;
+      std::string message_;
 
       // The location where the error occurred
-      Location m_location;
+      Location location_;
 
       // The previous error that caused the error to happen
-      Error* m_previous;
+      Error* previous_;
 
     public:
       // Constructor for an Error
-      Error(std::string message, Location location, Error* previous);
-      Error(std::string message, Location location);
+      Error(std::string message, Location location, Error* previous)
+        : message_(message), location_(location), previous_(previous) { }
+      Error(std::string message, Location location)
+        : Error(message, location, nullptr) { }
 
       // Return the string representation of the error
       virtual std::string what();
 
-      // Return the location of the error
-      Location location();
-
-      // Return the previous error that caused the error to happen
-      Error* previous();
+      // Return the fields of the error
+      std::string message() { return message_; }
+      Location location() { return location_; }
+      Error* previous() { return previous_; }
   };
 
 
@@ -42,8 +43,10 @@ namespace dauw
   {
     public:
       // Constructor
-      LexerError(std::string message, Location location, Error* previous);
-      LexerError(std::string message, Location location);
+      LexerError(std::string message, Location location, Error* previous)
+        : Error(message, location, previous) { }
+      LexerError(std::string message, Location location)
+        : LexerError(message, location, nullptr) { }
 
       // Return the string representation of the error
       std::string what() override;

@@ -1,84 +1,94 @@
 #pragma once
 
+#include <functional>
 #include <string>
+#include <vector>
 
 #include "common.h"
-#include "object.h"
-#include "source_location.h"
+#include "token.h"
 
 
 namespace dauw
 {
-  // Forward declarations for visitor and evaluator
-  class expr_visitor;
-  class expr_evaluator;
+  // Forward declarations
+  class ExprVisitor;
 
 
   // Base class for an expression
-  class expr
+  class Expr
   {
-  public:
-    // The Location of the expression
-    Location& location;
+    public:
+      // Return the location of the expression
+      virtual Location location() = 0;
 
-
-    // Constructor for an expression
-    expr(Location& location);
-
-    // Accept a visitor or evaluator on the expression
-    virtual void accept_visitor(expr_visitor& visitor) = 0;
-    virtual Object accept_evaluator(expr_evaluator& evaluator) = 0;
+      // Accept a visitor on the expression
+      virtual void accept(ExprVisitor& visitor) = 0;
   };
 
 
-  // Expression for a literal
-  class expr_literal : public expr
+  // Class that defines a literal expression
+  class LiteralExpr : public Expr
   {
-  public:
-    // The value of the literal
-    Value value;
+    private:
+      // The token of the expression
+      Token& token_;
 
+    public:
+      // Constructor
+      LiteralExpr(Token& token)
+        : token_(token) { }
 
-    // Constructor for a literal expression
-    expr_literal(Location& location, Value value);
+      // Return the value of the literal expression
+      std::string value() { return token_.value(); }
 
-    // Accept a visitor or evaluator on the literal expression
-    void accept_visitor(expr_visitor& visitor) override;
-    Object accept_evaluator(expr_evaluator& evaluator) override;
+      // Return the location of the expression
+      Location location() override { return token_.location(); }
+
+      // Accept a visitor on the expression
+      void accept(ExprVisitor& visitor) override;
   };
 
 
-  // Expression for a name
-  class expr_name : public expr
+  // Class that defines a nested expression
+  class NestedExpr : public Expr
   {
-  public:
-    // The name of the literal
-    std::string name;
+    private:
+      // The name of the nested expression
+      std::string name_;
 
+      // The expressions of the nested expression
+      Expr* left_;
+      Expr* right_;
 
-    // Constructor for a name expression
-    expr_name(Location& location, std::string name);
+    public:
+      // Constructor
+      NestedExpr(std::string name, Expr* left, Expr* right)
+        : name_(name), left_(left), right_(right) { }
 
-    // Accept a visitor or evaluator on the name expression
-    void accept_visitor(expr_visitor& visitor) override;
-    Object accept_evaluator(expr_evaluator& evaluator) override;
+      // Destructor
+      ~NestedExpr();
+
+      // Return the name of the nested expression
+      std::string name() { return name_; }
+
+      // Return the left and right expressions of the nested expression
+      Expr* left() { return left_; }
+      Expr* right() { return right_; }
+
+      // Return the location of the expression
+      Location location() override { return left_->location(); }
+
+      // Accept a visitor on the expression
+      void accept(ExprVisitor& visitor) override;
   };
 
 
   // Base class for an expression visitor
-  class expr_visitor
+  class ExprVisitor
   {
-  public:
-    virtual void visit_literal(expr_literal& expr) = 0;
-    virtual void visit_name(expr_name& expr) = 0;
-  };
-
-
-  // Base class for an expression evaluator
-  class expr_evaluator
-  {
-  public:
-    virtual Object evaluate_literal(expr_literal& expr) = 0;
-    virtual Object evaluate_name(expr_name& expr) = 0;
+    public:
+      // Visit expressions
+      virtual void visit_literal(LiteralExpr* expr) = 0;
+      virtual void visit_nested(NestedExpr* expr) = 0;
   };
 }
