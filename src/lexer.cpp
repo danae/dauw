@@ -23,7 +23,8 @@ namespace dauw
 
 
   // Constructor for the lexer
-  Lexer::Lexer()
+  Lexer::Lexer(std::string name)
+    : name_(name)
   {
     // Initialize the regex patterns
     comment_pattern_ = std::regex("(?:--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
@@ -51,11 +52,12 @@ namespace dauw
     rules_.push_back(LexerRule("operator_add", std::regex("\\+")));
     rules_.push_back(LexerRule("operator_subtract", std::regex("-")));
     rules_.push_back(LexerRule("operator_range", std::regex("\\.\\.")));
-    rules_.push_back(LexerRule("operator_compare", std::regex("<=>")));
+    rules_.push_back(LexerRule("operator_threeway", std::regex("<=>")));
     rules_.push_back(LexerRule("operator_less", std::regex("<")));
     rules_.push_back(LexerRule("operator_less_equal", std::regex("<=")));
     rules_.push_back(LexerRule("operator_greater", std::regex(">")));
     rules_.push_back(LexerRule("operator_greater_equal", std::regex(">=")));
+    rules_.push_back(LexerRule("operator_divisible", std::regex("%%")));
     rules_.push_back(LexerRule("operator_equal", std::regex("==")));
     rules_.push_back(LexerRule("operator_not_equal", std::regex("!=")));
     rules_.push_back(LexerRule("operator_match", std::regex("~")));
@@ -82,8 +84,9 @@ namespace dauw
 
     rules_.push_back(LexerRule("int", std::regex("0[Xx][0-9A-Fa-f][0-9A-Fa-f_]*|-?(?:0|[1-9][0-9_]*)"), 0));
     rules_.push_back(LexerRule("real", std::regex("-?(?:0|[1-9][0-9_]*)(?:\\.[0-9][0-9_]*(?:[Ee][+-]?(?:0|[1-9][0-9_]*))?|[Ee][+-]?(?:0|[1-9][0-9_]*))"), 0));
-    rules_.push_back(LexerRule("regex", std::regex("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*"), 0));
+    rules_.push_back(LexerRule("rune", std::regex("'((?:[^\\\\']|\\\\.)*)'"), 1));
     rules_.push_back(LexerRule("string", std::regex("\"((?:[^\\\\\"]|\\\\.)*)\""), 1));
+    rules_.push_back(LexerRule("regex", std::regex("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*"), 0));
   }
 
   // Replacement function for an identifier
@@ -103,7 +106,7 @@ namespace dauw
     indents.push_back(0);
 
     // Reset the state of the lexer
-    Location location;
+    Location location(name_);
 
     // Iterate over the lines in the source
     for (auto line : regex_lines(source))
@@ -231,6 +234,9 @@ namespace dauw
       indents.pop_back();
       tokens.push_back(Token("dedent", location));
     }
+
+    // Add eof token
+    tokens.push_back(Token("eof", location));
 
     // Return the tokens
     return tokens;

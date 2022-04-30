@@ -1,12 +1,5 @@
 #pragma once
 
-#include <regex>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <fmt/core.h>
-#include <fmt/format.h>
-
 #include "common.h"
 
 
@@ -16,6 +9,9 @@ namespace dauw
   class Location
   {
     private:
+      // The name of the source of the location
+      std::string name_;
+
       // The line of the location
       size_t line_;
 
@@ -25,10 +21,13 @@ namespace dauw
 
     public:
       // Constructor
-      Location(size_t line, size_t col)
-        : line_(line), col_(col) { }
-      Location()
-        : Location(0, 0) { }
+      Location(std::string name, size_t line, size_t col)
+        : name_(name), line_(line), col_(col) { }
+      Location(std::string name)
+        : Location(name, 0, 0) { }
+
+      // Return the name of the source of the location
+      std::string name();
 
       // Return the line of the location
       size_t line();
@@ -95,7 +94,7 @@ namespace fmt
     template <typename FormatContext>
     auto format(dauw::Location location, FormatContext& ctx)
     {
-      std::string format = fmt::format("line {}, col {}", location.line() + 1, location.col() + 1);
+      std::string format = fmt::format("{}, line {}, col {}", location.name(), location.line() + 1, location.col() + 1);
       return formatter<string_view>::format(format, ctx);
     }
   };
@@ -109,10 +108,10 @@ namespace fmt
     auto format(dauw::Token token, FormatContext& ctx)
     {
       std::string format;
-      if (!token.value_.empty())
-        format = fmt::format("{} \"{}\" at {}", token.name_, token.value_, token.location_);
+      if (!token.value().empty())
+        format = fmt::format("{} \"{}\" at {}", token.name(), token.value(), token.location());
       else
-        format = fmt::format("{} at {}", token.name_, token.location_);
+        format = fmt::format("{} at {}", token.name(), token.location());
       return formatter<string_view>::format(format, ctx);
     }
   };

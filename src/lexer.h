@@ -1,13 +1,5 @@
 #pragma once
 
-#include <deque>
-#include <functional>
-#include <regex>
-#include <string>
-#include <vector>
-#include <fmt/core.h>
-#include <fmt/format.h>
-
 #include "common.h"
 #include "errors.h"
 #include "token.h"
@@ -53,6 +45,9 @@ namespace dauw
   class Lexer
   {
     private:
+      // The name of the source
+      std::string name_;
+
       // Regex patterns for comments, newlines and whitespaces
       std::regex comment_pattern_;
       std::regex whitespace_pattern_;
@@ -67,7 +62,7 @@ namespace dauw
 
     public:
       // Constructor
-      Lexer();
+      Lexer(std::string name);
 
       // Convert a string into a deque of tokens
       std::deque<Token> tokenize(std::string source);

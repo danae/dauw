@@ -3,6 +3,12 @@
 
 namespace dauw
 {
+  // Return the name of the source of the location
+  std::string Location::name()
+  {
+    return name_;
+  }
+
   // Return the line of the location
   size_t Location::line()
   {

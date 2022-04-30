@@ -3,6 +3,44 @@
 
 namespace dauw
 {
+  using resolver = std::function<std::string(std::string)>;
+
+
+  // Resolve a file name
+  std::string resolve_file(std::string path)
+  {
+    // Create a vector of resolvers
+    std::vector<resolver> resolvers;
+
+    // Canonical path
+    resolvers.push_back([](std::string path)->std::string { return path; });
+    resolvers.push_back([](std::string path)->std::string { return fmt::format("{}.dauw", path); });
+
+    // User bin directory
+    resolvers.push_back([](std::string path)->std::string { return fmt::format("{}/.dauw/bin/{}", std::getenv("HOME"), path); });
+    resolvers.push_back([](std::string path)->std::string { return fmt::format("{}/.dauw/bin/{}.dauw", std::getenv("HOME"), path); });
+
+    // Iterate over the resolvers
+    for (auto resolve : resolvers)
+    {
+      auto resolved_path = resolve(path);
+      if (std::filesystem::exists(resolved_path))
+        return std::filesystem::canonical(resolved_path);
+    }
+
+    // The path does not exist
+    throw std::runtime_error(fmt::format("The file \"{}\" does not exist", path));
+  }
+
+  // Read the contents of a file
+  std::string read_file(std::string path)
+  {
+    std::ifstream stream(path);
+  	std::string source((std::istreambuf_iterator<char>(stream)), (std::istreambuf_iterator<char>()));
+    return source;
+  }
+
+
   // Search for a regular expression in a string
   std::optional<std::smatch> regex_search(std::regex pattern, std::string& string, size_t begin, size_t end)
   {

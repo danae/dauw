@@ -1,12 +1,33 @@
 #pragma once
 
+#include <cstdlib>
+#include <deque>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
 #include <optional>
 #include <regex>
+#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <vector>
+
+#include <fmt/core.h>
+#include <fmt/color.h>
+#include <fmt/format.h>
 
 
 namespace dauw
 {
+  // Resolve a file name
+  std::string resolve_file(std::string path);
+
+  // Read the contents of a file
+  std::string read_file(std::string path);
+
+
   // Search for a regular expression in a string
   std::optional<std::smatch> regex_search(std::regex pattern, std::string& string, size_t begin = 0, size_t end = 0);
 
