@@ -3,6 +3,7 @@
 #include "common.h"
 #include "ast.h"
 #include "errors.h"
+#include "logging.h"
 #include "token.h"
 
 
@@ -15,44 +16,45 @@ namespace dauw
       // The deque of tokens
       std::deque<Token> tokens_;
 
-      // The index of the currently parsed token
-      int index_ = 0;
+      // The token that is currently being parsed
+      Token current_;
 
+      // The token that will be parsed next
+      Token next_;
+      
 
       // Parsers for expressions
-      Expr* parse_expression();
+      std::shared_ptr<Expr> parse_expression();
 
       // Parsers for operations
-      Expr* parse_operation();
-      Expr* parse_logic_or();
-      Expr* parse_logic_and();
-      Expr* parse_logic_not();
-      Expr* parse_equality();
-      Expr* parse_comparison();
-      Expr* parse_threeway();
-      Expr* parse_range();
-      Expr* parse_term();
-      Expr* parse_factor();
-      Expr* parse_unary();
+      std::shared_ptr<Expr> parse_operation();
+      std::shared_ptr<Expr> parse_logic_or();
+      std::shared_ptr<Expr> parse_logic_and();
+      std::shared_ptr<Expr> parse_logic_not();
+      std::shared_ptr<Expr> parse_equality();
+      std::shared_ptr<Expr> parse_comparison();
+      std::shared_ptr<Expr> parse_threeway();
+      std::shared_ptr<Expr> parse_range();
+      std::shared_ptr<Expr> parse_term();
+      std::shared_ptr<Expr> parse_factor();
+      std::shared_ptr<Expr> parse_unary();
 
       // Parsers for primaries
-      Expr* parse_primary();
-      Expr* parse_call_postfix(Expr* callee);
-      Expr* parse_subscript_postfix(Expr* callee);
-      Expr* parse_access_postfix(Expr* callee);
+      std::shared_ptr<Expr> parse_primary();
+      std::shared_ptr<Expr> parse_call_postfix(std::shared_ptr<Expr> callee);
+      std::shared_ptr<Expr> parse_subscript_postfix(std::shared_ptr<Expr> callee);
+      std::shared_ptr<Expr> parse_access_postfix(std::shared_ptr<Expr> callee);
 
       // Parsers for atoms
-      Expr* parse_atom();
+      std::shared_ptr<Expr> parse_atom();
 
       // Basic parseer functionality
-      Token advance();
-      Token current();
-      Token previous();
       bool at_end();
-      bool check(std::string name);
-      bool match(std::string name);
-      bool match(std::initializer_list<std::string> names);
-      Token consume(std::string name, std::string message);
+      Token advance();
+      bool check(string_t name);
+      bool match(string_t name);
+      bool match(std::initializer_list<string_t> names);
+      Token consume(string_t name, string_t message);
 
 
     public:
@@ -60,6 +62,6 @@ namespace dauw
       Parser(std::deque<Token> tokens);
 
       // Parse a deque of tokens into an expression
-      Expr* parse();
+      std::shared_ptr<Expr> parse();
   };
 }

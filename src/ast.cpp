@@ -4,92 +4,56 @@
 namespace dauw
 {
   // Accept a visitor on the literal expression
-  void LiteralExpr::accept(ExprVisitor& visitor)
+  void ExprLiteral::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_literal(this);
+    visitor->visit_literal(shared_from_this());
   }
-
 
   // Accept a visitor on a name expression
-  void NameExpr::accept(ExprVisitor& visitor)
+  void ExprName::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_name(this);
+    visitor->visit_name(shared_from_this());
   }
-
 
   // Accept a visitor on a parenthesized expression
-  void ParenthesizedExpr::accept(ExprVisitor& visitor)
+  void ExprParenthesized::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_parenthesized(this);
-  }
-
-
-  // Destructor for a call expression
-  CallExpr::~CallExpr()
-  {
-    delete callee_;
-    for (auto argument : arguments_)
-      delete argument;
+    visitor->visit_parenthesized(shared_from_this());
   }
 
   // Accept a visitor on a call expression
-  void CallExpr::accept(ExprVisitor& visitor)
+  void ExprCall::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_call(this);
-  }
-
-
-  // Destructor for a subscript expression
-  SubscriptExpr::~SubscriptExpr()
-  {
-    delete callee_;
-    for (auto argument : arguments_)
-      delete argument;
+    visitor->visit_call(shared_from_this());
   }
 
   // Accept a visitor on a get expression
-  void SubscriptExpr::accept(ExprVisitor& visitor)
+  void ExprSubscript::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_subscript(this);
-  }
-
-
-  // Destructor for a get expression
-  GetExpr::~GetExpr()
-  {
-    delete callee_;
+    visitor->visit_subscript(shared_from_this());
   }
 
   // Accept a visitor on a get expression
-  void GetExpr::accept(ExprVisitor& visitor)
+  void ExprGet::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_get(this);
-  }
-
-
-  // Destructor for an unary expression
-  UnaryExpr::~UnaryExpr()
-  {
-    delete right_;
+    visitor->visit_get(shared_from_this());
   }
 
   // Accept a visitor on an unary expression
-  void UnaryExpr::accept(ExprVisitor& visitor)
+  void ExprUnary::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_unary(this);
-  }
-
-
-  // Destructor for a binary expression
-  BinaryExpr::~BinaryExpr()
-  {
-    delete left_;
-    delete right_;
+    visitor->visit_unary(shared_from_this());
   }
 
   // Accept a visitor on a binary expression
-  void BinaryExpr::accept(ExprVisitor& visitor)
+  void ExprBinary::accept(const std::shared_ptr<ExprVisitor>& visitor)
   {
-    visitor.visit_binary(this);
+    visitor->visit_binary(shared_from_this());
+  }
+
+  // Accept a visitor on a block expression
+  void ExprBlock::accept(const std::shared_ptr<ExprVisitor>& visitor)
+  {
+    visitor->visit_block(shared_from_this());
   }
 }

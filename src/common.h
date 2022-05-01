@@ -1,5 +1,6 @@
 #pragma once
 
+#include <compare>
 #include <cstdlib>
 #include <deque>
 #include <filesystem>
@@ -7,6 +8,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <regex>
 #include <sstream>
@@ -19,30 +21,39 @@
 #include <fmt/format.h>
 
 
+// Type declarations for common std types
+using string_t = std::string;
+using string_stream_t = std::stringstream;
+using string_view_t = std::string_view;
+using regex_t = std::regex;
+using match_t = std::smatch;
+using match_optional_t = std::optional<match_t>;
+
+
 namespace dauw
 {
   // Resolve a file name
-  std::string resolve_file(std::string path);
+  string_t resolve_file(string_t path);
 
   // Read the contents of a file
-  std::string read_file(std::string path);
+  string_t read_file(string_t path);
 
 
   // Search for a regular expression in a string
-  std::optional<std::smatch> regex_search(std::regex pattern, std::string& string, size_t begin = 0, size_t end = 0);
+  match_optional_t regex_search(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
 
   // Match a regular expression at the beginning of a string
-  std::optional<std::smatch> regex_match(std::regex pattern, std::string& string, size_t begin = 0, size_t end = 0);
+  match_optional_t regex_match(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
 
   // Match a regular expression in a whole string
-  std::optional<std::smatch> regex_fullmatch(std::regex pattern, std::string& string, size_t begin = 0, size_t end = 0);
+  match_optional_t regex_fullmatch(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
 
   // Split a string by the occurrences a regular expression
-  std::vector<std::string> regex_split(std::regex pattern, std::string& string);
+  std::vector<string_t> regex_split(regex_t pattern, string_t& string);
 
   // Split a string by newlines
-  std::vector<std::string> regex_lines(std::string& string);
+  std::vector<string_t> regex_lines(string_t& string);
 
   // Replace non-overlapping occurrences of a regular expression in a string
-  std::string regex_sub(std::regex pattern, std::string& replacement, std::string& string);
+  string_t regex_sub(regex_t pattern, string_t& replacement, string_t& string);
 }

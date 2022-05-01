@@ -2,7 +2,7 @@
 project(dauw)
 
 # Set language standards
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Add sources to the project
 file(GLOB_RECURSE DAUW_HEADERS src/*.h)

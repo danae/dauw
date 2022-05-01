@@ -12,32 +12,32 @@ namespace dauw
   {
     private:
       // The name of the rule
-      std::string name_;
+      string_t name_;
 
       // The regex pattern of the rule
-      std::regex pattern_;
+      regex_t pattern_;
 
       // The replacement function of this rule
-      std::function<std::string(std::smatch)> replacement_;
+      std::function<string_t(match_t)> replacement_;
 
 
     public:
       // Constructor
-      LexerRule(std::string name, std::regex pattern, std::function<std::string(std::smatch)> replacement)
+      LexerRule(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement)
         : name_(name), pattern_(pattern), replacement_(replacement) { }
-      LexerRule(std::string name, std::regex pattern, size_t replacement)
-        : LexerRule(name, pattern, [replacement](std::smatch match)->std::string { return match[replacement].str(); }) { }
-      LexerRule(std::string name, std::regex pattern)
-        : LexerRule(name, pattern, [](std::smatch match)->std::string { return ""; }) { }
+      LexerRule(string_t name, regex_t pattern, size_t replacement)
+        : LexerRule(name, pattern, [replacement](match_t match)->string_t { return match[replacement].str(); }) { }
+      LexerRule(string_t name, regex_t pattern)
+        : LexerRule(name, pattern, [](match_t match)->string_t { return ""; }) { }
 
       // Return the name of the rule
-      std::string name();
+      string_t name();
 
       // Return the pattern of the rule
-      std::regex pattern();
+      regex_t pattern();
 
       // Replace a match using this rule
-      std::string replace(std::smatch match);
+      string_t replace(match_t match);
   };
 
 
@@ -46,25 +46,25 @@ namespace dauw
   {
     private:
       // The name of the source
-      std::string name_;
+      string_t name_;
 
       // Regex patterns for comments, newlines and whitespaces
-      std::regex comment_pattern_;
-      std::regex whitespace_pattern_;
+      regex_t comment_pattern_;
+      regex_t whitespace_pattern_;
 
       // LexerRules for the lexer
       std::vector<LexerRule> rules_;
 
 
       // Replacement function for an identifier
-      static std::string replace_identifier_(std::smatch match);
+      static string_t replace_identifier_(match_t match);
 
 
     public:
       // Constructor
-      Lexer(std::string name);
+      Lexer(string_t name);
 
       // Convert a string into a deque of tokens
-      std::deque<Token> tokenize(std::string source);
+      std::deque<Token> tokenize(string_t source);
   };
 }

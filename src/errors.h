@@ -11,7 +11,7 @@ namespace dauw
   {
     private:
       // The message of the error
-      std::string message_;
+      string_t message_;
 
       // The location where the error occurred
       Location location_;
@@ -21,16 +21,16 @@ namespace dauw
 
     public:
       // Constructor for an Error
-      Error(std::string message, Location location, Error* previous)
+      Error(string_t message, Location location, Error* previous)
         : message_(message), location_(location), previous_(previous) { }
-      Error(std::string message, Location location)
+      Error(string_t message, Location location)
         : Error(message, location, nullptr) { }
 
       // Return the string representation of the error
-      virtual std::string what();
+      virtual string_t what();
 
       // Return the fields of the error
-      std::string message() { return message_; }
+      string_t message() { return message_; }
       Location location() { return location_; }
       Error* previous() { return previous_; }
   };
@@ -41,12 +41,12 @@ namespace dauw
   {
     public:
       // Constructor
-      LexerError(std::string message, Location location, Error* previous)
+      LexerError(string_t message, Location location, Error* previous)
         : Error(message, location, previous) { }
-      LexerError(std::string message, Location location)
+      LexerError(string_t message, Location location)
         : LexerError(message, location, nullptr) { }
 
       // Return the string representation of the error
-      std::string what() override;
+      string_t what() override;
   };
 }
