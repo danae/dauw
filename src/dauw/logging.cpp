@@ -1,6 +1,5 @@
 #include "logging.h"
 
-
 namespace dauw
 {
   int depth = 0;

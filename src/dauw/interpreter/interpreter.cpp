@@ -11,9 +11,6 @@ namespace dauw
       Lexer lexer(source_name);
       auto tokens = lexer.tokenize(source);
 
-      for (auto token : tokens)
-        fmt::print(fmt::fg(fmt::color::gray), "{}\n", token);
-
       // Convert the deque of tokens to an expression
       Parser parser(tokens);
       auto expr = parser.parse();

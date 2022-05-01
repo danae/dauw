@@ -1,10 +1,10 @@
 #pragma once
 
-#include "common.h"
-#include "errors.h"
-#include "lexer.h"
-#include "logging.h"
-#include "parser.h"
+#include <dauw/common.h>
+#include <dauw/errors.h>
+#include <dauw/logging.h>
+#include <dauw/parser/lexer.h>
+#include <dauw/parser/parser.h>
 
 
 namespace dauw

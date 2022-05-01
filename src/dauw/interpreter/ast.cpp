@@ -1,6 +1,5 @@
 #include "ast.h"
 
-
 namespace dauw
 {
   // Accept a visitor on the literal expression

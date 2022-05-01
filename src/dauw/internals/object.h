@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "common.h"
+#include <dauw/common.h>
 
 // Define for the IEEE 754 bitmasks
 #define BITMASK_SIGN        ((uint64_t)0x8000'0000'0000'0000)

@@ -1,13 +1,23 @@
 ﻿#include <argh.h>
 
-#include "common.h"
-#include "interpreter.h"
+#include <dauw/common.h>
+#include <dauw/interpreter/interpreter.h>
 
 
 // Print the header
 void print_header(int argc, const char* argv[])
 {
-  fmt::print(fmt::emphasis::bold | fmt::fg(fmt::color::slate_blue), "Dauw 0.1.0 -- written by Danae Nova\n");
+	fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(                                                       )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"( oooooooooo.                                           )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"( `888'   `Y8b                                          )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(  888      888  .oooo.   oooo  oooo  oooo oooo    ooo  )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(  888      888 `P  )88b  `888  `888   `88. `88.  .8'   )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(  888      888  .oP"888   888   888    `88..]88..8'    )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(  888     d88' d8(  888   888   888     `888'`888'     )");
+  fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"( o888bood8P'   `Y888""8o  `V88V"V8P'     `8'  `8'      )");
+	fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(                                                       )");
+
+  fmt::print(fmt::emphasis::bold, "Dauw {} -- written by Danae Nova\n", DAUW_VERSION);
   fmt::print("Interpreter for the Dauw programming language\n");
   fmt::print("Documentation and source available at https://dauw.dev/docs/\n\n");
 }

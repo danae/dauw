@@ -1,6 +1,5 @@
 #include "common.h"
 
-
 namespace dauw
 {
   using resolver = std::function<string_t(string_t)>;

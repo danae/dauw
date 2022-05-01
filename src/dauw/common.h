@@ -21,6 +21,9 @@
 #include <fmt/format.h>
 
 
+// Defines
+#define DAUW_VERSION "0.1.0"
+
 // Type declarations for common std types
 using string_t = std::string;
 using string_stream_t = std::stringstream;

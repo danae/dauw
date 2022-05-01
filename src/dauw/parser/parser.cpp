@@ -1,6 +1,5 @@
 #include "parser.h"
 
-
 namespace dauw
 {
   // Constructor for the parser

@@ -1,6 +1,5 @@
 #include "lexer.h"
 
-
 namespace dauw
 {
   // Return the name of the rule

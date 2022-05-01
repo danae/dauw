@@ -1,6 +1,5 @@
 #include "errors.h"
 
-
 namespace dauw
 {
   // Return the string representation of the Error

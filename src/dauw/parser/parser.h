@@ -1,10 +1,11 @@
 #pragma once
 
-#include "common.h"
-#include "ast.h"
-#include "errors.h"
-#include "logging.h"
-#include "token.h"
+#include <dauw/common.h>
+#include <dauw/errors.h>
+#include <dauw/logging.h>
+#include <dauw/interpreter/ast.h>
+#include <dauw/parser/location.h>
+#include <dauw/parser/token.h>
 
 
 namespace dauw
@@ -21,7 +22,7 @@ namespace dauw
 
       // The token that will be parsed next
       Token next_;
-      
+
 
       // Parsers for expressions
       std::shared_ptr<Expr> parse_expression();
