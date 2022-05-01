@@ -1,14 +1,15 @@
+================
 Lexical analysis
 ================
 
 Encoding
---------
+========
 
 Dauw source code should be in UTF-8 encoding or its ASCII subset; other encodings are not supported. Source code can either use Linux-style line endings (``\n``), which is preferred, or Windows-style line endings (``\r\n``). If source code can't be decoded, a ``SyntaxError`` is reported.
 
 
 Indentation
------------
+===========
 
 Dauw is an indentation sensitive language, which means that control structures in the language are expressed by their indentation, using the `off-side rule <https://en.wikipedia.org/wiki/Off-side_rule>`_. Indentation should only be marked by spaces; horizontal tabs or other whitespace characters are not supported.
 
@@ -21,15 +22,15 @@ Except at the start of a line or in string or character literals, the space and 
 
 
 Comments
---------
+========
 
-An inline comment starts with ``--`` and runs until the end of a line. Dauw has no support for block-style comments like ``/* */`` in C. Presumed comments in string or regex literals are not lexed as comments, but as part of those literals. Comments that appear directly above a declaration are lexed as documentation strings; comments in other places are ignored by the parser.
+An inline comment starts with ``--`` and runs until the end of a line. Dauw has no support for block-style comments. Presumed comments in string or regex literals are not lexed as comments, but as part of those literals. Comments that appear directly above a declaration are lexed as documentation strings; comments in other places are ignored by the parser.
 
 If the first line of source code starts with `#!`, it is perceived as an `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`_  and ignored by the parser.
 
 
 Identifiers and keywords
-------------------------
+========================
 
 Identifiers are described by the following lexical grammar::
 
@@ -45,23 +46,23 @@ Identifiers must start with an ASCII letter or the underscore and can be followe
 
 Some examples of valid identifiers in context::
 
-    foo = 42
-    pi_plus_two = 5.14159
-    `false` = 360
-    `妖精` = "I'm a fairy!"
-    `✈️` = "Ready for take-off!"
+    let foo = 42
+    let pi_plus_two = 5.14_15_92
+    let `false` = 360
+    let `妖精` = "I'm a fairy!"
+    let `✈️` = "Ready for take-off!"
 
 The following words are reserved keywords and cannot be used as ASCII identifiers::
 
-    break       false       return      while
-    continue    for         save        yield
-    discard     if          then
-    do          in          true
-    else        nothing     until
+    and         false       nothing     true
+    break       for         or          until
+    discard     if          return      while
+    do          in          save        yield
+    else        not         then
 
 
 Integer literals
-----------------
+================
 
 Integer literals are described by the following lexical grammar::
 
@@ -74,7 +75,7 @@ An integer literal can be either an optionally negative decimal number, or a hex
 
 
 Real literals
--------------
+=============
 
 Real (or floating point) literals are described by the following lexical grammar::
 
@@ -85,7 +86,7 @@ A real literal is an optionally negative decimal number, followed by a decimal f
 
 
 Character and string literals
------------------------------
+=============================
 
 Character and string literals are described by the following lexical grammar::
 
@@ -99,30 +100,29 @@ Character literals denote a single Unicode code-point and are delimited by singl
 
 The following escape sequences are supported in character and string literals, which are mostly the same as supported by the `JSON standard <https://www.json.org/json-en.html>`_:
 
-===============     ===========
-Escape sequence     Description
-===============     ===========
-``\'``              Single quote
-``\"``              Double quote
-``\\``              Backslash (in order to output a regular backslash)
-``\b``              Backspace (ASCII ``BS``)
-``\f``              Form feed (ASCII ``FF``)
-``\n``              Line feed/newline (ASCII ``LF``)
-``\r``              Carriage return (ASCII ``CR``)
-``\t``              Horizontal tab (ASCII ``TAB``)
-``\u{···}``         Unicode code point specified by 1 to 6 hex digits
-===============     ===========
+===============  ===========
+Escape sequence  Description
+===============  ===========
+``\'``           Single quote
+``\"``           Double quote
+``\\``           Backslash (in order to output a regular backslash)
+``\b``           Backspace (ASCII ``BS``)
+``\f``           Form feed (ASCII ``FF``)
+``\n``           Line feed/newline (ASCII ``LF``)
+``\r``           Carriage return (ASCII ``CR``)
+``\t``           Horizontal tab (ASCII ``TAB``)
+``\u{···}``      Unicode code point specified by 1 to 6 hex digits
+===============  ===========
 
 
 Operators and delimiters
-------------------------
+========================
 
 The following sequences of symbols are used as operators::
 
-    =   ==  <>  ~   <   <=  >   >=
-    <=> ..  +   -   *   /   //  %
-    ?   #   $
+    =   ==  <>  ~   <   <=  >   >=  <=> ..
+    +   -   *   /   //  %   ?   #   $
 
 The following tokens serve as delimiters in the grammar or are otherwise significant to the lexical analyzer::
 
-    (   )   {   }   [   ]   ,   .   :
+    (   )   {   }   [   ]   ,   .   :   \
