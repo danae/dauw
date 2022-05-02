@@ -1,7 +1,6 @@
 ﻿#include <argh.h>
 
-#include <dauw/common.h>
-#include <dauw/interpreter/interpreter.h>
+#include "dauw.h"
 
 
 // Print the header
@@ -43,7 +42,7 @@ void print_usage(int argc, const char* argv[])
 int main(int argc, const char* argv[])
 {
   // Create the interpreter
-	auto interpreter = std::make_shared<dauw::Interpreter>();
+	auto app = std::make_shared<dauw::Dauw>();
 
 	// Parse the arguments
 	argh::parser cmdl;
@@ -57,18 +56,18 @@ int main(int argc, const char* argv[])
 		// Show this help message and exit
 		print_header(argc, argv);
 		print_usage(argc, argv);
-		return 0;
+		return DAUW_EXIT_OK;
 	}
 	else if (cmdl[{"-v", "--version"}])
 	{
 		// Show version information and exit
 		print_header(argc, argv);
-		return 0;
+		return DAUW_EXIT_OK;
 	}
 	else if (cmdl(1))
 	{
 		// Evaluate the source code in the specified file
-		return interpreter->interpret_from_file(cmdl(1).str());
+		return app->run_file(cmdl(1).str());
 	}
 	else
 	{
@@ -76,6 +75,6 @@ int main(int argc, const char* argv[])
 		print_header(argc, argv);
 		fmt::print("Use CTRL+C to exit the interactive prompt\n");
 
-		return interpreter->interpret_from_repl();
+		return app->run_repl();
 	}
 }

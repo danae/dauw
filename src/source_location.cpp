@@ -1,4 +1,4 @@
-#include "location.h"
+#include "source_location.h"
 
 namespace dauw
 {
@@ -31,34 +31,6 @@ namespace dauw
   void Location::increase_col_(size_t n)
   {
     col_ += n;
-  }
-
-  // Return the string representation of this location in a source string
-  string_t Location::format(string_t& source)
-  {
-    // Get the line and column in the source
-    auto lines = dauw::regex_lines(source);
-    if (line_ >= lines.size())
-      throw std::runtime_error(fmt::format("line {} is not present in the specified source", line_ + 1));
-
-    auto line = lines[line_];
-    if (col_ >= line.length())
-      throw std::runtime_error(fmt::format("line {}, col {} is not present in the specified source", line_ + 1, col_ + 1));
-
-    // Create a string stream
-  	string_stream_t sb;
-
-    // Format the source line
-  	sb << fmt::format("{: >6d} | {}\n", line_ + 1, lines[line_]);
-
-    // Format the source position
-  	sb << "       | ";
-  	for (auto i = 0; i < col_; i ++)
-  		sb << " ";
-  	sb << "^";
-
-    // Return the string stream
-  	return sb.str();
   }
 
   // Return if the location equals another location

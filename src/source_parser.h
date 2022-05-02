@@ -1,11 +1,10 @@
 #pragma once
 
-#include <dauw/common.h>
-#include <dauw/errors.h>
-#include <dauw/logging.h>
-#include <dauw/interpreter/ast.h>
-#include <dauw/parser/location.h>
-#include <dauw/parser/token.h>
+#include "common.h"
+#include "ast.h"
+#include "errors.h"
+#include "source_location.h"
+#include "source_token.h"
 
 
 namespace dauw

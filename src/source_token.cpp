@@ -1,4 +1,4 @@
-#include "token.h"
+#include "source_token.h"
 
 namespace dauw
 {

@@ -2,43 +2,14 @@
 
 namespace dauw
 {
-  using resolver = std::function<string_t(string_t)>;
-
-
-  // Resolve a file name
-  string_t resolve_file(string_t path)
+  // Repeat a string for the specified amount of times
+  string_t string_repeat(string_t string, size_t times)
   {
-    // Create a vector of resolvers
-    std::vector<resolver> resolvers;
-
-    // Canonical path
-    resolvers.push_back([](string_t path)->string_t { return path; });
-    resolvers.push_back([](string_t path)->string_t { return fmt::format("{}.dauw", path); });
-
-    // User bin directory
-    resolvers.push_back([](string_t path)->string_t { return fmt::format("{}/.dauw/bin/{}", std::getenv("HOME"), path); });
-    resolvers.push_back([](string_t path)->string_t { return fmt::format("{}/.dauw/bin/{}.dauw", std::getenv("HOME"), path); });
-
-    // Iterate over the resolvers
-    for (auto resolve : resolvers)
-    {
-      auto resolved_path = resolve(path);
-      if (std::filesystem::exists(resolved_path))
-        return std::filesystem::canonical(resolved_path);
-    }
-
-    // The path does not exist
-    throw std::runtime_error(fmt::format("The file \"{}\" does not exist", path));
+    string_t result;
+    for (auto i = 0; i < times; i ++)
+      result += string;
+    return result;
   }
-
-  // Read the contents of a file
-  string_t read_file(string_t path)
-  {
-    std::ifstream stream(path);
-  	string_t source((std::istreambuf_iterator<char>(stream)), (std::istreambuf_iterator<char>()));
-    return source;
-  }
-
 
   // Search for a regular expression in a string
   match_optional_t regex_search(regex_t pattern, string_t& string, size_t begin, size_t end)

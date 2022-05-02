@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dauw/common.h>
-#include <dauw/parser/location.h>
-#include <dauw/parser/token.h>
+#include "common.h"
+#include "source_location.h"
+#include "source_token.h"
 
 
 namespace dauw

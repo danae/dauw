@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dauw/common.h>
+#include "common.h"
 
 
 namespace dauw
@@ -44,9 +44,6 @@ namespace dauw
 
       // Return the column of the location
       size_t& col();
-
-      // Return the string representation of this location in a source string
-      string_t format(string_t& source);
 
       // Operator overloads
       bool operator==(const Location& other);

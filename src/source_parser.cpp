@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "source_parser.h"
 
 namespace dauw
 {
@@ -274,7 +274,7 @@ namespace dauw
       return std::make_shared<ExprParenthesized>(expr);
     }
 
-    throw Error("Expected expression", next_.location());
+    throw SyntaxError(next_.location(), "Expected atom");
   }
 
 
@@ -288,7 +288,7 @@ namespace dauw
       tokens_.pop_front();
 
       if (current_.name() == "error")
-        throw Error(current_.value(), current_.location());
+        throw SyntaxError(current_.location(), current_.value());
     }
 
     return current_;
@@ -337,6 +337,6 @@ namespace dauw
     if (check(name))
       return advance();
 
-    throw Error(message, next_.location());
+    throw SyntaxError(next_.location(), message);
   }
 }

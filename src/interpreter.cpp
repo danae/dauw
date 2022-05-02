@@ -2,60 +2,6 @@
 
 namespace dauw
 {
-  // Interpret a source string
-  int Interpreter::interpret(string_t source_name, string_t source)
-  {
-    try
-  	{
-      // Convert the source string to a deque of tokens
-      Lexer lexer(source_name);
-      auto tokens = lexer.tokenize(source);
-
-      // Convert the deque of tokens to an expression
-      Parser parser(tokens);
-      auto expr = parser.parse();
-
-      // Evaluate the expression
-      if (expr != nullptr)
-        print(expr);
-
-      return 0;
-  	}
-  	catch (dauw::Error& error)
-  	{
-  		dauw::log_error(error, source);
-      return 1;
-  	}
-  }
-
-  // Interpret from a read-eval-print loop
-  int Interpreter::interpret_from_repl()
-  {
-    // Variable to hold the current line
-  	string_t source;
-
-  	// Execute the read-eval-print loop
-  	while (true)
-  	{
-  		// Print the prompts
-  		fmt::print(fmt::fg(fmt::color::slate_blue ), "$ ");
-
-      // Read a new line and run it
-  		std::getline(std::cin, source);
-  		interpret("<prompt>", source);
-  	}
-
-    return 0;
-  }
-
-  // Interpret from a file
-  int Interpreter::interpret_from_file(string_t file_path)
-  {
-    // Read and run the contents of the file
-  	auto absolute_path = resolve_file(file_path);
-  	auto source = read_file(absolute_path);
-  	return interpret(absolute_path, source);
-  }
 
   void Interpreter::print_depth()
   {

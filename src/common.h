@@ -1,18 +1,9 @@
 #pragma once
 
-#include <compare>
-#include <cstdlib>
-#include <deque>
 #include <filesystem>
 #include <fstream>
-#include <functional>
-#include <iomanip>
 #include <iostream>
-#include <memory>
-#include <optional>
 #include <regex>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -24,9 +15,18 @@
 // Defines
 #define DAUW_VERSION "0.1.0"
 
+// Defines for exit codes
+#define DAUW_EXIT_OK 0
+#define DAUW_EXIT_USAGE 64
+#define DAUW_EXIT_DATAERR 65
+#define DAUW_EXIT_SOFTWAREERR 70
+#define DAUW_EXIT_OSERR 71
+#define DAUW_EXIT_IOERR 74
+#define DAUW_EXIT_CONFIG 78
+
+
 // Type declarations for common std types
 using string_t = std::string;
-using string_stream_t = std::stringstream;
 using string_view_t = std::string_view;
 using regex_t = std::regex;
 using match_t = std::smatch;
@@ -35,12 +35,8 @@ using match_optional_t = std::optional<match_t>;
 
 namespace dauw
 {
-  // Resolve a file name
-  string_t resolve_file(string_t path);
-
-  // Read the contents of a file
-  string_t read_file(string_t path);
-
+  // Repeat a string for the specified amount of times
+  string_t string_repeat(string_t string, size_t times);
 
   // Search for a regular expression in a string
   match_optional_t regex_search(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);

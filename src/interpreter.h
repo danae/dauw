@@ -1,10 +1,7 @@
 #pragma once
 
-#include <dauw/common.h>
-#include <dauw/errors.h>
-#include <dauw/logging.h>
-#include <dauw/parser/lexer.h>
-#include <dauw/parser/parser.h>
+#include "common.h"
+#include "ast.h"
 
 
 namespace dauw
@@ -17,15 +14,6 @@ namespace dauw
 
 
     public:
-      // Interpret a source string
-      int interpret(string_t source_name, string_t source);
-
-      // Interpret from a read-eval-print loop
-      int interpret_from_repl();
-
-      // Interpret from a file
-      int interpret_from_file(string_t file_path);
-
       void print_depth();
       void print(const std::shared_ptr<dauw::Expr>& expr);
 

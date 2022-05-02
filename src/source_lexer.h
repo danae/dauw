@@ -1,9 +1,9 @@
 #pragma once
 
-#include <dauw/common.h>
-#include <dauw/errors.h>
-#include <dauw/parser/location.h>
-#include <dauw/parser/token.h>
+#include "common.h"
+#include "errors.h"
+#include "source_location.h"
+#include "source_token.h"
 
 
 namespace dauw
@@ -24,12 +24,7 @@ namespace dauw
 
     public:
       // Constructor
-      LexerRule(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement)
-        : name_(name), pattern_(pattern), replacement_(replacement) { }
-      LexerRule(string_t name, regex_t pattern, size_t replacement)
-        : LexerRule(name, pattern, [replacement](match_t match)->string_t { return match[replacement].str(); }) { }
-      LexerRule(string_t name, regex_t pattern)
-        : LexerRule(name, pattern, [](match_t match)->string_t { return ""; }) { }
+      LexerRule(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement);
 
       // Return the name of the rule
       string_t name();
@@ -46,8 +41,9 @@ namespace dauw
   class Lexer
   {
     private:
-      // The name of the source
-      string_t name_;
+      // The source string
+      string_t source_;
+      string_t source_name_;
 
       // Regex patterns for comments, newlines and whitespaces
       regex_t comment_pattern_;
@@ -57,15 +53,17 @@ namespace dauw
       std::vector<LexerRule> rules_;
 
 
-      // Replacement function for an identifier
-      static string_t replace_identifier_(match_t match);
+      // Add a rule to the lexer
+      void rule_(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement);
+      void rule_(string_t name, regex_t pattern, size_t replacement);
+      void rule_(string_t name, regex_t pattern);
 
 
     public:
       // Constructor
-      Lexer(string_t name);
+      Lexer(string_t source, string_t source_name);
 
       // Convert a string into a deque of tokens
-      std::deque<Token> tokenize(string_t source);
+      std::deque<Token> tokenize();
   };
 }
