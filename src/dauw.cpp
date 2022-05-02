@@ -44,17 +44,20 @@ namespace dauw
   int Dauw::run_repl()
   {
     // Variable to hold the current line
-  	string_t source;
+  	string_t line;
 
-  	// Execute the read-eval-print loop
-  	while (true)
+    // Execute the read-eval-print loop
+    while (true)
   	{
-  		// Print the prompts
-  		fmt::print(fmt::fg(fmt::color::slate_blue ), "$ ");
+      // Read a line from the prompt and quit if appropriate
+      if (linenoise::Readline("$ ", line))
+        break;
 
-      // Read a new line and run it
-  		std::getline(std::cin, source);
-  		run(source, "<prompt>");
+      // Add the line to the history
+      linenoise::AddHistory(line.c_str());
+
+      // Run the line
+  		run(line, "<prompt>");
   	}
 
     // Exit the loop normally
@@ -83,7 +86,7 @@ namespace dauw
   void Dauw::report(string_t message)
   {
     // Print the message
-    fmt::print(fmt::fg(fmt::color::crimson), message);
+    fmt::print(fmt::fg(fmt::color::crimson), "{}\n", message);
   }
 
   // Report an error with a location

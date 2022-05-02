@@ -11,6 +11,8 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 
+#include <linenoise.hpp>
+
 
 // Defines
 #define DAUW_VERSION "0.1.0"

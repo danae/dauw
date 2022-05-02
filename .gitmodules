@@ -4,3 +4,6 @@
 [submodule "include/fmt"]
 	path = include/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "include/cpp-linenoise"]
+	path = include/cpp-linenoise
+	url = https://github.com/yhirose/cpp-linenoise
