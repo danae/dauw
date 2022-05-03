@@ -1,2 +1,0 @@
-Types and methods
-=================
