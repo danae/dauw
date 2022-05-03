@@ -1,5 +1,5 @@
 # Ignore build directories
-/[Bb]uild
+/[Bb]uild/
 
 # Ignore CMake files
 CMakeLists.txt.user

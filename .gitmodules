@@ -1,9 +1,9 @@
-[submodule "include/argh"]
-	path = include/argh
+[submodule "lib/argh"]
+	path = lib/argh
 	url = https://github.com/adishavit/argh
-[submodule "include/fmt"]
-	path = include/fmt
-	url = https://github.com/fmtlib/fmt
-[submodule "include/cpp-linenoise"]
-	path = include/cpp-linenoise
+[submodule "lib/cpp-linenoise"]
+	path = lib/cpp-linenoise
 	url = https://github.com/yhirose/cpp-linenoise
+[submodule "lib/fmt"]
+	path = lib/fmt
+	url = https://github.com/fmtlib/fmt

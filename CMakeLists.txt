@@ -10,11 +10,11 @@ file(GLOB_RECURSE DAUW_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(dauw ${DAUW_HEADERS} ${DAUW_SOURCES})
 
 # Add libraries to the project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/include/argh)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/argh)
 target_link_libraries(dauw argh)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/include/fmt)
-target_link_libraries(dauw fmt::fmt)
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/include/cpp-linenoise)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/cpp-linenoise)
 target_link_libraries(dauw linenoise)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/fmt)
+target_link_libraries(dauw fmt::fmt)
