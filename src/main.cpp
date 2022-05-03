@@ -16,9 +16,9 @@ void print_header(int argc, const char* argv[])
   fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"( o888bood8P'   `Y888""8o  `V88V"V8P'     `8'  `8'      )");
 	fmt::print(fmt::fg(fmt::color::slate_blue), "{}\n", R"(                                                       )");
 
-  fmt::print(fmt::emphasis::bold, "Dauw {} -- written by Danae Nova\n", DAUW_VERSION);
-  fmt::print("Interpreter for the Dauw programming language\n");
-  fmt::print("Documentation and source available at https://dauw.dev/docs/\n\n");
+  fmt::print(fmt::emphasis::bold, "Dauw {} (commit {} at branch {})\n", DAUW_VERSION, DAUW_GIT_COMMIT_HASH, DAUW_GIT_BRANCH);
+  fmt::print("Interpreter and compiler for the Dauw programming language\n");
+  fmt::print("Documentation and source available at https://dauw.dev/\n\n");
 }
 
 // Print the usage
