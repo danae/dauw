@@ -33,6 +33,9 @@ target_link_libraries(${PROJECT_NAME} linenoise)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/fmt)
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/pcrexx)
+target_link_libraries(${PROJECT_NAME} pcrexx)
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/utfcpp)
 target_link_libraries(${PROJECT_NAME} utf8cpp)
 

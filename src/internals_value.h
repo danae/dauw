@@ -53,9 +53,9 @@ namespace dauw
   int64_t value_as_int(value_t value);
 
   // Value that represents a rune type
-  value_t value_of_rune(char32_t rune_value);
+  value_t value_of_rune(uint32_t rune_value);
   bool value_is_rune(value_t value);
-  char32_t value_as_rune(value_t value);
+  uint32_t value_as_rune(value_t value);
 
   // Value that represents a pointer type
   value_t value_of_ptr(uintptr_t ptr_value);
@@ -75,10 +75,10 @@ namespace dauw
 
 
   // Convert a string to a pointer value
-  value_t value_ptr_from_string(string_t string);
+  value_t value_ptr_from_string(String string);
 
   // Convert a pointer value to a string
-  string_t value_uintptr_to_string(value_t value);
+  String value_uintptr_to_string(value_t value);
 
   // Convert a shared pointer to a pointer value
   template <typename T>

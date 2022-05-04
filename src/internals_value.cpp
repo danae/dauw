@@ -90,12 +90,12 @@ namespace dauw
   }
 
   // Convert a rune type to a value
-  value_t value_of_rune(char32_t rune_value)
+  value_t value_of_rune(uint32_t rune_value)
   {
     if (rune_value > 0x10FFFF)
-      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it exceeds the last code point U+10FFFF", (uint32_t)rune_value));
+      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it exceeds the last code point U+10FFFF", rune_value));
     if (rune_value >= 0xD800 && rune_value <= 0xDFFF)
-      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it contains a surrogate code point", (uint32_t)rune_value));
+      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it contains a surrogate code point", rune_value));
 
     return (value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE));
   }
@@ -107,12 +107,12 @@ namespace dauw
   }
 
   // Convert a value to an rune type
-  char32_t value_as_rune(value_t value)
+  uint32_t value_as_rune(value_t value)
   {
     if (!value_is_rune(value))
       throw std::domain_error("The value does not represent a valid rune type");
 
-    char32_t rune_value = (char32_t)(value & BITMASK_VALUE);
+    uint32_t rune_value = (uint32_t)(value & BITMASK_VALUE);
     if (rune_value > 0x10FFFF)
       throw std::out_of_range("The value exceeds the range of a rune value because it exceeds the last code point U+10FFFF");
     if (rune_value >= 0xD800 && rune_value <= 0xDFFF)
@@ -192,7 +192,7 @@ namespace dauw
     else if (dauw::value_is_int(value))
       return fmt::format("int({}) [{:x}]", value_as_int(value), value);
     else if (dauw::value_is_rune(value))
-      return fmt::format("rune({}) [{:x}]", utf8::utf32to8(std::u32string(1, (char32_t)value_as_rune(value))), value);
+      return fmt::format("rune({}) [{:x}]", utf8::utf32to8(std::u32string(1, (uint32_t)value_as_rune(value))), value);
     else if (dauw::value_is_ptr(value))
       return fmt::format("<pointer to address 0x{:016X}> [{:x}]", value_as_ptr(value), value);
     else if (dauw::value_is_real(value))
@@ -203,16 +203,16 @@ namespace dauw
 
 
   // Convert a string to a pointer value
-  value_t value_ptr_from_string(string_t string)
+  value_t value_ptr_from_string(String string)
   {
-    uintptr_t ptr_value = (uintptr_t)string.data();
+    uintptr_t ptr_value = (uintptr_t)string.c_str();
     return value_of_ptr(ptr_value);
   }
 
   // Convert a pointer value to a string
-  string_t value_uintptr_to_string(value_t value)
+  String value_uintptr_to_string(value_t value)
   {
     uintptr_t ptr_value = value_as_ptr(value);
-    return string_t((const char*)ptr_value);
+    return String((const char*)ptr_value);
   }
 }

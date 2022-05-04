@@ -3,18 +3,18 @@
 namespace dauw
 {
   // Convert a string to a vector of runes
-  std::vector<char32_t> string_to_runes(string_t string)
+  std::vector<uint32_t> string_to_runes(string_t string)
   {
     if (!utf8::is_valid(string.cbegin(), string.cend()))
       throw std::out_of_range(fmt::format("The value '{}' is not a valid UTF-8 encoded string", string));
 
-    std::vector<char32_t> runes;
+    std::vector<uint32_t> runes;
     utf8::utf8to32(string.cbegin(), string.cend(), std::back_inserter(runes));
     return runes;
   }
 
   // Convert a vector of runes to a string
-  string_t string_from_runes(std::vector<char32_t> runes)
+  string_t string_from_runes(std::vector<uint32_t> runes)
   {
     string_t string;
     utf8::utf32to8(runes.cbegin(), runes.cend(), std::back_inserter(string));
