@@ -34,7 +34,6 @@
 
 
 // Type declarations for common std types
-using rune_t = uint32_t;
 using string_t = std::string;
 using string_view_t = std::string_view;
 using regex_t = std::regex;
@@ -45,10 +44,10 @@ using match_optional_t = std::optional<match_t>;
 namespace dauw
 {
   // Convert a string to a vector of runes
-  std::vector<rune_t> string_to_runes(string_t string);
+  std::vector<char32_t> string_to_runes(string_t string);
 
   // Convert a vector of runes to a string
-  string_t string_from_runes(std::vector<rune_t> runes);
+  string_t string_from_runes(std::vector<char32_t> runes);
 
   // Repeat a string for the specified amount of times
   string_t string_repeat(string_t string, size_t times);

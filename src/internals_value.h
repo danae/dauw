@@ -53,9 +53,9 @@ namespace dauw
   int64_t value_as_int(value_t value);
 
   // Value that represents a rune type
-  value_t value_of_rune(rune_t rune_value);
+  value_t value_of_rune(char32_t rune_value);
   bool value_is_rune(value_t value);
-  rune_t value_as_rune(value_t value);
+  char32_t value_as_rune(value_t value);
 
   // Value that represents a pointer type
   value_t value_of_ptr(uintptr_t ptr_value);

@@ -90,12 +90,12 @@ namespace dauw
   }
 
   // Convert a rune type to a value
-  value_t value_of_rune(rune_t rune_value)
+  value_t value_of_rune(char32_t rune_value)
   {
     if (rune_value > 0x10FFFF)
-      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it exceeds the last code point U+10FFFF", rune_value));
+      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it exceeds the last code point U+10FFFF", (uint32_t)rune_value));
     if (rune_value >= 0xD800 && rune_value <= 0xDFFF)
-      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it contains a surrogate code point", rune_value));
+      throw std::out_of_range(fmt::format("The value U+{:06X} exceeds the range of a rune value because it contains a surrogate code point", (uint32_t)rune_value));
 
     return (value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE));
   }
@@ -107,12 +107,12 @@ namespace dauw
   }
 
   // Convert a value to an rune type
-  rune_t value_as_rune(value_t value)
+  char32_t value_as_rune(value_t value)
   {
     if (!value_is_rune(value))
       throw std::domain_error("The value does not represent a valid rune type");
 
-    rune_t rune_value = (rune_t)(value & BITMASK_VALUE);
+    char32_t rune_value = (char32_t)(value & BITMASK_VALUE);
     if (rune_value > 0x10FFFF)
       throw std::out_of_range("The value exceeds the range of a rune value because it exceeds the last code point U+10FFFF");
     if (rune_value >= 0xD800 && rune_value <= 0xDFFF)

@@ -354,7 +354,7 @@ namespace dauw
       if (runes.size() > 1)
         throw SyntaxError(current_.location(), "The rune literal contains more than one code point");
 
-      rune_t rune_value = (rune_t)runes.front();
+      auto rune_value = runes.front();
 
       // Return the expression
       return std::make_shared<ExprLiteral>(value_of_rune(rune_value), current_.location());
