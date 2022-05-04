@@ -30,12 +30,12 @@ namespace dauw
   	}
   	catch (dauw::SyntaxError& error)
   	{
-      report_error(error);
+      report_error(error, "SyntaxError");
       return DAUW_EXIT_DATAERR;
   	}
     catch (dauw::RuntimeError& error)
   	{
-      report_error(error);
+      report_error(error, "RuntimeError");
       return DAUW_EXIT_SOFTWAREERR;
   	}
   }
@@ -111,10 +111,10 @@ namespace dauw
   }
 
   // Report an error exception
-  void Dauw::report_error(Error& error)
+  void Dauw::report_error(Error& error, string_t error_type)
   {
     // Report the error
-    report(error.location(), error.message());
+    report(error.location(), fmt::format("{}: {}", error_type, error.message()));
 
     // Report the previous error if there is one
     if (error.previous() != nullptr)

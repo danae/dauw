@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "internals_value.h"
 #include "source_location.h"
 #include "source_token.h"
 
@@ -60,7 +61,7 @@ namespace dauw
   {
     private:
       // The value of the expression
-      string_t value_;
+      value_t value_;
 
       // The location of the expression
       Location location_;
@@ -68,11 +69,11 @@ namespace dauw
 
     public:
       // Constructor
-      ExprLiteral(string_t value, Location location)
+      ExprLiteral(value_t value, Location location)
         : value_(value), location_(location) { }
 
       // Return the fields of the literal expression
-      string_t& value() { return value_; }
+      value_t& value() { return value_; }
 
       // Return the location of the expression
       Location& location() override { return location_; }

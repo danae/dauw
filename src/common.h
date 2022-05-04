@@ -1,8 +1,7 @@
 #pragma once
 
-#include <filesystem>
-#include <fstream>
-#include <iostream>
+#include <deque>
+#include <iterator>
 #include <regex>
 #include <string>
 #include <vector>
@@ -10,12 +9,19 @@
 #include <fmt/core.h>
 #include <fmt/color.h>
 #include <fmt/format.h>
-
-#include <linenoise.hpp>
+#include <utf8.h>
 
 
 // Defines
-#define DAUW_VERSION "0.1.0"
+#ifndef DAUW_VERSION
+  #define DAUW_VERSION "0.1.0"
+#endif
+#ifndef DAUW_GIT_BRANCH
+  #define DAUW_GIT_BRANCH "unknown"
+#endif
+#ifndef DAUW_GIT_COMMIT_HASH
+  #define DAUW_GIT_COMMIT_HASH "unknown"
+#endif
 
 // Defines for exit codes
 #define DAUW_EXIT_OK 0
@@ -28,6 +34,7 @@
 
 
 // Type declarations for common std types
+using rune_t = uint32_t;
 using string_t = std::string;
 using string_view_t = std::string_view;
 using regex_t = std::regex;
@@ -37,8 +44,17 @@ using match_optional_t = std::optional<match_t>;
 
 namespace dauw
 {
+  // Convert a string to a vector of runes
+  std::vector<rune_t> string_to_runes(string_t string);
+
+  // Convert a vector of runes to a string
+  string_t string_from_runes(std::vector<rune_t> runes);
+
   // Repeat a string for the specified amount of times
   string_t string_repeat(string_t string, size_t times);
+
+  // Convert escape sequences in a string to their literal equivalent
+  string_t string_unescape(string_t string);
 
   // Search for a regular expression in a string
   match_optional_t regex_search(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
@@ -56,5 +72,5 @@ namespace dauw
   std::vector<string_t> regex_lines(string_t& string);
 
   // Replace non-overlapping occurrences of a regular expression in a string
-  string_t regex_sub(regex_t pattern, string_t& replacement, string_t& string);
+  string_t regex_replace(regex_t pattern, string_t replacement, string_t& string);
 }

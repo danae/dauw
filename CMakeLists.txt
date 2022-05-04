@@ -33,6 +33,9 @@ target_link_libraries(${PROJECT_NAME} linenoise)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/fmt)
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/utfcpp)
+target_link_libraries(${PROJECT_NAME} utf8cpp)
+
 # Add compile definitions to the project
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE "DAUW_GIT_BRANCH=\"${GIT_BRANCH}\""

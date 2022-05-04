@@ -7,6 +7,11 @@
 #include "source_location.h"
 #include "source_parser.h"
 
+#include <filesystem>
+#include <fstream>
+
+#include <linenoise.hpp>
+
 
 namespace dauw
 {
@@ -41,6 +46,6 @@ namespace dauw
       void report(Location location, string_t message);
 
       // Report an error exception
-      void report_error(Error& error);
+      void report_error(Error& error, string_t error_type = "Error");
   };
 }

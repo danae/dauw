@@ -7,3 +7,6 @@
 [submodule "lib/fmt"]
 	path = lib/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "lib/utfcpp"]
+	path = lib/utfcpp
+	url = https://github.com/nemtrif/utfcpp

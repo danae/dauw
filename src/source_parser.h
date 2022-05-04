@@ -3,6 +3,7 @@
 #include "common.h"
 #include "ast.h"
 #include "errors.h"
+#include "internals_value.h"
 #include "source_location.h"
 #include "source_token.h"
 
@@ -47,6 +48,11 @@ namespace dauw
 
       // Parsers for atoms
       std::shared_ptr<Expr> parse_atom();
+      std::shared_ptr<Expr> parse_int();
+      std::shared_ptr<Expr> parse_real();
+      std::shared_ptr<Expr> parse_rune();
+      std::shared_ptr<Expr> parse_string();
+      std::shared_ptr<Expr> parse_regex();
 
       // Basic parseer functionality
       bool at_end();

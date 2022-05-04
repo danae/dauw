@@ -246,13 +246,21 @@ namespace dauw
 
     // literal → 'nothing' | 'false' | 'true' | INT | REAL | STRING
     if (match("keyword_nothing"))
-      return std::make_shared<ExprLiteral>("nothing", current_.location());
+      return std::make_shared<ExprLiteral>(value_nothing(), current_.location());
     if (match("keyword_false"))
-      return std::make_shared<ExprLiteral>("false", current_.location());
+      return std::make_shared<ExprLiteral>(value_false(), current_.location());
     if (match("keyword_true"))
-      return std::make_shared<ExprLiteral>("true", current_.location());
-    if (match({"int", "real", "rune", "string", "regex"}))
-      return std::make_shared<ExprLiteral>(current_.value(), current_.location());
+      return std::make_shared<ExprLiteral>(value_true(), current_.location());
+    if (match("int"))
+      return parse_int();
+    if (match("real"))
+      return parse_real();
+    if (match("rune"))
+      return parse_rune();
+    if (match("string"))
+      return parse_string();
+    if (match("regex"))
+      return parse_regex();
 
     // name → IDENTIFIER
     if (match("identifier"))
@@ -275,6 +283,100 @@ namespace dauw
     }
 
     throw SyntaxError(next_.location(), "Expected atom");
+  }
+
+  // Parse an int literal
+  std::shared_ptr<Expr> Parser::parse_int()
+  {
+    auto value = current_.value();
+
+    try
+    {
+      // Sanitize the int literal
+      value = regex_replace(regex_t("_"), "", value);
+
+      // Parse the int literal
+      size_t end_index;
+      auto is_hex = (value.rfind("0x", 0) == 0 || value.rfind("0X", 0) == 0);
+      auto int_value = (int64_t)std::stoll(value, &end_index, is_hex ? 16 : 10);
+      if (end_index != value.length())
+        throw SyntaxError(current_.location(), fmt::format("Invalid character '{}' in int literal", value, value.substr(end_index, 1)));
+
+      // Return the expression
+      return std::make_shared<ExprLiteral>(value_of_int(int_value), current_.location());
+    }
+    catch (std::invalid_argument& ex) {
+      throw SyntaxError(current_.location(), ex.what());
+    }
+    catch (std::out_of_range& ex) {
+      throw SyntaxError(current_.location(), ex.what());
+    }
+  }
+
+  // Parse a real literal
+  std::shared_ptr<Expr> Parser::parse_real()
+  {
+    auto value = current_.value();
+
+    try
+    {
+      // Sanitize the int literal
+      value = regex_replace(regex_t("_"), "", value);
+
+      // Parse the real literal
+      size_t end_index;
+      double real_value = std::stod(value, &end_index);
+      if (end_index != value.length())
+        throw SyntaxError(current_.location(), fmt::format("Invalid character '{}' in real literal", value, value.substr(end_index, 1)));
+
+      // Return the expression
+      return std::make_shared<ExprLiteral>(value_of_real(real_value), current_.location());
+    }
+    catch (std::invalid_argument& ex) {
+      throw SyntaxError(current_.location(), ex.what());
+    }
+    catch (std::out_of_range& ex) {
+      throw SyntaxError(current_.location(), ex.what());
+    }
+  }
+
+  // Parse a rune literal
+  std::shared_ptr<Expr> Parser::parse_rune()
+  {
+    auto value = current_.value();
+
+    try
+    {
+      // Parse the rune literal
+      auto runes = string_to_runes(string_unescape(value));
+      if (runes.size() < 1)
+        throw SyntaxError(current_.location(), "The rune literal contains no code point");
+      if (runes.size() > 1)
+        throw SyntaxError(current_.location(), "The rune literal contains more than one code point");
+
+      rune_t rune_value = (rune_t)runes.front();
+
+      // Return the expression
+      return std::make_shared<ExprLiteral>(value_of_rune(rune_value), current_.location());
+    }
+    catch (std::out_of_range& ex) {
+      throw SyntaxError(current_.location(), ex.what());
+    }
+  }
+
+  // Parse a string literal
+  std::shared_ptr<Expr> Parser::parse_string()
+  {
+    auto value = string_unescape(current_.value());
+    return std::make_shared<ExprLiteral>(value_ptr_from_string(value), current_.location());
+  }
+
+  // Parse a regex literal
+  std::shared_ptr<Expr> Parser::parse_regex()
+  {
+    // TODO: Implement actual regex conversion
+    auto value = string_unescape(current_.value());
+    return std::make_shared<ExprLiteral>(value_ptr_from_string(value), current_.location());
   }
 
 

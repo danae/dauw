@@ -2,6 +2,20 @@
 
 namespace dauw
 {
+  // Constructor for a token
+  Token::Token(string_t name, string_t value, Location location, size_t length)
+    : name_(name), value_(value), location_(location), length_(length)
+  {
+  }
+  Token::Token(string_t name, Location location, size_t length)
+    : Token(name, "", location, length)
+  {
+  }
+  Token::Token()
+    : Token("bof", "", Location(""))
+  {
+  }
+
   // Return the name of the token
   string_t& Token::name()
   {
