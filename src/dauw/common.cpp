@@ -1,4 +1,4 @@
-#include "common.h"
+#include "common.hpp"
 
 namespace dauw
 {
@@ -42,7 +42,7 @@ namespace dauw
   {
     auto escape_pattern = std::regex("\\\\(u\\{([0-9A-Fa-f]{1,6})\\}|.)");
     match_optional_t escape_match;
-    
+
     while ((escape_match = regex_search(escape_pattern, string)).has_value())
     {
       auto match = escape_match.value();

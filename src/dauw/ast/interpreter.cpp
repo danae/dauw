@@ -1,4 +1,4 @@
-#include "interpreter.h"
+#include "interpreter.hpp"
 
 namespace dauw
 {

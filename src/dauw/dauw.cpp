@@ -1,4 +1,4 @@
-#include "dauw.h"
+#include "dauw.hpp"
 
 namespace dauw
 {

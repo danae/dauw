@@ -1,4 +1,4 @@
-#include "ast.h"
+#include "ast.hpp"
 
 namespace dauw
 {

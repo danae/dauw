@@ -1,13 +1,13 @@
 #pragma once
 
-#include "common.h"
-#include "ast.h"
-#include "errors.h"
-#include "internals_object.h"
-#include "internals_value.h"
-#include "source_location.h"
-#include "source_token.h"
-#include "vm.h"
+#include <dauw/common.hpp>
+#include <dauw/errors.hpp>
+#include <dauw/vm.hpp>
+#include <dauw/ast/ast.hpp>
+#include <dauw/internals/object.hpp>
+#include <dauw/internals/value.hpp>
+#include <dauw/source/location.hpp>
+#include <dauw/source/token.hpp>
 
 
 namespace dauw

@@ -1,6 +1,6 @@
 ﻿#include <argh.h>
 
-#include "dauw.h"
+#include <dauw/dauw.hpp>
 
 
 // Print the header

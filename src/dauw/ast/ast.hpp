@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common.h"
-#include "internals_value.h"
-#include "source_location.h"
-#include "source_token.h"
+#include <dauw/common.hpp>
+#include <dauw/internals/value.hpp>
+#include <dauw/source/location.hpp>
+#include <dauw/source/token.hpp>
 
 
 namespace dauw

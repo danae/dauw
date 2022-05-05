@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include <dauw/common.hpp>
 
 #include <cstdlib>
 #include <cstring>

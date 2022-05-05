@@ -1,4 +1,4 @@
-#include "internals_object.h"
+#include "object.hpp"
 
 namespace dauw
 {

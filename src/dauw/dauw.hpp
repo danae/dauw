@@ -1,12 +1,12 @@
 #pragma once
 
-#include "common.h"
-#include "errors.h"
-#include "interpreter.h"
-#include "source_lexer.h"
-#include "source_location.h"
-#include "source_parser.h"
-#include "vm.h"
+#include <dauw/common.hpp>
+#include <dauw/errors.hpp>
+#include <dauw/vm.hpp>
+#include <dauw/ast/interpreter.hpp>
+#include <dauw/source/lexer.hpp>
+#include <dauw/source/location.hpp>
+#include <dauw/source/parser.hpp>
 
 #include <filesystem>
 #include <fstream>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.h"
-#include "ast.h"
+#include <dauw/common.hpp>
+#include <dauw/ast/ast.hpp>
 
 
 namespace dauw

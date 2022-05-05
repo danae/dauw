@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.h"
-#include "internals_object.h"
+#include <dauw/common.hpp>
+#include <dauw/internals/object.hpp>
 
 #include <forward_list>
 

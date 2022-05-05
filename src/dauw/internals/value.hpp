@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common.h"
-#include "errors.h"
-#include "internals_object.h"
+#include <dauw/common.hpp>
+#include <dauw/errors.hpp>
+#include <dauw/internals/object.hpp>
 
 #include <memory>
 
@@ -107,12 +107,14 @@ namespace dauw
 
 namespace fmt
 {
+  using namespace dauw;
+
   // Class that defines a formatter for a value
   template <>
-  struct formatter<dauw::Value> : formatter<string_view_t>
+  struct formatter<Value> : formatter<string_view_t>
   {
     template <typename FormatContext>
-    auto format(dauw::Value value, FormatContext& ctx)
+    auto format(Value value, FormatContext& ctx)
     {
       return formatter<string_view_t>::format(value.to_string(), ctx);
     }

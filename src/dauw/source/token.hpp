@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.h"
-#include "source_location.h"
+#include <dauw/common.hpp>
+#include <dauw/source/location.hpp>
 
 
 namespace dauw
@@ -63,7 +63,7 @@ namespace fmt
         format = fmt::format("{} \"{}\" at {}", token.name(), token.value(), token.location());
       else
         format = fmt::format("{} at {}", token.name(), token.location());
-        
+
       return formatter<string_view_t>::format(format, ctx);
     }
   };
