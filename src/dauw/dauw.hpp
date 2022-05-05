@@ -2,11 +2,11 @@
 
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
-#include <dauw/vm.hpp>
 #include <dauw/ast/interpreter.hpp>
 #include <dauw/source/lexer.hpp>
 #include <dauw/source/location.hpp>
 #include <dauw/source/parser.hpp>
+#include <dauw/vm/vm.hpp>
 
 #include <filesystem>
 #include <fstream>

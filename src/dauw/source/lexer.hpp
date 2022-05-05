@@ -43,13 +43,15 @@ namespace dauw
     private:
       // The source string
       string_t source_;
+
+      // The name of the source string
       string_t source_name_;
 
-      // Regex patterns for comments, newlines and whitespaces
+      // Regex patterns for comments and whitespaces
       regex_t comment_pattern_;
       regex_t whitespace_pattern_;
 
-      // LexerRules for the lexer
+      // Vector of rules that the lexer uses for tokenizing
       std::vector<LexerRule> rules_;
 
 

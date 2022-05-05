@@ -4,8 +4,10 @@ namespace dauw
 {
   // Constructor for a lexer rule
   LexerRule::LexerRule(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement)
-    : name_(name), pattern_(pattern), replacement_(replacement)
   {
+    name_ = name;
+    pattern_ = pattern;
+    replacement_ = replacement;
   }
 
   // Return the name of the rule
@@ -29,8 +31,10 @@ namespace dauw
 
   // Constructor for the lexer
   Lexer::Lexer(string_t source, string_t source_name)
-    : source_(source), source_name_(source_name)
   {
+    source_ = source;
+    source_name_ = source_name;
+
     // Initialize the regex patterns
     comment_pattern_ = regex_t("(?:--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
     whitespace_pattern_ = regex_t("[ \\t]+");

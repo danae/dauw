@@ -20,8 +20,10 @@ namespace dauw
   class ExprBinary;
   class ExprBlock;
 
+  class Interpreter;
 
-  // Base class for an expression visitor
+
+  // Base class that defines an expression visitor
   class ExprVisitor
   {
     public:
@@ -41,7 +43,7 @@ namespace dauw
   };
 
 
-  // Base class for an expression
+  // Base class thet defines an expression
   class Expr
   {
     public:
@@ -53,6 +55,10 @@ namespace dauw
 
       // Accept a visitor on the expression
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) = 0;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -69,17 +75,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprLiteral(Value value, Location location)
-        : value_(value), location_(location) { }
+      ExprLiteral(Value value, Location location);
 
-      // Return the fields of the literal expression
-      Value& value() { return value_; }
-
-      // Return the location of the expression
-      Location& location() override { return location_; }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -93,17 +97,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprName(Token name)
-        : name_(name) { }
+      ExprName(Token name);
 
-      // Return the fields of the name expression
-      Token& name() { return name_; }
-
-      // Return the location of the expression
-      Location& location() override { return name_.location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -112,22 +114,20 @@ namespace dauw
   {
     private:
       // The nested expression of the parenthesized expression
-      std::shared_ptr<Expr> nested_;
+      std::shared_ptr<Expr> expr_;
 
 
     public:
       // Constructor
-      ExprParenthesized(std::shared_ptr<Expr> nested)
-        : nested_(nested) { }
+      ExprParenthesized(std::shared_ptr<Expr> expr);
 
-      // Return the fields of the parenthesized expression
-      std::shared_ptr<Expr>& nested() { return nested_; }
-
-      // Return the location of the expression
-      Location& location() override { return nested_->location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -147,19 +147,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprCall(std::shared_ptr<Expr> callee, Token end, std::vector<std::shared_ptr<Expr>> arguments)
-        : callee_(callee), end_(end), arguments_(arguments) { }
+      ExprCall(std::shared_ptr<Expr> callee, Token end, std::vector<std::shared_ptr<Expr>> arguments);
 
-      // Return the fields of the call expression
-      std::shared_ptr<Expr>& callee() { return callee_; }
-      Token& end() { return end_; }
-      std::vector<std::shared_ptr<Expr>>& arguments() { return arguments_; }
-
-      // Return the location of the expression
-      Location& location() override { return end_.location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -167,8 +163,8 @@ namespace dauw
   class ExprSubscript : public Expr, public std::enable_shared_from_this<ExprSubscript>
   {
     private:
-      // The callee of the subscript expression
-      std::shared_ptr<Expr> callee_;
+      // The indexee of the subscript expression
+      std::shared_ptr<Expr> indexee_;
 
       // The end token of the subscript expression
       Token end_;
@@ -179,19 +175,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprSubscript(std::shared_ptr<Expr> callee, Token end, std::vector<std::shared_ptr<Expr>> arguments)
-        : callee_(callee), end_(end), arguments_(arguments) { }
+      ExprSubscript(std::shared_ptr<Expr> indexee, Token end, std::vector<std::shared_ptr<Expr>> arguments);
 
-      // Return the fields of the subscript expression
-      std::shared_ptr<Expr>& callee() { return callee_; }
-      Token& end() { return end_; }
-      std::vector<std::shared_ptr<Expr>>& arguments() { return arguments_; }
-
-      // Return the location of the expression
-      Location& location() override { return end_.location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -199,8 +191,8 @@ namespace dauw
   class ExprGet : public Expr, public std::enable_shared_from_this<ExprGet>
   {
     private:
-      // The callee of the get expression
-      std::shared_ptr<Expr> callee_;
+      // The object of the get expression
+      std::shared_ptr<Expr> object_;
 
       // The name token of the get expression
       Token name_;
@@ -208,18 +200,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprGet(std::shared_ptr<Expr> callee, Token name)
-        : callee_(callee), name_(name) { }
+      ExprGet(std::shared_ptr<Expr> object, Token name);
 
-      // Return the fields of the get expression
-      std::shared_ptr<Expr>& callee() { return callee_; }
-      Token& name() { return name_; }
-
-      // Return the location of the expression
-      Location& location() override { return name_.location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -236,18 +225,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprUnary(Token op, std::shared_ptr<Expr> right)
-        : op_(op), right_(right) { }
+      ExprUnary(Token op, std::shared_ptr<Expr> right);
 
-      // Return the fields of the unary expression
-      Token& op() { return op_; }
-      std::shared_ptr<Expr>& right() { return right_; }
-
-      // Return the location of the expression
-      Location& location() override { return op_.location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -265,19 +251,15 @@ namespace dauw
 
     public:
       // Constructor
-      ExprBinary(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right)
-        : op_(op), left_(left), right_(right) { }
+      ExprBinary(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right);
 
-      // Return the fields of the binary expression
-      Token& op() { return op_; }
-      std::shared_ptr<Expr>& left() { return left_; }
-      std::shared_ptr<Expr>& right() { return right_; }
-
-      // Return the location of the expression
-      Location& location() override { return op_.location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 
 
@@ -290,17 +272,15 @@ namespace dauw
 
 
     public:
-      // ExprBlock
-      ExprBlock(std::vector<std::shared_ptr<Expr>> exprs)
-        : exprs_(exprs) { }
+      // Constructor
+      ExprBlock(std::vector<std::shared_ptr<Expr>> exprs);
 
-      // Return the fields of the block expression
-      std::vector<std::shared_ptr<Expr>> exprs() { return exprs_; }
-
-      // Return the location of the expression
-      Location& location() override { return exprs_[0]->location(); }
-
-      // Accept a visitor on the expression
+      // Expression implementation
+      virtual Location& location() override;
       virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+
+      // Friend classes
+      friend class ExprVisitor;
+      friend class Interpreter;
   };
 }

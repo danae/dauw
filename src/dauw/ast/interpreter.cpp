@@ -17,13 +17,13 @@ namespace dauw
   // Visit a literal expression
   void Interpreter::visit_literal(const std::shared_ptr<dauw::ExprLiteral>& expr)
   {
-    fmt::print("ExprLiteral({})\n", expr->value());
+    fmt::print("ExprLiteral({})\n", expr->value_);
   }
 
   // Visit a name expression
   void Interpreter::visit_name(const std::shared_ptr<dauw::ExprName>& expr)
   {
-    fmt::print("ExprName({})\n", expr->name().value());
+    fmt::print("ExprName({})\n", expr->name_.value());
   }
 
   // Visit a parenthesized expression
@@ -34,7 +34,7 @@ namespace dauw
     print_depth();
     fmt::print("- ");
     depth ++;
-    print(expr->nested());
+    print(expr->expr_);
     depth --;
   }
 
@@ -49,12 +49,12 @@ namespace dauw
     fmt::print("callee:\n");
     depth ++;
     print_depth();
-    print(expr->callee());
+    print(expr->callee_);
     depth --;
 
     print_depth();
     fmt::print("arguments:\n");
-    for (auto argument : expr->arguments())
+    for (auto argument : expr->arguments_)
     {
       print_depth();
       fmt::print("- ");
@@ -74,15 +74,15 @@ namespace dauw
     depth ++;
 
     print_depth();
-    fmt::print("callee:\n");
+    fmt::print("indexee:\n");
     depth ++;
     print_depth();
-    print(expr->callee());
+    print(expr->indexee_);
     depth --;
 
     print_depth();
     fmt::print("arguments:\n");
-    for (auto argument : expr->arguments())
+    for (auto argument : expr->arguments_)
     {
       print_depth();
       fmt::print("- ");
@@ -102,14 +102,14 @@ namespace dauw
     depth ++;
 
     print_depth();
-    fmt::print("callee:\n");
+    fmt::print("object:\n");
     depth ++;
     print_depth();
-    print(expr->callee());
+    print(expr->object_);
     depth --;
 
     print_depth();
-    fmt::print("name: '{}'\n", expr->name().value());
+    fmt::print("name: '{}'\n", expr->name_.value());
 
     depth --;
   }
@@ -117,30 +117,30 @@ namespace dauw
   // Visit an unary expression
   void Interpreter::visit_unary(const std::shared_ptr<dauw::ExprUnary>& expr)
   {
-    fmt::print("ExprUnary('{}'):\n", expr->op().value());
+    fmt::print("ExprUnary('{}'):\n", expr->op_.value());
 
     print_depth();
     fmt::print("- ");
     depth ++;
-    print(expr->right());
+    print(expr->right_);
     depth --;
   }
 
   // Visit a binary expression
   void Interpreter::visit_binary(const std::shared_ptr<dauw::ExprBinary>& expr)
   {
-    fmt::print("ExprBinary('{}'):\n", expr->op().value());
+    fmt::print("ExprBinary('{}'):\n", expr->op_.value());
 
     print_depth();
     fmt::print("- ");
     depth ++;
-    print(expr->left());
+    print(expr->left_);
     depth --;
 
     print_depth();
     fmt::print("- ");
     depth ++;
-    print(expr->right());
+    print(expr->right_);
     depth --;
   }
 
@@ -149,12 +149,12 @@ namespace dauw
   {
     fmt::print("ExprBlock:\n");
 
-    for (auto i = 0; i < expr->exprs().size(); i ++)
+    for (auto i = 0; i < expr->exprs_.size(); i ++)
     {
       print_depth();
       fmt::print("- ");
       depth ++;
-      print(expr->exprs()[i]);
+      print(expr->exprs_[i]);
       depth --;
     }
   }
