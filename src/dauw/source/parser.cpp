@@ -397,6 +397,12 @@ namespace dauw
   }
 
 
+  // Return if the parser has reaced the end of the tokens
+  bool Parser::at_end()
+  {
+    return next_.name() == "eof";
+  }
+
   // Advance to the next token and return that token
   Token Parser::advance()
   {
@@ -411,12 +417,6 @@ namespace dauw
     }
 
     return current_;
-  }
-
-  // Return if the parser has reaced the end of the tokens
-  bool Parser::at_end()
-  {
-    return next_.name() == "eof";
   }
 
   // Check if the next token has the specified name
@@ -450,7 +450,7 @@ namespace dauw
     return false;
   }
 
-  // Consume the next token and fail if it doesn't have the specified name
+  // Consume the next token and report the specified error if it doesn't have the specified name
   Token Parser::consume(string_t name, string_t message)
   {
     if (check(name))

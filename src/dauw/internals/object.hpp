@@ -16,7 +16,7 @@ namespace dauw
   };
 
 
-  // Class that represents an object in heap memory
+  // Base class that represents an object in heap memory
   class Obj
   {
     private:
@@ -39,7 +39,7 @@ namespace dauw
   };
 
 
-  // Class that represents a string
+  // Class that represents a string object
   class ObjString : public Obj
   {
     private:

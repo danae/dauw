@@ -59,12 +59,22 @@ namespace dauw
       std::shared_ptr<Expr> parse_string();
       std::shared_ptr<Expr> parse_regex();
 
-      // Basic parseer functionality
+      // Return if the parser has reaced the end of the tokens
       bool at_end();
+
+      // Advance to the next token and return that token
       Token advance();
+
+      // Check if the next token has the specified name
       bool check(string_t name);
+
+      // Check if the next token has the specified name and advance if so
       bool match(string_t name);
+
+      // Check if the next token has one of the specified names and advance if so
       bool match(std::initializer_list<string_t> names);
+
+      // Consume the next token and report the specified error if it doesn't have the specified name
       Token consume(string_t name, string_t message);
 
 
