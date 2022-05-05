@@ -6,6 +6,7 @@
 #include "source_lexer.h"
 #include "source_location.h"
 #include "source_parser.h"
+#include "vm.h"
 
 #include <filesystem>
 #include <fstream>
@@ -19,12 +20,16 @@ namespace dauw
   class Dauw : public std::enable_shared_from_this<Dauw>
   {
     private:
+      // The virtual machine for the application
+      std::shared_ptr<VM> vm_;
+
       // The interpreter for the application
       std::shared_ptr<Interpreter> interpreter_;
 
       // The current source string
       string_t current_source_;
       string_t current_source_name_;
+
 
     public:
       // Constructor

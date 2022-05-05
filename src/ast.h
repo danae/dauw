@@ -61,7 +61,7 @@ namespace dauw
   {
     private:
       // The value of the expression
-      value_t value_;
+      Value value_;
 
       // The location of the expression
       Location location_;
@@ -69,17 +69,17 @@ namespace dauw
 
     public:
       // Constructor
-      ExprLiteral(value_t value, Location location)
+      ExprLiteral(Value value, Location location)
         : value_(value), location_(location) { }
 
       // Return the fields of the literal expression
-      value_t& value() { return value_; }
+      Value& value() { return value_; }
 
       // Return the location of the expression
       Location& location() override { return location_; }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -103,7 +103,7 @@ namespace dauw
       Location& location() override { return name_.location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -127,7 +127,7 @@ namespace dauw
       Location& location() override { return nested_->location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -159,7 +159,7 @@ namespace dauw
       Location& location() override { return end_.location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -191,7 +191,7 @@ namespace dauw
       Location& location() override { return end_.location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -219,7 +219,7 @@ namespace dauw
       Location& location() override { return name_.location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -247,7 +247,7 @@ namespace dauw
       Location& location() override { return op_.location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -277,7 +277,7 @@ namespace dauw
       Location& location() override { return op_.location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 
 
@@ -301,6 +301,6 @@ namespace dauw
       Location& location() override { return exprs_[0]->location(); }
 
       // Accept a visitor on the expression
-      void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
   };
 }

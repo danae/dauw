@@ -3,9 +3,11 @@
 #include "common.h"
 #include "ast.h"
 #include "errors.h"
+#include "internals_object.h"
 #include "internals_value.h"
 #include "source_location.h"
 #include "source_token.h"
+#include "vm.h"
 
 
 namespace dauw
@@ -14,6 +16,9 @@ namespace dauw
   class Parser
   {
     private:
+      // Reference to the virtual machine
+      VM* vm_;
+
       // The deque of tokens
       std::deque<Token> tokens_;
 
@@ -65,7 +70,7 @@ namespace dauw
 
     public:
       // Constructor
-      Parser(std::deque<Token> tokens);
+      Parser(VM* vm, std::deque<Token> tokens);
 
       // Parse a deque of tokens into an expression
       std::shared_ptr<Expr> parse();

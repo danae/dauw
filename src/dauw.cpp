@@ -5,6 +5,9 @@ namespace dauw
   // Constructor
   Dauw::Dauw()
   {
+    // Create the virtual machine
+    vm_ = std::make_shared<VM>();
+
     // Create the interpreter
     interpreter_ = std::make_shared<Interpreter>();
   }
@@ -20,7 +23,7 @@ namespace dauw
 
       // Lex and parse the source string
       auto tokens = Lexer(source, source_name).tokenize();
-      auto expr = Parser(tokens).parse();
+      auto expr = Parser(vm_.get(), tokens).parse();
 
       // Evaluate the expression
       if (expr != nullptr)

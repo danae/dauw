@@ -3,6 +3,7 @@
 #include <deque>
 #include <iterator>
 #include <regex>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -49,11 +50,14 @@ namespace dauw
   // Convert a vector of runes to a string
   string_t string_from_runes(std::vector<uint32_t> runes);
 
+  // Convert a rune to a string
+  string_t string_from_rune(uint32_t rune);
+
   // Repeat a string for the specified amount of times
   string_t string_repeat(string_t string, size_t times);
 
   // Convert escape sequences in a string to their literal equivalent
-  string_t string_unescape(string_t string);
+  string_t string_unescape(string_t string, bool is_rune);
 
   // Search for a regular expression in a string
   match_optional_t regex_search(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);

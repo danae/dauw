@@ -50,7 +50,7 @@ namespace dauw
 
 namespace fmt
 {
-  // Class that defines a formatter for a lexer token
+  // Class that defines a formatter for a token
   template <>
   struct formatter<dauw::Token> : formatter<string_view_t>
   {
@@ -58,10 +58,12 @@ namespace fmt
     auto format(dauw::Token token, FormatContext& ctx)
     {
       string_t format;
+
       if (!token.value().empty())
         format = fmt::format("{} \"{}\" at {}", token.name(), token.value(), token.location());
       else
         format = fmt::format("{} at {}", token.name(), token.location());
+        
       return formatter<string_view_t>::format(format, ctx);
     }
   };

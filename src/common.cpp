@@ -21,6 +21,13 @@ namespace dauw
     return string;
   }
 
+  // Convert a rune to a string
+  string_t string_from_rune(uint32_t rune)
+  {
+    std::vector<uint32_t> runes({rune});
+    return string_from_runes(runes);
+  }
+
   // Repeat a string for the specified amount of times
   string_t string_repeat(string_t string, size_t times)
   {
@@ -31,9 +38,41 @@ namespace dauw
   }
 
   // Convert escape sequences in a string to their literal equivalent
-  string_t string_unescape(string_t string)
+  string_t string_unescape(string_t string, bool is_rune)
   {
-    // TODO: Implement actual logic
+    auto escape_pattern = std::regex("\\\\(u\\{([0-9A-Fa-f]{1,6})\\}|.)");
+    match_optional_t escape_match;
+    
+    while ((escape_match = regex_search(escape_pattern, string)).has_value())
+    {
+      auto match = escape_match.value();
+      auto escape = match.str(1);
+
+      string_t replacement;
+      if (escape == "\"" && !is_rune)
+        replacement = "\"";
+      else if (escape == "'" && is_rune)
+        replacement = "'";
+      else if (escape == "\\")
+        replacement = "\\";
+      else if (escape == "b")
+        replacement = "\b";
+      else if (escape == "f")
+        replacement = "\f";
+      else if (escape == "n")
+        replacement = "\n";
+      else if (escape == "r")
+        replacement = "\r";
+      else if (escape == "t")
+        replacement = "\t";
+      else if (escape.rfind("u", 0) == 0)
+        replacement = string_from_rune((uint32_t)std::stoi(match.str(2), nullptr, 16));
+      else
+        throw std::out_of_range(fmt::format("Invalid escape sequence \\{} in {}", escape, is_rune ? "rune" : "string"));
+
+      string = match.prefix().str() + replacement + match.suffix().str();
+    }
+
     return string;
   }
 

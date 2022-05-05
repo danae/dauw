@@ -17,7 +17,7 @@ namespace dauw
   // Visit a literal expression
   void Interpreter::visit_literal(const std::shared_ptr<dauw::ExprLiteral>& expr)
   {
-    fmt::print("ExprLiteral({})\n", value_format(expr->value()));
+    fmt::print("ExprLiteral({})\n", expr->value());
   }
 
   // Visit a name expression

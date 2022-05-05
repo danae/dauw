@@ -2,9 +2,10 @@
 
 #include "common.h"
 #include "errors.h"
+#include "internals_object.h"
 
 #include <memory>
-#include <stdexcept>
+
 
 // Type definition for the value type
 using value_t = uint64_t;
@@ -24,75 +25,96 @@ using value_t = uint64_t;
 #define TAG_UNUSED1         ((value_t)0x0006'0000'0000'0000)
 #define TAG_UNUSED2         ((value_t)0x0007'0000'0000'0000)
 
-// Defines for values of constaant types
+// Defines for values of constant types
 #define VAL_NOTHING         ((value_t)(BITMASK_QNAN | TAG_NOTHING))
 #define VAL_FALSE           ((value_t)(BITMASK_QNAN | TAG_FALSE))
 #define VAL_TRUE            ((value_t)(BITMASK_QNAN | TAG_TRUE))
 
+// Defines for allowed value ranges
+#define INT_RANGE_CHECK     ((int64_t)0xffff'0000'0000'0000)
+#define INT_OF_NEG_CHECK    ((int64_t)0xffff'8000'0000'0000)
+#define INT_OF_NEG_MASK     ((int64_t)0x0000'ffff'ffff'ffff)
+#define INT_AS_NEG_CHECK    ((int64_t)0x0000'8000'0000'0000)
+#define INT_AS_NEG_VAL      ((int64_t)0xffff'0000'0000'0000)
+
+#define RUNE_MAX            ((uint32_t)0x10ffff)
+#define RUNE_SURROGATE_MIN  ((uint32_t)0x00d800)
+#define RUNE_SURROGATE_MAX  ((uint32_t)0x00dfff)
+
 
 namespace dauw
 {
-  // Value that represents a nothing type
-  value_t value_nothing();
-  bool value_is_nothing(value_t value);
-
-  // Value tha trepresents a bool type
-  value_t value_false();
-  bool value_is_false(value_t value);
-
-  value_t value_true();
-  bool value_is_true(value_t value);
-
-  value_t value_of_bool(bool bool_value);
-  bool value_is_bool(value_t value);
-  bool value_as_bool(value_t value);
-
-  // Value that represents an int type
-  value_t value_of_int(int64_t int_value);
-  bool value_is_int(value_t value);
-  int64_t value_as_int(value_t value);
-
-  // Value that represents a rune type
-  value_t value_of_rune(uint32_t rune_value);
-  bool value_is_rune(value_t value);
-  uint32_t value_as_rune(value_t value);
-
-  // Value that represents a pointer type
-  value_t value_of_ptr(uintptr_t ptr_value);
-  bool value_is_ptr(value_t value);
-  uintptr_t value_as_ptr(value_t value);
-
-  // Value that represents a real type
-  value_t value_of_real(double real_value);
-  bool value_is_real(value_t value);
-  double value_as_real(value_t value);
-
-  // Return if two values are equal
-  bool value_equals(value_t lhs, value_t rhs);
-
-  // Formt a value
-  string_t value_format(value_t value);
-
-
-  // Convert a string to a pointer value
-  value_t value_ptr_from_string(String string);
-
-  // Convert a pointer value to a string
-  String value_uintptr_to_string(value_t value);
-
-  // Convert a shared pointer to a pointer value
-  template <typename T>
-  inline value_t value_ptr_from_shared_ptr(std::shared_ptr<T> value)
+  // Class that represents a value in stack memory
+  class Value
   {
-    uintptr_t ptr_value = (uintptr_t)value.get();
-    return value_of_ptr(ptr_value);
-  }
+    private:
+      // The actual value
+      value_t value_;
 
-  // Convert a pointer value to a shared pointer
-  template <typename T>
-  inline std::shared_ptr<T> value_uintptr_to_shared_ptr(value_t value)
+
+    public:
+      // Constants for constant values
+      static const Value value_nothing;
+      static const Value value_false;
+      static const Value value_true;
+
+
+      // Constructor
+      Value(value_t value);
+
+      // Value that represents a constant type
+      bool is_nothing() const;
+      bool is_false() const;
+      bool is_true() const;
+
+      // Value tha trepresents a bool type
+      static Value of_bool(bool bool_value);
+      bool is_bool() const;
+      bool as_bool() const;
+
+      // Value that represents an int type
+      static Value of_int(int64_t int_value);
+      bool is_int() const;
+      int64_t as_int() const;
+
+      // Value that represents a rune type
+      static Value of_rune(uint32_t rune_value);
+      bool is_rune() const;
+      uint32_t as_rune() const;
+
+      // Value that represents a real type
+      static Value of_real(double real_value);
+      bool is_real() const;
+      double as_real() const;
+
+      // Value that represents an object type
+      static Value of_obj(Obj* object_value);
+      bool is_obj() const;
+      Obj* as_obj() const;
+
+      // Assign another value to this value
+      Value operator=(const Value& other);
+
+      // Return if the value equals another value
+      bool operator==(const Value& other);
+      bool operator!=(const Value& other);
+
+      // Return a representative string representation of the value
+      string_t to_string();
+  };
+}
+
+
+namespace fmt
+{
+  // Class that defines a formatter for a value
+  template <>
+  struct formatter<dauw::Value> : formatter<string_view_t>
   {
-    uintptr_t ptr_value = value_as_ptr(value);
-    return std::shared_ptr<T>(ptr_value);
-  }
+    template <typename FormatContext>
+    auto format(dauw::Value value, FormatContext& ctx)
+    {
+      return formatter<string_view_t>::format(value.to_string(), ctx);
+    }
+  };
 }

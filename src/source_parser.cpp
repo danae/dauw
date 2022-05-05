@@ -3,8 +3,7 @@
 namespace dauw
 {
   // Constructor for the parser
-  Parser::Parser(std::deque<Token> tokens)
-    : tokens_(tokens)
+  Parser::Parser(VM* vm, std::deque<Token> tokens) : vm_(vm), tokens_(tokens)
   {
     // Advance to the first token
     advance();
@@ -246,11 +245,11 @@ namespace dauw
 
     // literal → 'nothing' | 'false' | 'true' | INT | REAL | STRING
     if (match("keyword_nothing"))
-      return std::make_shared<ExprLiteral>(value_nothing(), current_.location());
+      return std::make_shared<ExprLiteral>(Value::value_nothing, current_.location());
     if (match("keyword_false"))
-      return std::make_shared<ExprLiteral>(value_false(), current_.location());
+      return std::make_shared<ExprLiteral>(Value::value_false, current_.location());
     if (match("keyword_true"))
-      return std::make_shared<ExprLiteral>(value_true(), current_.location());
+      return std::make_shared<ExprLiteral>(Value::value_true, current_.location());
     if (match("int"))
       return parse_int();
     if (match("real"))
@@ -303,7 +302,7 @@ namespace dauw
         throw SyntaxError(current_.location(), fmt::format("Invalid character '{}' in int literal", value, value.substr(end_index, 1)));
 
       // Return the expression
-      return std::make_shared<ExprLiteral>(value_of_int(int_value), current_.location());
+      return std::make_shared<ExprLiteral>(Value::of_int(int_value), current_.location());
     }
     catch (std::invalid_argument& ex) {
       throw SyntaxError(current_.location(), ex.what());
@@ -330,7 +329,7 @@ namespace dauw
         throw SyntaxError(current_.location(), fmt::format("Invalid character '{}' in real literal", value, value.substr(end_index, 1)));
 
       // Return the expression
-      return std::make_shared<ExprLiteral>(value_of_real(real_value), current_.location());
+      return std::make_shared<ExprLiteral>(Value::of_real(real_value), current_.location());
     }
     catch (std::invalid_argument& ex) {
       throw SyntaxError(current_.location(), ex.what());
@@ -347,8 +346,11 @@ namespace dauw
 
     try
     {
+      // Unescape the rune literal
+      value = string_unescape(value, true);
+
       // Parse the rune literal
-      auto runes = string_to_runes(string_unescape(value));
+      auto runes = string_to_runes(value);
       if (runes.size() < 1)
         throw SyntaxError(current_.location(), "The rune literal contains no code point");
       if (runes.size() > 1)
@@ -357,7 +359,7 @@ namespace dauw
       auto rune_value = runes.front();
 
       // Return the expression
-      return std::make_shared<ExprLiteral>(value_of_rune(rune_value), current_.location());
+      return std::make_shared<ExprLiteral>(Value::of_rune(rune_value), current_.location());
     }
     catch (std::out_of_range& ex) {
       throw SyntaxError(current_.location(), ex.what());
@@ -367,16 +369,31 @@ namespace dauw
   // Parse a string literal
   std::shared_ptr<Expr> Parser::parse_string()
   {
-    auto value = string_unescape(current_.value());
-    return std::make_shared<ExprLiteral>(value_ptr_from_string(value), current_.location());
+    auto value = current_.value();
+
+    try
+    {
+      // Unescape the string literal
+      value = string_unescape(value, false);
+
+      // Allocate the string value
+      auto string_value = vm_->allocate_string(value.c_str());
+
+      // Return the expression
+      return std::make_shared<ExprLiteral>(Value::of_obj(string_value), current_.location());
+    }
+    catch (std::out_of_range& ex) {
+      throw SyntaxError(current_.location(), ex.what());
+    }
   }
 
   // Parse a regex literal
   std::shared_ptr<Expr> Parser::parse_regex()
   {
     // TODO: Implement actual regex conversion
-    auto value = string_unescape(current_.value());
-    return std::make_shared<ExprLiteral>(value_ptr_from_string(value), current_.location());
+    auto value = current_.value();
+    auto string_value = vm_->allocate_string(value.c_str());
+    return std::make_shared<ExprLiteral>(Value::of_obj(string_value), current_.location());
   }
 
 
