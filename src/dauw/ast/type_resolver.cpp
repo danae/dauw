@@ -51,10 +51,6 @@ namespace dauw
   // Visit a name expression
   void TypeResolver::visit_name(const expr_name_ptr& expr)
   {
-    // Resolve the type of the name expression
-    if (expr->has_type())
-      resolve(expr->type());
-
     // TODO: Implement type resolving for name expressions
   }
 

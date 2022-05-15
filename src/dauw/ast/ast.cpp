@@ -129,16 +129,8 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a name expression
-  ExprName::ExprName(Token name, std::optional<expr_ptr> type)
-    : name_(name), type_(type)
-  {
-  }
-  ExprName::ExprName(Token name, expr_ptr type)
-    : ExprName(name, std::make_optional(type))
-  {
-  }
   ExprName::ExprName(Token name)
-    : ExprName(name, std::nullopt)
+    : name_(name)
   {
   }
 
@@ -146,18 +138,6 @@ namespace dauw
   string_t ExprName::name()
   {
     return name_.value();
-  }
-
-  // Return the type of the name expression
-  expr_ptr ExprName::type()
-  {
-    return type_.value();
-  }
-
-  // Return if the name expression has a type
-  bool ExprName::has_type()
-  {
-    return type_.has_value();
   }
 
   // Return the location of the expression
@@ -524,23 +504,23 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a block expression
-  ExprBlock::ExprBlock(expr_ptr_vector exprs)
+  ExprBlock::ExprBlock(ExprBlock::block_type exprs)
     : exprs_(exprs)
   {
   }
 
   // Return the expressions of the block expression
-  expr_ptr_vector ExprBlock::exprs()
+  ExprBlock::block_type ExprBlock::exprs()
   {
     return exprs_;
   }
 
   // Iterate over the expressions of the block expression
-  expr_ptr_vector::const_iterator ExprBlock::begin()
+  ExprBlock::block_type::const_iterator ExprBlock::begin()
   {
     return exprs_.cbegin();
   }
-  expr_ptr_vector::const_iterator ExprBlock::end()
+  ExprBlock::block_type::const_iterator ExprBlock::end()
   {
     return exprs_.cend();
   }

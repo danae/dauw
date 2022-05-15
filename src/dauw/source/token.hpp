@@ -27,7 +27,6 @@ namespace dauw
       // Constructor
       Token(string_t name, string_t value, Location location, size_t length = 0);
       Token(string_t name, Location location, size_t length = 0);
-      Token();
 
       // Return the name of the token
       string_t& name();

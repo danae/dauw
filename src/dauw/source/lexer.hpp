@@ -40,6 +40,10 @@ namespace dauw
   // Class that defines the lexer
   class Lexer
   {
+    public:
+      // Type definition for the token token_list_type type
+      using token_list_type = std::deque<Token>;
+
     private:
       // The source string
       string_t source_;
@@ -65,7 +69,7 @@ namespace dauw
       // Constructor
       Lexer(string_t source, string_t source_name);
 
-      // Convert a string into a deque of tokens
-      std::deque<Token> tokenize();
+      // Convert a string into a token iterator
+      token_list_type tokenize();
   };
 }

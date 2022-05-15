@@ -115,10 +115,10 @@ namespace dauw
   }
 
   // Convert a string into a deque of tokens
-  std::deque<Token> Lexer::tokenize()
+  Lexer::token_list_type Lexer::tokenize()
   {
     // Initialize a deque to store the tokens
-    std::deque<Token> tokens;
+    token_list_type tokens;
 
     // Initialize a stack to store the indentation levels
     std::deque<int> indents;
@@ -169,8 +169,6 @@ namespace dauw
       {
         // If the indent is smaller than the last indent, then add as much dedent tokens until the indent matches one on the stack
         indents.pop_back();
-        if (tokens.back().name() == "dedent")
-          tokens.push_back(Token("newline", location));
         tokens.push_back(Token("dedent", location));
       }
 
@@ -241,7 +239,6 @@ namespace dauw
     {
       indents.pop_back();
       tokens.push_back(Token("dedent", location));
-      tokens.push_back(Token("newline", location));
     }
 
     // Add eof token

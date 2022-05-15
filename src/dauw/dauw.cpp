@@ -3,7 +3,7 @@
 
 namespace dauw
 {
-  void print_tokens(std::deque<Token> tokens)
+  void print_tokens(Lexer::token_list_type tokens)
   {
     int indent = 0;
     for (auto token : tokens)
@@ -56,35 +56,37 @@ namespace dauw
     current_source_name_ = source_name;
 
     // Create the error reporter
-    auto error_reporter = std::make_shared<ErrorReporter>(source, source_name);
+    auto error_reporter = std::make_shared<ErrorReporter>();
 
     // Tokenize the source string
     auto tokens = Lexer(source, source_name).tokenize();
+    print_tokens(tokens);
 
-    // Parse the source string and exit the application if a parser error occurred
-    auto expr = Parser(vm_.get(), error_reporter.get(), tokens).parse();
-    if (error_reporter->had_error_)
-      return DAUW_EXIT_DATAERR;
-
-    // Execute the source string and exit the application if a runtime error occurred
-    try
+    // Parse the tokens and exit the application if a parser error occurred
+    auto expr = Parser(tokens, error_reporter.get(), vm_.get()).parse();
+    if (error_reporter->has_errors())
     {
-      // Resolve the types of the expression
-      //auto type_resolver = std::make_shared<TypeResolver>();
-      //type_resolver->resolve(expr);
-
-      // Evaluate the expression
-      auto interpreter = std::make_shared<Interpreter>();
-      interpreter->print(expr);
-
-      // Quit with an ok exit code
-      return DAUW_EXIT_OK;
+      error_reporter->print_errors(current_source_);
+      error_reporter->clear_errors();
+      return DAUW_EXIT_DATAERR;
     }
-    catch (dauw::RuntimeError& error)
-  	{
-      error_reporter->report_error(error, "RuntimeError");
+
+    // Resolve the types of the expression
+    //auto type_resolver = std::make_shared<TypeResolver>();
+    //type_resolver->resolve(expr);
+
+    // Execute the expression and exit the application if a runtime error occurred
+    auto interpreter = std::make_shared<Interpreter>();
+    interpreter->print(expr);
+    if (error_reporter->has_errors())
+    {
+      error_reporter->print_errors(current_source_);
+      error_reporter->clear_errors();
       return DAUW_EXIT_SOFTWAREERR;
-  	}
+    }
+
+    // Quit with an ok exit code
+    return DAUW_EXIT_OK;
   }
 
   // Run code from a read-eval-print loop

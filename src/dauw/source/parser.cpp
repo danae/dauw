@@ -3,12 +3,164 @@
 namespace dauw
 {
   // Constructor for the parser
-  Parser::Parser(VM* vm, ErrorReporter* error_reporter, std::deque<Token> tokens)
-    : vm_(vm), error_reporter_(error_reporter), tokens_(tokens)
+  Parser::Parser(Lexer::token_list_type tokens, ErrorReporter* error_reporter, VM* vm)
+    : tokens_(tokens), error_reporter_(error_reporter), vm_(vm)
   {
-    // Advance to the first token
-    advance();
   }
+
+  // Return the current token
+  Token Parser::current()
+  {
+    return tokens_[index_ - 1];
+  }
+
+  // Return the token past the current token
+  Token Parser::next()
+  {
+    return tokens_[index_];
+  }
+
+  // Return if the parser reached the end of the tokens
+  bool Parser::at_end()
+  {
+    return next().name() == "eof";
+  }
+
+  // Advance to the next token and return that token
+  Token Parser::advance()
+  {
+    if (!at_end())
+      index_ ++;
+    return current();
+  }
+
+  // Check if the next token has the specified name
+  bool Parser::check(string_t name)
+  {
+    return at_end() ? false : next().name() == name;
+  }
+
+  // Check if the next token has the specified name and advance if so
+  bool Parser::match(string_t name)
+  {
+    if (check(name))
+    {
+      advance();
+      return true;
+    }
+
+    return false;
+  }
+
+  // Check if the next token has one of the specified names and advance if so
+  bool Parser::match(const std::initializer_list<string_t> names)
+  {
+    for (auto name : names)
+    {
+      if (check(name))
+      {
+        advance();
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Consume the next token or report an error if it doesn't have the specified name
+  Token Parser::consume(string_t name, string_t context)
+  {
+    if (match(name))
+      return current();
+    else if (!context.empty())
+      throw error_reporter_->report_syntax_error(next().location(), fmt::format("Expected {} {}, but found {}", name, context, next().name()));
+    else
+      throw error_reporter_->report_syntax_error(next().location(), fmt::format("Expected {}, but found {}", name, next().name()));
+  }
+
+  // Synchronize the parser after an error
+  void Parser::synchronize()
+  {
+    // Advance the parser until it reaches an expression boundary
+    advance();
+    while (!at_end())
+    {
+      // Check for a newline token
+      if (current().name() == "newline")
+        break;
+
+      // Advance the parser
+      advance();
+    }
+  }
+
+
+  // Parse a binary expression
+  expr_ptr Parser::parse_as_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  {
+    // Parse the left operand
+    auto left = parse_operand(this);
+
+    // Check if we match the binary operator
+    while (match(op_names))
+    {
+      // Set the operator token
+      auto op = current();
+
+      // Parse the right operand
+      auto right = parse_operand(this);
+
+      // Create the binary expression
+      left = std::make_shared<ExprBinary>(left, op, right);
+    }
+
+    // Return the expression
+    return left;
+  }
+
+  // Parse a single binary expression
+  expr_ptr Parser::parse_as_single_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  {
+    // Parse the left operand
+    auto left = parse_operand(this);
+
+    // Check if we match the binary operator
+    if (match(op_names))
+    {
+      // Set the operator token
+      auto op = current();
+
+      // Parse the right operand
+      auto right = parse_operand(this);
+
+      // Return the binary expression
+      return std::make_shared<ExprBinary>(left, op, right);
+    }
+
+    // Return the expression
+    return left;
+  }
+
+  // Parse an unary expression
+  expr_ptr Parser::parse_as_unary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  {
+    // Check if we match the unary operator
+    if (match(op_names))
+    {
+      // Set the operand token
+      auto op = current();
+
+      // Parse the operand as another unary expression
+      auto right = parse_as_unary(op_names, parse_operand);
+
+      // Return the unary expression
+      return std::make_shared<ExprUnary>(op, right);
+    }
+
+    // Parse the operand
+    return parse_operand(this);
+  }
+
 
   // Parse a deque of tokens into an expression
   expr_ptr Parser::parse()
@@ -29,7 +181,7 @@ namespace dauw
   expr_ptr Parser::parse_script()
   {
     // Create a vector to store expressions
-    expr_ptr_vector exprs;
+    ExprBlock::block_type exprs;
 
     // Parse lines until we reach an EOF token
     while (!at_end())
@@ -45,13 +197,13 @@ namespace dauw
   {
     try
     {
-      // Check comments at the start of the line
-      last_line_comment_ = "";
+      // Check comments before the line
+      line_comment_ = "";
       while (match("comment"))
       {
-        if (!last_line_comment_.empty())
-          last_line_comment_ += "\n";
-        last_line_comment_ += current_.value();
+        if (!line_comment_.empty())
+          line_comment_.append("\n");
+        line_comment_.append(current().value());
 
         consume("newline", "after comment");
       }
@@ -63,8 +215,9 @@ namespace dauw
       if (check("comment"))
         advance();
 
-      // Consume a newline token
-      consume("newline", "after expression");
+      // Consume a newline token or skip if the current token is a dedent token
+      if (current().name() != "dedent")
+        consume("newline", "after expression");
 
       // Return the expression
       return expr;
@@ -72,6 +225,7 @@ namespace dauw
     catch (SyntaxError& ex)
     {
       synchronize();
+      fmt::print("{} at {}\n", ex.message(), ex.location());
       return nullptr;
     }
   }
@@ -93,7 +247,7 @@ namespace dauw
   expr_ptr Parser::parse_def()
   {
     // Set the keyword
-    auto keyword = current_;
+    auto keyword = current();
 
     // Parse the identifier
     auto name = consume("identifier", "in def declaration");
@@ -104,7 +258,7 @@ namespace dauw
       // The def declaration is a function declaration
 
       // Set the token
-      auto token = current_;
+      auto token = current();
 
       // Parse the parameters
       auto parameters = parse_parameters();
@@ -184,7 +338,7 @@ namespace dauw
   expr_ptr Parser::parse_if()
   {
     // Set the keyword
-    auto keyword = current_;
+    auto keyword = current();
 
     // Parse the condition
     auto condition = parse_simple();
@@ -207,7 +361,7 @@ namespace dauw
   expr_ptr Parser::parse_for()
   {
     // Set the keyword
-    auto keyword = current_;
+    auto keyword = current();
 
     // Parse the name
     auto name = consume("identifier", "in for expression");
@@ -229,7 +383,7 @@ namespace dauw
   expr_ptr Parser::parse_while()
   {
     // Set the keyword
-    auto keyword = current_;
+    auto keyword = current();
 
     // Parse the condition
     auto condition = parse_simple();
@@ -247,7 +401,7 @@ namespace dauw
   expr_ptr Parser::parse_until()
   {
     // Set the keyword
-    auto keyword = current_;
+    auto keyword = current();
 
     // Parse the condition
     auto condition = parse_simple();
@@ -264,14 +418,11 @@ namespace dauw
   // block → NEWLINE INDENT line+ DEDENT
   expr_ptr Parser::parse_block()
   {
-    // Set the token to the current NEWLINE token
-    auto token = current_;
-
     // Consume an INDENT token
     consume("indent", "in block");
 
     // Create a vector to store expressions
-    expr_ptr_vector exprs;
+    ExprBlock::block_type exprs;
 
     // Parse lines until we reach a DEDENT token
     do
@@ -375,7 +526,7 @@ namespace dauw
       if (match("parenthesis_left"))
       {
         // Set the token
-        auto token = current_;
+        auto token = current();
 
         // Parse the arguments
         auto arguments = std::make_shared<ExprSequence>(token, parse_arguments());
@@ -413,25 +564,25 @@ namespace dauw
     {
       // Check for a literal expression
       if (match("keyword_nothing"))
-        return std::make_shared<ExprLiteral>(value_nothing, current_.location());
+        return std::make_shared<ExprLiteral>(value_nothing, current().location());
       if (match("keyword_false"))
-        return std::make_shared<ExprLiteral>(value_false, current_.location());
+        return std::make_shared<ExprLiteral>(value_false, current().location());
       if (match("keyword_true"))
-        return std::make_shared<ExprLiteral>(value_true, current_.location());
+        return std::make_shared<ExprLiteral>(value_true, current().location());
       if (match("int"))
-        return std::make_shared<ExprLiteral>(value_int(current_.value()), current_.location());
+        return std::make_shared<ExprLiteral>(value_int(current().value()), current().location());
       if (match("real"))
-        return std::make_shared<ExprLiteral>(value_real(current_.value()), current_.location());
+        return std::make_shared<ExprLiteral>(value_real(current().value()), current().location());
       if (match("rune"))
-        return std::make_shared<ExprLiteral>(value_rune(current_.value()), current_.location());
+        return std::make_shared<ExprLiteral>(value_rune(current().value()), current().location());
       if (match("string"))
-        return std::make_shared<ExprLiteral>(value_string(current_.value()), current_.location());
+        return std::make_shared<ExprLiteral>(value_string(current().value()), current().location());
       if (match("regex"))
-        return std::make_shared<ExprLiteral>(value_regex(current_.value()), current_.location());
+        return std::make_shared<ExprLiteral>(value_regex(current().value()), current().location());
 
       // Check for a name expression
       if (match("identifier"))
-        return std::make_shared<ExprName>(current_);
+        return std::make_shared<ExprName>(current());
 
       // Check for a sequence expression
       if (match("square_bracket_left"))
@@ -450,17 +601,17 @@ namespace dauw
         return parse_grouped();
 
       // No suitable expression found, so throw an error
-      throw error(next_, fmt::format("Expected atom, but found {}", next_.name()));
+      throw error_reporter_->report_syntax_error(next().location(), fmt::format("Expected atom, but found {}", next().name()));
     }
     catch (std::invalid_argument& ex)
     {
       // Found a literal that is malformed
-      throw error(current_, ex.what());
+      throw error_reporter_->report_syntax_error(current().location(), ex.what());
     }
     catch (std::out_of_range& ex)
     {
       // Found a literal whose value is out of range
-      throw error(current_, ex.what());
+      throw error_reporter_->report_syntax_error(current().location(), ex.what());
     }
   }
 
@@ -473,7 +624,7 @@ namespace dauw
     ExprSequence::sequence_type items;
 
     // Set the opening token
-    auto token = current_;
+    auto token = current();
 
     // Parse expressions until we reach the closing token
     do
@@ -498,7 +649,7 @@ namespace dauw
     ExprRecord::record_type items;
 
     // Set the opening token
-    auto token = current_;
+    auto token = current();
 
     // Parse expressions until we reach the closing token
     do
@@ -523,7 +674,7 @@ namespace dauw
   expr_ptr Parser::parse_lambda()
   {
     // Set the token
-    auto token = current_;
+    auto token = current();
 
     // Parse the parameters
     consume("parenthesis_left", "in lambda atom");
@@ -556,43 +707,12 @@ namespace dauw
     return std::make_shared<ExprGrouped>(expr);
   }
 
-  // Parse parameters
-  // parameters → (IDENTIFIER ':' simple) (',' IDENTIFIER ':' simple)*)?
-  expr_name_ptr_vector Parser::parse_parameters()
-  {
-    // Create a vector to store the parameters
-    expr_name_ptr_vector parameters;
-
-    // Loop until we encounter a closing parenthesis
-    if (!check("parenthesis_right"))
-    {
-      do
-      {
-        // Parse the name
-        auto name = consume("identifier", "in parameters");
-        consume("symbol_colon", "in parameters");
-
-        // Parse the type
-        auto type = parse_simple();
-
-        // Create the expression and add it to the parameters
-        parameters.push_back(std::make_shared<ExprName>(name, type));
-      } while (match("symbol_comma"));
-    }
-
-    // Consume the closing parenthesis
-    consume("parenthesis_right", "in parameters");
-
-    // Return the parameters
-    return parameters;
-  }
-
   // Parse arguments
   // arguments → simple (',' simple)*
-  expr_ptr_vector Parser::parse_arguments()
+  ExprSequence::sequence_type Parser::parse_arguments()
   {
     // Create a vector to store the arguments
-    expr_ptr_vector arguments;
+    ExprSequence::sequence_type arguments;
 
     // Loop until we encounter a closing parenthesis
     if (!check("parenthesis_right"))
@@ -611,71 +731,36 @@ namespace dauw
     return arguments;
   }
 
-
-  // Parse a binary expression
-  expr_ptr Parser::parse_as_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  // Parse parameters
+  // parameters → (IDENTIFIER ':' simple) (',' IDENTIFIER ':' simple)*)?
+  ExprFunction::parameters_type Parser::parse_parameters()
   {
-    // Parse the left operand
-    auto left = parse_operand(this);
+    // Create a vector to store the parameters
+    ExprFunction::parameters_type parameters;
 
-    // Check if we match the binary operator
-    while (match(op_names))
+    // Loop until we encounter a closing parenthesis
+    if (!check("parenthesis_right"))
     {
-      // Set the operator token
-      auto op = current_;
+      do
+      {
+        // Parse the name
+        auto name = consume("identifier", "in parameters");
+        consume("symbol_colon", "in parameters");
 
-      // Parse the right operand
-      auto right = parse_operand(this);
+        // Parse the type
+        // TODO: Make a parser for actual types
+        auto type = consume("identifier", "in parameters");
 
-      // Create the binary expression
-      left = std::make_shared<ExprBinary>(left, op, right);
+        // Create the expression and add it to the parameters
+        parameters.push_back(Parameter(name, Type(type.value())));
+      } while (match("symbol_comma"));
     }
 
-    // Return the expression
-    return left;
-  }
+    // Consume the closing parenthesis
+    consume("parenthesis_right", "in parameters");
 
-  // Parse a single binary expression
-  expr_ptr Parser::parse_as_single_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
-  {
-    // Parse the left operand
-    auto left = parse_operand(this);
-
-    // Check if we match the binary operator
-    if (match(op_names))
-    {
-      // Set the operator token
-      auto op = current_;
-
-      // Parse the right operand
-      auto right = parse_operand(this);
-
-      // Return the binary expression
-      return std::make_shared<ExprBinary>(left, op, right);
-    }
-
-    // Return the expression
-    return left;
-  }
-
-  // Parse an unary expression
-  expr_ptr Parser::parse_as_unary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
-  {
-    // Check if we match the unary operator
-    if (match(op_names))
-    {
-      // Set the operand token
-      auto op = current_;
-
-      // Parse the operand as another unary expression
-      auto right = parse_as_unary(op_names, parse_operand);
-
-      // Return the unary expression
-      return std::make_shared<ExprUnary>(op, right);
-    }
-
-    // Parse the operand
-    return parse_operand(this);
+    // Return the parameters
+    return parameters;
   }
 
 
@@ -700,7 +785,7 @@ namespace dauw
   Value Parser::value_real(string_t value)
   {
     // Remove thousand separators from the real literal
-    value = regex_utils::replace(regex_t("_"), "", current_.value());
+    value = regex_utils::replace(regex_t("_"), "", value);
 
     // Parse the real literal
     size_t end_index;
@@ -716,7 +801,7 @@ namespace dauw
   Value Parser::value_rune(string_t value)
   {
     // Unescape the rune literal
-    value = string_utils::unescape(current_.value(), string_utils::EscapeType::RUNE);
+    value = string_utils::unescape(value, string_utils::EscapeType::RUNE);
 
     // Parse the rune literal
     auto runes = string_utils::to_runes(value);
@@ -756,97 +841,5 @@ namespace dauw
 
     // Return the value
     return Value::of_obj(string_value, type_string);
-  }
-
-
-  // Create and report a syntax error
-  SyntaxError Parser::error(Token token, string_t message)
-  {
-    // Report the error
-    error_reporter_->report(token.location(), fmt::format("ParserError: {}", message));
-
-    // Return the error
-    return SyntaxError(token.location(), message);
-  }
-
-  // Synchronize the parser after an error
-  void Parser::synchronize()
-  {
-    // Advance the parser until it reaches an expression boundary
-    advance();
-    while (!at_end())
-    {
-      // Check for a newline token
-      if (current_.name() == "newline")
-        break;
-
-      // Advance the parser
-      advance();
-    }
-  }
-
-
-  // Return if the parser has reaced the end of the tokens
-  bool Parser::at_end()
-  {
-    return next_.name() == "eof";
-  }
-
-  // Advance to the next token and return that token
-  Token Parser::advance()
-  {
-    if (!at_end())
-    {
-      current_ = next_;
-      next_ = tokens_.front();
-      tokens_.pop_front();
-
-      if (current_.name() == "error")
-        throw error(current_, current_.value());
-    }
-
-    return current_;
-  }
-
-  // Check if the next token has the specified name
-  bool Parser::check(string_t name)
-  {
-    return at_end() ? false : next_.name() == name;
-  }
-
-  // Check if the next token has the specified name and advance if so
-  bool Parser::match(string_t name)
-  {
-    if (!check(name))
-      return false;
-
-    advance();
-    return true;
-  }
-
-  // Check if the next token has one of the specified names and advance if so
-  bool Parser::match(const std::initializer_list<string_t> names)
-  {
-    for (auto name : names)
-    {
-      if (check(name))
-      {
-        advance();
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  // Consume the next token or report an error if it doesn't have the specified name
-  Token Parser::consume(string_t name, string_t context)
-  {
-    if (check(name))
-      return advance();
-    else if (!context.empty())
-      throw error(next_, fmt::format("Expected {} {}, but found {}", name, context, next_.name()));
-    else
-      throw error(next_, fmt::format("Expected {}, but found {}", name, next_.name()));
   }
 }

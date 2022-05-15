@@ -11,10 +11,6 @@ namespace dauw
     : Token(name, "", location, length)
   {
   }
-  Token::Token()
-    : Token("bof", "", Location(""))
-  {
-  }
 
   // Return the name of the token
   string_t& Token::name()

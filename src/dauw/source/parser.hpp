@@ -3,8 +3,10 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/ast/ast.hpp>
+#include <dauw/ast/parameter.hpp>
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/value.hpp>
+#include <dauw/source/lexer.hpp>
 #include <dauw/source/location.hpp>
 #include <dauw/source/token.hpp>
 #include <dauw/vm/vm.hpp>
@@ -20,24 +22,35 @@ namespace dauw
       using parser_function_type = std::function<expr_ptr(Parser*)>;
 
 
-      // Reference to the virtual machine
-      VM* vm_;
+      // The tokens to parse
+      Lexer::token_list_type tokens_;
 
-      // Reference to the error reporter
+      // The index of the token that is currently being parsed
+      size_t index_;
+
+      // References to application components
+      VM* vm_;
       ErrorReporter* error_reporter_;
 
-      // The deque of tokens
-      std::deque<Token> tokens_;
-
-      // The token that is currently being parsed
-      Token current_;
-
-      // The token that will be parsed next
-      Token next_;
-
       // The last full line comment that has been parsed
-      string_t last_line_comment_;
+      string_t line_comment_;
 
+
+      // Basic parser functionality
+      bool at_end();
+      Token current();
+      Token next();
+      Token advance();
+      bool check(string_t name);
+      bool match(string_t name);
+      bool match(std::initializer_list<string_t> names);
+      Token consume(string_t name, string_t context);
+      void synchronize();
+
+      // Parser helper functions
+      expr_ptr parse_as_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_as_single_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_as_unary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
 
       // Parsers for expressions
       expr_ptr parse_script();
@@ -68,13 +81,10 @@ namespace dauw
       expr_ptr parse_record();
       expr_ptr parse_lambda();
       expr_ptr parse_grouped();
-      expr_name_ptr_vector parse_parameters();
-      expr_ptr_vector parse_arguments();
 
-      // Parser helper functions
-      expr_ptr parse_as_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_as_single_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_as_unary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      // Parsers for specialized types
+      ExprFunction::parameters_type parse_parameters();
+      ExprSequence::sequence_type parse_arguments();
 
       // Parsers for values
       Value value_int(string_t value);
@@ -83,34 +93,10 @@ namespace dauw
       Value value_string(string_t value);
       Value value_regex(string_t value);
 
-      // Create and report a syntax error
-      SyntaxError error(Token token, string_t message);
-
-      // Synchronize the parser after an error
-      void synchronize();
-
-      // Return if the parser has reaced the end of the tokens
-      bool at_end();
-
-      // Advance to the next token and return that token
-      Token advance();
-
-      // Check if the next token has the specified name
-      bool check(string_t name);
-
-      // Check if the next token has the specified name and advance if so
-      bool match(string_t name);
-
-      // Check if the next token has one of the specified names and advance if so
-      bool match(std::initializer_list<string_t> names);
-
-      // Consume the next token or report an error if it doesn't have the specified name
-      Token consume(string_t name, string_t context = "");
-
 
     public:
       // Constructor
-      Parser(VM* vm, ErrorReporter* error_reporter, std::deque<Token> tokens);
+      Parser(Lexer::token_list_type tokens, ErrorReporter* error_reporter, VM* vm);
 
       // Parse a deque of tokens into an expression
       expr_ptr parse();

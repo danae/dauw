@@ -28,9 +28,6 @@ namespace dauw
       string_t current_source_;
       string_t current_source_name_;
 
-      // The error state of the application
-      bool had_error = false;
-
 
     public:
       // Constructor

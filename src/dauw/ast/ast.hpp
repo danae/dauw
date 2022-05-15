@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dauw/common.hpp>
+#include <dauw/ast/parameter.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 #include <dauw/source/location.hpp>
@@ -10,6 +11,7 @@
 namespace dauw
 {
   // Forward declarations
+  class ExprVisitor;
   class Expr;
   class ExprLiteral;
   class ExprSequence;
@@ -27,8 +29,10 @@ namespace dauw
   class ExprUntil;
   class ExprBlock;
   class ExprDef;
-  class ExprVisitor;
 
+
+  // Type definitions for expression visitor pointers
+  using expr_visitor_ptr = std::shared_ptr<ExprVisitor>;
 
   // Type definitions for expression pointers
   using expr_ptr = std::shared_ptr<Expr>;
@@ -48,13 +52,6 @@ namespace dauw
   using expr_until_ptr = std::shared_ptr<ExprUntil>;
   using expr_block_ptr = std::shared_ptr<ExprBlock>;
   using expr_def_ptr = std::shared_ptr<ExprDef>;
-
-  // Type definitions for common vectors of expression pointers
-  using expr_ptr_vector = std::vector<expr_ptr>;
-  using expr_name_ptr_vector = std::vector<expr_name_ptr>;
-
-  // Type definitions for expression visitor pointers
-  using expr_visitor_ptr = std::shared_ptr<ExprVisitor>;
 
 
   // Base class that defines an expression visitor
@@ -145,7 +142,7 @@ namespace dauw
   {
     public:
       // Type definition for the underlying sequence container
-      using sequence_type = expr_ptr_vector;
+      using sequence_type = std::vector<expr_ptr>;
 
 
     private:
@@ -212,7 +209,7 @@ namespace dauw
   {
     public:
       // Type declaration for the parameter expression
-      using parameters_type = std::vector<expr_name_ptr>;
+      using parameters_type = std::vector<Parameter>;
 
 
     private:
@@ -258,24 +255,13 @@ namespace dauw
       // The name token of the name expression
       Token name_;
 
-      // The type of the name expression
-      std::optional<expr_ptr> type_;
-
 
     public:
       // Constructor
-      ExprName(Token name, std::optional<expr_ptr> type);
-      ExprName(Token name, expr_ptr type);
       ExprName(Token name);
 
       // Return the name of the name expression
       string_t name();
-
-      // Return the type of the name expression
-      expr_ptr type();
-
-      // Return if the name expression has a type
-      bool has_type();
 
       // Expression implementation
       virtual Location& location() override;
@@ -555,21 +541,25 @@ namespace dauw
   // Class that defines a block expression
   class ExprBlock : public Expr, public std::enable_shared_from_this<ExprBlock>
   {
+    public:
+      // Type definition for the expressions of the block
+      using block_type = std::vector<expr_ptr>;
+
     private:
       // The expressions of the block expression
-      expr_ptr_vector exprs_;
+      block_type exprs_;
 
 
     public:
       // Constructor
-      ExprBlock(expr_ptr_vector exprs);
+      ExprBlock(block_type exprs);
 
       // Return the expressions of the block expression
-      expr_ptr_vector exprs();
+      block_type exprs();
 
       // Iterate over the expressions of the block expression
-      expr_ptr_vector::const_iterator begin();
-      expr_ptr_vector::const_iterator end();
+      block_type::const_iterator begin();
+      block_type::const_iterator end();
 
       // Expression implementation
       virtual Location& location() override;

@@ -54,28 +54,34 @@ namespace dauw
   // Class that defines error reporter behaviour
   class ErrorReporter
   {
+    public:
+      // Type definition for the error list type
+      using error_list_type = std::vector<Error>;
+
+
     private:
-      // The current source string
-      string_t source_;
-      string_t source_name_;
+      // The list of reported errors
+      error_list_type errors_;
 
 
     public:
-      // The error state
-      // TODO: Make this private
-      bool had_error_ = false;
+      // Return the reported errors
+      error_list_type errors();
 
+      // Return if the reporter has reported errors
+      bool has_errors();
 
-      // Constructor
-      ErrorReporter(string_t source, string_t source_name);
+      // Clear the reported errors
+      void clear_errors();
 
-      // Report an error
-      void report(string_t message);
+      // Print the reported errors
+      void print_errors(string_t source);
 
-      // Report an error with a location
-      void report(Location location, string_t message);
+      // Print an error
+      void print_error(Error error, string_t source);
 
-      // Report an error exception
-      void report_error(Error& error, string_t error_type = "Error");
+      // Report an error at a location
+      SyntaxError report_syntax_error(Location location, string_t message);
+      RuntimeError report_runtime_error(Location location, string_t message);
   };
 }

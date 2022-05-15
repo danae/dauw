@@ -59,15 +59,6 @@ namespace dauw
   void Interpreter::visit_name(const expr_name_ptr& expr)
   {
     fmt::print("ExprName({})\n", expr->name());
-
-    if (expr->has_type())
-    {
-      print_depth();
-      fmt::print("type: ");
-      depth ++;
-      print(expr->type());
-      depth --;
-    }
   }
 
   // Visit a function expression
@@ -82,10 +73,7 @@ namespace dauw
     for (auto parameter : expr->parameters())
     {
       print_depth();
-      fmt::print("- ");
-      depth ++;
-      print(parameter);
-      depth --;
+      fmt::print("- {}\n", parameter);
     }
 
     if (expr->has_return_type())
