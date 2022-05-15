@@ -1,21 +1,22 @@
 #pragma once
 
 #include <dauw/common.hpp>
+#include <dauw/errors.hpp>
 #include <dauw/ast/ast.hpp>
+#include <dauw/internals/type.hpp>
 
 
 namespace dauw
 {
-  // Class that defines the interpreter
-  class Interpreter : public ExprVisitor, public std::enable_shared_from_this<Interpreter>
+  // Class that defines the type resolver
+  class TypeResolver : public ExprVisitor, public std::enable_shared_from_this<TypeResolver>
   {
-    private:
-      int depth = 0;
-
-
     public:
-      void print_depth();
-      void print(const expr_ptr& expr);
+      // Resolve the type of an expression
+      void resolve(const expr_ptr& expr, bool throw_if_failed = true);
+
+      // Resolve if a type is a subtype of another type
+      void resolve_subtype_of(const expr_ptr& expr, Type& type);
 
       // Visitor implementation
       virtual void visit_literal(const expr_literal_ptr& expr) override;

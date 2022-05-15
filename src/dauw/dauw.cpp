@@ -1,44 +1,88 @@
 #include "dauw.hpp"
 
+
 namespace dauw
 {
+  void print_tokens(std::deque<Token> tokens)
+  {
+    int indent = 0;
+    for (auto token : tokens)
+    {
+      auto indent_str = string_utils::repeat("    ", indent);
+
+      if (token.name() == "newline")
+      {
+        fmt::print(fmt::fg(fmt::color::gold), "{}{}\n", indent_str, token);
+      }
+      else if (token.name() == "indent")
+      {
+        fmt::print(fmt::fg(fmt::color::light_green), "{}{}\n", indent_str, token);
+        indent ++;
+      }
+      else if (token.name() == "dedent")
+      {
+        indent --;
+        indent_str = string_utils::repeat("    ", indent);
+        fmt::print(fmt::fg(fmt::color::light_pink), "{}{}\n", indent_str, token);
+      }
+      else if (token.name() == "eof")
+      {
+        fmt::print(fmt::fg(fmt::color::tomato), "{}{}\n", indent_str, token);
+      }
+      else if (token.name() == "comment")
+      {
+        fmt::print(fmt::fg(fmt::color::gray), "{}{}\n", indent_str, token);
+      }
+      else
+      {
+        fmt::print("{}{}\n", indent_str, token);
+      }
+    }
+  }
+
+
   // Constructor
   Dauw::Dauw()
   {
     // Create the virtual machine
     vm_ = std::make_shared<VM>();
-
-    // Create the interpreter
-    interpreter_ = std::make_shared<Interpreter>();
   }
 
   // Interpret a source string
   int Dauw::run(string_t source, string_t source_name)
   {
-    try
-  	{
-      // Set the current source and error indicator
-      current_source_ = source;
-      current_source_name_ = source_name;
+    // Set the current source and error indicator
+    current_source_ = source;
+    current_source_name_ = source_name;
 
-      // Lex and parse the source string
-      auto tokens = Lexer(source, source_name).tokenize();
-      auto expr = Parser(vm_.get(), tokens).parse();
+    // Create the error reporter
+    auto error_reporter = std::make_shared<ErrorReporter>(source, source_name);
+
+    // Tokenize the source string
+    auto tokens = Lexer(source, source_name).tokenize();
+
+    // Parse the source string and exit the application if a parser error occurred
+    auto expr = Parser(vm_.get(), error_reporter.get(), tokens).parse();
+    if (error_reporter->had_error_)
+      return DAUW_EXIT_DATAERR;
+
+    // Execute the source string and exit the application if a runtime error occurred
+    try
+    {
+      // Resolve the types of the expression
+      //auto type_resolver = std::make_shared<TypeResolver>();
+      //type_resolver->resolve(expr);
 
       // Evaluate the expression
-      if (expr != nullptr)
-        interpreter_->print(expr);
+      auto interpreter = std::make_shared<Interpreter>();
+      interpreter->print(expr);
 
+      // Quit with an ok exit code
       return DAUW_EXIT_OK;
-  	}
-  	catch (dauw::SyntaxError& error)
-  	{
-      report_error(error, "SyntaxError");
-      return DAUW_EXIT_DATAERR;
-  	}
+    }
     catch (dauw::RuntimeError& error)
   	{
-      report_error(error, "RuntimeError");
+      error_reporter->report_error(error, "RuntimeError");
       return DAUW_EXIT_SOFTWAREERR;
   	}
   }
@@ -73,7 +117,7 @@ namespace dauw
     // Check if the file exists
     if (!std::filesystem::exists(file))
     {
-      report(fmt::format("The file '{}' does not exist", file));
+      fmt::print(fmt::fg(fmt::color::crimson), "The file '{}' does not exist", file);
       return DAUW_EXIT_IOERR;
     }
 
@@ -83,47 +127,5 @@ namespace dauw
 
     // Run the source string
   	return run(source, std::filesystem::canonical(file));
-  }
-
-  // Report an error
-  void Dauw::report(string_t message)
-  {
-    // Print the message
-    fmt::print(fmt::fg(fmt::color::crimson), "{}\n", message);
-  }
-
-  // Report an error with a location
-  void Dauw::report(Location location, string_t message)
-  {
-    // Print the error
-    report(message);
-
-    // Get the location in the source
-    auto lines = regex_lines(current_source_);
-    if (location.line() >= lines.size())
-      throw std::runtime_error(fmt::format("line {} is not present in the specified source", location.line() + 1));
-
-    auto line = lines[location.line()];
-    if (location.col() >= line.length())
-      throw std::runtime_error(fmt::format("line {}, col {} is not present in the specified source", location.line() + 1, location.col() + 1));
-
-    // Print the location
-    fmt::print("at {}\n", location);
-    fmt::print("{: >6d} | {}\n", location.line() + 1, lines[location.line()]);
-    fmt::print("       | {}^\n", string_repeat(" ", location.col()));
-  }
-
-  // Report an error exception
-  void Dauw::report_error(Error& error, string_t error_type)
-  {
-    // Report the error
-    report(error.location(), fmt::format("{}: {}", error_type, error.message()));
-
-    // Report the previous error if there is one
-    if (error.previous() != nullptr)
-  	{
-  	  fmt::print("\nThe previous error was caused by:\n\n");
-  		report_error(*error.previous());
-  	}
   }
 }

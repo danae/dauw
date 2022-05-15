@@ -2,16 +2,15 @@
 
 namespace dauw
 {
-  // Constants for constant values
-  const Value Value::value_nothing = Value(VAL_NOTHING);
-  const Value Value::value_false = Value(VAL_FALSE);
-  const Value Value::value_true = Value(VAL_TRUE);
-
-
   // Constructor for a value
-  Value::Value(value_t value)
+  Value::Value(value_t value, Type type) : value_(value), type_(type)
   {
-    value_ = value;
+  }
+
+  // Return the type of the value
+  Type& Value::type()
+  {
+    return type_;
   }
 
   // Return if the value represents nothing
@@ -35,7 +34,7 @@ namespace dauw
   // Convert a bool type to a value
   Value Value::of_bool(bool bool_value)
   {
-    return Value(bool_value ? VAL_TRUE : VAL_FALSE);
+    return Value(bool_value ? VAL_TRUE : VAL_FALSE, type_bool);
   }
 
   // Return if the value represents a bool type
@@ -64,7 +63,7 @@ namespace dauw
         throw std::out_of_range(fmt::format("{} exceeds the valid range of an int; it exceeds 48 bits of storage", int_value));
     }
 
-    return Value((value_t)(BITMASK_QNAN | TAG_INT | ((value_t)int_value & BITMASK_VALUE)));
+    return Value((value_t)(BITMASK_QNAN | TAG_INT | ((value_t)int_value & BITMASK_VALUE)), type_int);
   }
 
   // Return if the value represents an int type
@@ -94,7 +93,7 @@ namespace dauw
     if (rune_value >= RUNE_SURROGATE_MIN && rune_value <= RUNE_SURROGATE_MAX)
       throw std::out_of_range(fmt::format("U+{:06X} exceeds the valid range of a rune; it specifies a surrogate code point", rune_value));
 
-    return Value((value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE)));
+    return Value((value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE)), type_rune);
   }
 
   // Return if the value represents an rune type
@@ -127,7 +126,7 @@ namespace dauw
     if ((value & BITMASK_QNAN) == BITMASK_QNAN)
       throw std::out_of_range("Value exceeds the valid range of a real; it contains a quiet NaN");
 
-    return Value(value);
+    return Value(value, type_real);
   }
 
   // Return if the value represents a real type
@@ -151,9 +150,9 @@ namespace dauw
   }
 
   // Convert an object type to a value
-  Value Value::of_obj(Obj* object_value)
+  Value Value::of_obj(Obj* object_value, Type object_type)
   {
-    return Value((value_t)(BITMASK_QNAN | BITMASK_SIGN | (value_t)(uintptr_t)object_value & BITMASK_VALUE));
+    return Value((value_t)(BITMASK_QNAN | BITMASK_SIGN | (value_t)(uintptr_t)object_value & BITMASK_VALUE), object_type);
   }
 
   // Return if the value represents an object type
@@ -183,9 +182,9 @@ namespace dauw
   bool Value::operator==(const Value& other)
   {
     if (is_real() && other.is_real())
-      return as_real() == other.as_real();
+      return type_ == other.type_ && as_real() == other.as_real();
     else
-      return value_ == other.value_;
+      return type_ == other.type_ && value_ == other.value_;
   }
   bool Value::operator!=(const Value& other)
   {
@@ -196,15 +195,15 @@ namespace dauw
   string_t Value::to_string()
   {
     if (is_nothing())
-      return "Nothing()";
+      return "nothing";
     else if (is_bool())
-      return fmt::format("Bool({})", as_bool() ? "true" : "false");
+      return fmt::format("{}", as_bool() ? "true" : "false");
     else if (is_int())
-      return fmt::format("Int({})", as_int());
+      return fmt::format("{}", as_int());
     else if (is_rune())
-      return fmt::format("Rune('{}')", utf8::utf32to8(std::u32string(1, (uint32_t)as_rune())));
+      return fmt::format("'{}'", utf8::utf32to8(std::u32string(1, (uint32_t)as_rune())));
     else if (is_real())
-      return fmt::format("Real({})", as_real());
+      return fmt::format("{}", as_real());
     else if (is_obj())
       return as_obj()->to_string();
     else

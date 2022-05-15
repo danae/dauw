@@ -3,6 +3,7 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/internals/object.hpp>
+#include <dauw/internals/type.hpp>
 
 #include <memory>
 
@@ -51,16 +52,16 @@ namespace dauw
       // The actual value
       value_t value_;
 
+      // The type of the value
+      Type type_;
+
 
     public:
-      // Constants for constant values
-      static const Value value_nothing;
-      static const Value value_false;
-      static const Value value_true;
-
-
       // Constructor
-      Value(value_t value);
+      Value(value_t value, Type type);
+
+      // Return the type of the value
+      Type& type();
 
       // Value that represents a constant type
       bool is_nothing() const;
@@ -88,7 +89,7 @@ namespace dauw
       double as_real() const;
 
       // Value that represents an object type
-      static Value of_obj(Obj* object_value);
+      static Value of_obj(Obj* object_value, Type object_type);
       bool is_obj() const;
       Obj* as_obj() const;
 
@@ -102,6 +103,12 @@ namespace dauw
       // Return a representative string representation of the value
       string_t to_string();
   };
+
+
+  // Definitions for primitive values
+  const Value value_nothing = Value(VAL_NOTHING, type_nothing);
+  const Value value_false = Value(VAL_FALSE, type_bool);
+  const Value value_true = Value(VAL_TRUE, type_bool);
 }
 
 

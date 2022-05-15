@@ -3,6 +3,7 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/ast/interpreter.hpp>
+#include <dauw/ast/type_resolver.hpp>
 #include <dauw/source/lexer.hpp>
 #include <dauw/source/location.hpp>
 #include <dauw/source/parser.hpp>
@@ -23,12 +24,12 @@ namespace dauw
       // The virtual machine for the application
       std::shared_ptr<VM> vm_;
 
-      // The interpreter for the application
-      std::shared_ptr<Interpreter> interpreter_;
-
       // The current source string
       string_t current_source_;
       string_t current_source_name_;
+
+      // The error state of the application
+      bool had_error = false;
 
 
     public:
@@ -43,14 +44,5 @@ namespace dauw
 
       // Run code from a file
       int run_file(string_t file);
-
-      // Report an error
-      void report(string_t message);
-
-      // Report an error with a location
-      void report(Location location, string_t message);
-
-      // Report an error exception
-      void report_error(Error& error, string_t error_type = "Error");
   };
 }

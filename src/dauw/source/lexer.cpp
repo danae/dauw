@@ -36,7 +36,7 @@ namespace dauw
     source_name_ = source_name;
 
     // Initialize the regex patterns
-    comment_pattern_ = regex_t("(?:--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
+    comment_pattern_ = regex_t("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
     whitespace_pattern_ = regex_t("[ \\t]+");
 
     // Initialize the rules
@@ -52,6 +52,9 @@ namespace dauw
     rule_("symbol_dot", regex_t("\\."));
     rule_("symbol_lambda", regex_t("\\\\"));
 
+    rule_("operator_maybe", regex_t("\\?"), 0);
+    rule_("operator_union", regex_t("\\|"), 0);
+    rule_("operator_intersection", regex_t("&"), 0);
     rule_("operator_length", regex_t("#"), 0);
     rule_("operator_string", regex_t("\\$"), 0);
     rule_("operator_multiply", regex_t("\\*"), 0);
@@ -75,15 +78,14 @@ namespace dauw
     rule_("operator_logical_or", regex_t("or"), 0);
     rule_("operator_assign", regex_t("="), 0);
 
+    rule_("keyword_def", regex_t("def"));
     rule_("keyword_do", regex_t("do"));
     rule_("keyword_else", regex_t("else"));
     rule_("keyword_false", regex_t("false"));
     rule_("keyword_for", regex_t("for"));
-    rule_("keyword_func", regex_t("func"));
     rule_("keyword_if", regex_t("if"));
     rule_("keyword_in", regex_t("in"));
     rule_("keyword_nothing", regex_t("nothing"));
-    rule_("keyword_return", regex_t("return"));
     rule_("keyword_then", regex_t("then"));
     rule_("keyword_true", regex_t("true"));
     rule_("keyword_until", regex_t("until"));
@@ -126,7 +128,7 @@ namespace dauw
     Location location(source_name_);
 
     // Iterate over the lines in the source
-    for (auto line : regex_lines(source_))
+    for (auto line : regex_utils::split_lines(source_))
     {
       // Check for a shebang at the start of the source
       if (line.rfind("#!", 0) == 0)
@@ -167,6 +169,8 @@ namespace dauw
       {
         // If the indent is smaller than the last indent, then add as much dedent tokens until the indent matches one on the stack
         indents.pop_back();
+        if (tokens.back().name() == "dedent")
+          tokens.push_back(Token("newline", location));
         tokens.push_back(Token("dedent", location));
       }
 
@@ -180,7 +184,7 @@ namespace dauw
       while (location.col() < line.length())
       {
         // Check for comments at the current position
-        auto comment_match = regex_match(comment_pattern_, line, location.col());
+        auto comment_match = regex_utils::match(comment_pattern_, line, location.col());
         if (comment_match.has_value())
         {
           auto match = comment_match.value();
@@ -193,7 +197,7 @@ namespace dauw
         }
 
         // Check for whitespaces at the current position
-        auto whitespace_match = regex_match(whitespace_pattern_, line, location.col());
+        auto whitespace_match = regex_utils::match(whitespace_pattern_, line, location.col());
         if (whitespace_match.has_value())
         {
           auto match = whitespace_match.value();
@@ -205,7 +209,7 @@ namespace dauw
         std::vector<Token> matched_tokens;
         for (auto rule : rules_)
         {
-          auto rule_match = regex_match(rule.pattern(), line, location.col());
+          auto rule_match = regex_utils::match(rule.pattern(), line, location.col());
           if (rule_match.has_value())
           {
             auto match = rule_match.value();
@@ -237,6 +241,7 @@ namespace dauw
     {
       indents.pop_back();
       tokens.push_back(Token("dedent", location));
+      tokens.push_back(Token("newline", location));
     }
 
     // Add eof token

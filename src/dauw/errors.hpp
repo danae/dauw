@@ -49,4 +49,33 @@ namespace dauw
       RuntimeError(Location location, string_t message, Error* previous);
       RuntimeError(Location location, string_t message);
   };
+
+
+  // Class that defines error reporter behaviour
+  class ErrorReporter
+  {
+    private:
+      // The current source string
+      string_t source_;
+      string_t source_name_;
+
+
+    public:
+      // The error state
+      // TODO: Make this private
+      bool had_error_ = false;
+
+
+      // Constructor
+      ErrorReporter(string_t source, string_t source_name);
+
+      // Report an error
+      void report(string_t message);
+
+      // Report an error with a location
+      void report(Location location, string_t message);
+
+      // Report an error exception
+      void report_error(Error& error, string_t error_type = "Error");
+  };
 }

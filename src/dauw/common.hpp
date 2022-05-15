@@ -5,6 +5,9 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <fmt/core.h>
@@ -44,36 +47,57 @@ using match_optional_t = std::optional<match_t>;
 
 namespace dauw
 {
-  // Convert a string to a vector of runes
-  std::vector<uint32_t> string_to_runes(string_t string);
+  // Namespace that defines string utilities
+  namespace string_utils
+  {
+    // Enum that defines the type of (un)escape to perform
+    enum class EscapeType { RUNE, STRING, REGEX };
 
-  // Convert a vector of runes to a string
-  string_t string_from_runes(std::vector<uint32_t> runes);
 
-  // Convert a rune to a string
-  string_t string_from_rune(uint32_t rune);
+    // Convert escape sequences in a string to unprintable characters
+    string_t unescape(string_t string, EscapeType escape_type);
 
-  // Repeat a string for the specified amount of times
-  string_t string_repeat(string_t string, size_t times);
+    // Return the replacement for an unicode escape sequence in a string to unescape
+    string_t unescape_unicode_replacement(match_t match, EscapeType escape_type);
 
-  // Convert escape sequences in a string to their literal equivalent
-  string_t string_unescape(string_t string, bool is_rune);
+    // Return the replacement for an escape sequence in a string to unescape
+    string_t unescape_replacement(match_t match, EscapeType escape_type);
 
-  // Search for a regular expression in a string
-  match_optional_t regex_search(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
 
-  // Match a regular expression at the beginning of a string
-  match_optional_t regex_match(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
+    // Convert a string to a vector of runes
+    std::vector<uint32_t> to_runes(string_t string);
 
-  // Match a regular expression in a whole string
-  match_optional_t regex_fullmatch(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
+    // Convert a vector of runes to a string
+    string_t from_runes(std::vector<uint32_t> runes);
 
-  // Split a string by the occurrences a regular expression
-  std::vector<string_t> regex_split(regex_t pattern, string_t& string);
+    // Convert a rune to a string
+    string_t from_rune(uint32_t rune);
 
-  // Split a string by newlines
-  std::vector<string_t> regex_lines(string_t& string);
 
-  // Replace non-overlapping occurrences of a regular expression in a string
-  string_t regex_replace(regex_t pattern, string_t replacement, string_t& string);
+    // Repeat a string for the specified amount of times
+    string_t repeat(string_t string, size_t times);
+  }
+
+
+  // Namespace that defines regex utilities
+  namespace regex_utils
+  {
+    // Search for a regular expression in a string
+    match_optional_t search(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
+
+    // Match a regular expression at the beginning of a string
+    match_optional_t match(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
+
+    // Match a regular expression in a whole string
+    match_optional_t fullmatch(regex_t pattern, string_t& string, size_t begin = 0, size_t end = 0);
+
+    // Split a string by the occurrences a regular expression
+    std::vector<string_t> split(regex_t pattern, string_t& string);
+
+    // Split a string by newlines
+    std::vector<string_t> split_lines(string_t& string);
+
+    // Replace non-overlapping occurrences of a regular expression in a string
+    string_t replace(regex_t pattern, string_t replacement, string_t& string);
+  }
 }

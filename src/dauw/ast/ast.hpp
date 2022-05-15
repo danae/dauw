@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dauw/common.hpp>
+#include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 #include <dauw/source/location.hpp>
 #include <dauw/source/token.hpp>
@@ -11,16 +12,49 @@ namespace dauw
   // Forward declarations
   class Expr;
   class ExprLiteral;
+  class ExprSequence;
+  class ExprRecord;
   class ExprName;
-  class ExprParenthesized;
+  class ExprFunction;
+  class ExprGrouped;
   class ExprCall;
-  class ExprSubscript;
   class ExprGet;
   class ExprUnary;
   class ExprBinary;
+  class ExprIf;
+  class ExprFor;
+  class ExprWhile;
+  class ExprUntil;
   class ExprBlock;
+  class ExprDef;
+  class ExprVisitor;
 
-  class Interpreter;
+
+  // Type definitions for expression pointers
+  using expr_ptr = std::shared_ptr<Expr>;
+  using expr_literal_ptr = std::shared_ptr<ExprLiteral>;
+  using expr_sequence_ptr = std::shared_ptr<ExprSequence>;
+  using expr_record_ptr = std::shared_ptr<ExprRecord>;
+  using expr_name_ptr = std::shared_ptr<ExprName>;
+  using expr_function_ptr = std::shared_ptr<ExprFunction>;
+  using expr_grouped_ptr = std::shared_ptr<ExprGrouped>;
+  using expr_call_ptr = std::shared_ptr<ExprCall>;
+  using expr_get_ptr = std::shared_ptr<ExprGet>;
+  using expr_unary_ptr = std::shared_ptr<ExprUnary>;
+  using expr_binary_ptr = std::shared_ptr<ExprBinary>;
+  using expr_if_ptr = std::shared_ptr<ExprIf>;
+  using expr_for_ptr = std::shared_ptr<ExprFor>;
+  using expr_while_ptr = std::shared_ptr<ExprWhile>;
+  using expr_until_ptr = std::shared_ptr<ExprUntil>;
+  using expr_block_ptr = std::shared_ptr<ExprBlock>;
+  using expr_def_ptr = std::shared_ptr<ExprDef>;
+
+  // Type definitions for common vectors of expression pointers
+  using expr_ptr_vector = std::vector<expr_ptr>;
+  using expr_name_ptr_vector = std::vector<expr_name_ptr>;
+
+  // Type definitions for expression visitor pointers
+  using expr_visitor_ptr = std::shared_ptr<ExprVisitor>;
 
 
   // Base class that defines an expression visitor
@@ -31,34 +65,54 @@ namespace dauw
       virtual ~ExprVisitor() = default;
 
       // Visit expressions
-      virtual void visit_literal(const std::shared_ptr<ExprLiteral>& expr) = 0;
-      virtual void visit_name(const std::shared_ptr<ExprName>& expr) = 0;
-      virtual void visit_parenthesized(const std::shared_ptr<ExprParenthesized>& expr) = 0;
-      virtual void visit_call(const std::shared_ptr<ExprCall>& expr) = 0;
-      virtual void visit_subscript(const std::shared_ptr<ExprSubscript>& expr) = 0;
-      virtual void visit_get(const std::shared_ptr<ExprGet>& expr) = 0;
-      virtual void visit_unary(const std::shared_ptr<ExprUnary>& expr) = 0;
-      virtual void visit_binary(const std::shared_ptr<ExprBinary>& expr) = 0;
-      virtual void visit_block(const std::shared_ptr<ExprBlock>& expr) = 0;
+      virtual void visit_literal(const expr_literal_ptr& expr) = 0;
+      virtual void visit_sequence(const expr_sequence_ptr& expr) = 0;
+      virtual void visit_record(const expr_record_ptr& expr) = 0;
+      virtual void visit_name(const expr_name_ptr& expr) = 0;
+      virtual void visit_function(const expr_function_ptr& expr) = 0;
+      virtual void visit_grouped(const expr_grouped_ptr& expr) = 0;
+      virtual void visit_call(const expr_call_ptr& expr) = 0;
+      virtual void visit_get(const expr_get_ptr& expr) = 0;
+      virtual void visit_unary(const expr_unary_ptr& expr) = 0;
+      virtual void visit_binary(const expr_binary_ptr& expr) = 0;
+      virtual void visit_if(const expr_if_ptr& expr) = 0;
+      virtual void visit_for(const expr_for_ptr& expr) = 0;
+      virtual void visit_while(const expr_while_ptr& expr) = 0;
+      virtual void visit_until(const expr_until_ptr& expr) = 0;
+      virtual void visit_block(const expr_block_ptr& expr) = 0;
+      virtual void visit_def(const expr_def_ptr& expr) = 0;
   };
 
 
   // Base class thet defines an expression
   class Expr
   {
+    private:
+      // The resolved type of the expression
+      std::optional<Type> resolved_type_ = std::nullopt;
+
+
     public:
       // Destructor
       virtual ~Expr() = default;
+
+      // Return the resolved type of the expression
+      Type& resolved_type();
+
+      // Return if the expression has a resolved type
+      bool has_resolved_type();
+
+      // Set the resolved type of the expression
+      void set_resolved_type(Type& type);
+
+      // Set the resolved type of the expression to that of another expression
+      void set_resolved_type_from(expr_ptr expr);
 
       // Return the location of the expression
       virtual Location& location() = 0;
 
       // Accept a visitor on the expression
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) = 0;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+      virtual void accept(const expr_visitor_ptr& visitor) = 0;
   };
 
 
@@ -66,10 +120,10 @@ namespace dauw
   class ExprLiteral : public Expr, public std::enable_shared_from_this<ExprLiteral>
   {
     private:
-      // The value of the expression
+      // The value of the literal expression
       Value value_;
 
-      // The location of the expression
+      // The location of the literal expression
       Location location_;
 
 
@@ -77,13 +131,123 @@ namespace dauw
       // Constructor
       ExprLiteral(Value value, Location location);
 
+      // Return the value of the literal expression
+      Value value();
+
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
 
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+
+  // Class that defines a sequence expression
+  class ExprSequence : public Expr, public std::enable_shared_from_this<ExprSequence>
+  {
+    public:
+      // Type definition for the underlying sequence container
+      using sequence_type = expr_ptr_vector;
+
+
+    private:
+      // The token of the sequence expression
+      Token token_;
+
+      // The items of the sequence expression
+      sequence_type items_;
+
+
+    public:
+      // Constructor
+      ExprSequence(Token token, sequence_type items);
+
+      // Return the items of the sequence expression
+      sequence_type items();
+
+      // Iterate over the items of the sequence expression
+      sequence_type::const_iterator begin();
+      sequence_type::const_iterator end();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a record expression
+  class ExprRecord : public Expr, public std::enable_shared_from_this<ExprRecord>
+  {
+    public:
+      // Type definition for the underlying record container
+      using record_name_type = string_t;
+      using record_type = std::unordered_map<record_name_type, expr_ptr>;
+
+
+    private:
+      // The token of the record expression
+      Token token_;
+
+      // The items of the record expression
+      record_type items_;
+
+
+    public:
+      // Constructor
+      ExprRecord(Token token, record_type items);
+
+      // Return the items of the record expression
+      record_type items();
+
+      // Iterate over the items of the record expression
+      record_type::const_iterator begin();
+      record_type::const_iterator end();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a function expression
+  class ExprFunction : public Expr, public std::enable_shared_from_this<ExprFunction>
+  {
+    public:
+      // Type declaration for the parameter expression
+      using parameters_type = std::vector<expr_name_ptr>;
+
+
+    private:
+      // The token of the function expression
+      Token token_;
+
+      // The parameters of the function expression
+      parameters_type parameters_;
+
+      // The return type of the function expression
+      std::optional<expr_ptr> return_type_;
+
+      // The body of the function expression
+      expr_ptr body_;
+
+
+    public:
+      // Constructor
+      ExprFunction(Token token, parameters_type parameters, std::optional<expr_ptr> return_type, expr_ptr body);
+
+      // Return the parameters of the function expression
+      parameters_type parameters();
+
+      // Return the return type of the function expression
+      expr_ptr return_type();
+
+      // Return if the function definition has a return type
+      bool has_return_type();
+
+      // Return the body of the function expression
+      expr_ptr body();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
@@ -94,40 +258,49 @@ namespace dauw
       // The name token of the name expression
       Token name_;
 
+      // The type of the name expression
+      std::optional<expr_ptr> type_;
+
 
     public:
       // Constructor
+      ExprName(Token name, std::optional<expr_ptr> type);
+      ExprName(Token name, expr_ptr type);
       ExprName(Token name);
+
+      // Return the name of the name expression
+      string_t name();
+
+      // Return the type of the name expression
+      expr_ptr type();
+
+      // Return if the name expression has a type
+      bool has_type();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
-  // Class that defines a parenthesized expression
-  class ExprParenthesized : public Expr, public std::enable_shared_from_this<ExprParenthesized>
+  // Class that defines a grouped expression
+  class ExprGrouped : public Expr, public std::enable_shared_from_this<ExprGrouped>
   {
     private:
-      // The nested expression of the parenthesized expression
-      std::shared_ptr<Expr> expr_;
+      // The nested expression of the grouped expression
+      expr_ptr expr_;
 
 
     public:
       // Constructor
-      ExprParenthesized(std::shared_ptr<Expr> expr);
+      ExprGrouped(expr_ptr expr);
+
+      // Return the nested expression of the grouped expression
+      expr_ptr expr();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
@@ -136,54 +309,28 @@ namespace dauw
   {
     private:
       // The callee of the call expression
-      std::shared_ptr<Expr> callee_;
+      expr_ptr callee_;
 
-      // The end token of the call expression
-      Token end_;
+      // The token of the call expression
+      Token token_;
 
-      // The operand of the call expression
-      std::vector<std::shared_ptr<Expr>> arguments_;
-
-
-    public:
-      // Constructor
-      ExprCall(std::shared_ptr<Expr> callee, Token end, std::vector<std::shared_ptr<Expr>> arguments);
-
-      // Expression implementation
-      virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
-  };
-
-
-  // Class that defines a subscript expression
-  class ExprSubscript : public Expr, public std::enable_shared_from_this<ExprSubscript>
-  {
-    private:
-      // The indexee of the subscript expression
-      std::shared_ptr<Expr> indexee_;
-
-      // The end token of the subscript expression
-      Token end_;
-
-      // The operand of the subscript expression
-      std::vector<std::shared_ptr<Expr>> arguments_;
+      // The arguments of the call expression
+      expr_sequence_ptr arguments_;
 
 
     public:
       // Constructor
-      ExprSubscript(std::shared_ptr<Expr> indexee, Token end, std::vector<std::shared_ptr<Expr>> arguments);
+      ExprCall(expr_ptr callee, Token token, expr_sequence_ptr arguments);
+
+      // Return the callee of the call expression
+      expr_ptr callee();
+
+      // Return the arguments of the call expression
+      expr_sequence_ptr arguments();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
@@ -192,7 +339,7 @@ namespace dauw
   {
     private:
       // The object of the get expression
-      std::shared_ptr<Expr> object_;
+      expr_ptr object_;
 
       // The name token of the get expression
       Token name_;
@@ -200,15 +347,17 @@ namespace dauw
 
     public:
       // Constructor
-      ExprGet(std::shared_ptr<Expr> object, Token name);
+      ExprGet(expr_ptr object, Token name);
+
+      // Return the object of the get expression
+      expr_ptr object();
+
+      // Return the name of the get expression
+      string_t name();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
@@ -216,24 +365,26 @@ namespace dauw
   class ExprUnary : public Expr, public std::enable_shared_from_this<ExprUnary>
   {
     private:
-      // The operator of the unary expression
+      // The operator token of the unary expression
       Token op_;
 
       // The operand of the unary expression
-      std::shared_ptr<Expr> right_;
+      expr_ptr right_;
 
 
     public:
       // Constructor
-      ExprUnary(Token op, std::shared_ptr<Expr> right);
+      ExprUnary(Token op, expr_ptr right);
+
+      // Return the operator of the unary expression
+      string_t op();
+
+      // Return the operand of the unary expression
+      expr_ptr right();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
-
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
@@ -241,25 +392,163 @@ namespace dauw
   class ExprBinary : public Expr, public std::enable_shared_from_this<ExprBinary>
   {
     private:
-      // The operator of the binary expression
+      // The operator token of the binary expression
       Token op_;
 
       // The operands of the binary expression
-      std::shared_ptr<Expr> left_;
-      std::shared_ptr<Expr> right_;
+      expr_ptr left_;
+      expr_ptr right_;
 
 
     public:
       // Constructor
-      ExprBinary(std::shared_ptr<Expr> left, Token op, std::shared_ptr<Expr> right);
+      ExprBinary(expr_ptr left, Token op, expr_ptr right);
+
+      // Return the operator of the unary expression
+      string_t op();
+
+      // Return the operands of the unary expression
+      expr_ptr left();
+      expr_ptr right();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
 
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+
+  // Class that defines an if expression
+  class ExprIf : public Expr, public std::enable_shared_from_this<ExprIf>
+  {
+    private:
+      // The keyword token of the if expression
+      Token keyword_;
+
+      // The condition of the if expression
+      expr_ptr condition_;
+
+      // The true branch of the if expression
+      expr_ptr true_branch_;
+
+      // The false branch of the if expression
+      std::optional<expr_ptr> false_branch_;
+
+
+    public:
+      // Constructor
+      ExprIf(Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch);
+
+      // Return the condition of the if expression
+      expr_ptr condition();
+
+      // Return the branches of the if expression
+      expr_ptr true_branch();
+
+      // Return the false branch of the if expression
+      expr_ptr false_branch();
+
+      // Return if the if expression has a false branch
+      bool has_false_branch();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a for expression
+  class ExprFor : public Expr, public std::enable_shared_from_this<ExprFor>
+  {
+    private:
+      // The keyword token of the for expression
+      Token keyword_;
+
+      // The name token of the for expression
+      Token name_;
+
+      // The iterable of the for expression
+      expr_ptr iterable_;
+
+      // The body of the for expression
+      expr_ptr body_;
+
+
+    public:
+      // Constructor
+      ExprFor(Token keyword, Token name, expr_ptr iterable, expr_ptr body);
+
+      // Return the name of the for expression
+      string_t name();
+
+      // Return the iterable of the for expression
+      expr_ptr iterable();
+
+      // Return the body of the for expression
+      expr_ptr body();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a while expression
+  class ExprWhile : public Expr, public std::enable_shared_from_this<ExprWhile>
+  {
+    private:
+      // The keyword token of the while expression
+      Token keyword_;
+
+      // The condition of the while expression
+      expr_ptr condition_;
+
+      // The body of the while expression
+      expr_ptr body_;
+
+
+    public:
+      // Constructor
+      ExprWhile(Token keyword, expr_ptr condition, expr_ptr body);
+
+      // Return the condition of the while expression
+      expr_ptr condition();
+
+      // Return the body of the while expression
+      expr_ptr body();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines an until expression
+  class ExprUntil : public Expr, public std::enable_shared_from_this<ExprUntil>
+  {
+    private:
+      // The keyword token of the until expression
+      Token keyword_;
+
+      // The condition of the until expression
+      expr_ptr condition_;
+
+      // The body of the until expression
+      expr_ptr body_;
+
+
+    public:
+      // Constructor
+      ExprUntil(Token keyword, expr_ptr condition, expr_ptr body);
+
+      // Return the condition of the until expression
+      expr_ptr condition();
+
+      // Return the body of the until expression
+      expr_ptr body();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
 
@@ -268,19 +557,58 @@ namespace dauw
   {
     private:
       // The expressions of the block expression
-      std::vector<std::shared_ptr<Expr>> exprs_;
+      expr_ptr_vector exprs_;
 
 
     public:
       // Constructor
-      ExprBlock(std::vector<std::shared_ptr<Expr>> exprs);
+      ExprBlock(expr_ptr_vector exprs);
+
+      // Return the expressions of the block expression
+      expr_ptr_vector exprs();
+
+      // Iterate over the expressions of the block expression
+      expr_ptr_vector::const_iterator begin();
+      expr_ptr_vector::const_iterator end();
 
       // Expression implementation
       virtual Location& location() override;
-      virtual void accept(const std::shared_ptr<ExprVisitor>& visitor) override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
 
-      // Friend classes
-      friend class ExprVisitor;
-      friend class Interpreter;
+
+  // Class that defines a def expression
+  class ExprDef : public Expr, public std::enable_shared_from_this<ExprDef>
+  {
+    private:
+      // The name token of the def expression
+      Token name_;
+
+      // The type of the def expression
+      std::optional<expr_ptr> type_;
+
+      // The value of the def expression
+      expr_ptr value_;
+
+
+    public:
+      // Constructor
+      ExprDef(Token name, std::optional<expr_ptr> type, expr_ptr value);
+
+      // Return the name of the def expression
+      string_t name();
+
+      // Return the type of the def expression
+      expr_ptr type();
+
+      // Return if the def expression has a type
+      bool has_type();
+
+      // Return the value of the def expression
+      expr_ptr value();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 }

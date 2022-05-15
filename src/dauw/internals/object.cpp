@@ -20,7 +20,7 @@ namespace dauw
     switch (type_)
     {
       case ObjType::STRING:
-        return fmt::format("String(\"{}\")", dynamic_cast<ObjString*>(this)->c_str());
+        return fmt::format("\"{}\"", dynamic_cast<ObjString*>(this)->c_str());
       default:
         return fmt::format("<object at address {:#012x}>", (uintptr_t)this);
     }
