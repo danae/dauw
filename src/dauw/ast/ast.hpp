@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/ast/parameter.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 #include <dauw/source/location.hpp>
@@ -11,6 +10,8 @@
 namespace dauw
 {
   // Forward declarations
+  class Node;
+
   class ExprVisitor;
   class Expr;
   class ExprLiteral;
@@ -18,6 +19,7 @@ namespace dauw
   class ExprRecord;
   class ExprName;
   class ExprFunction;
+  class ExprFunctionParameter;
   class ExprGrouped;
   class ExprCall;
   class ExprGet;
@@ -30,17 +32,26 @@ namespace dauw
   class ExprBlock;
   class ExprDef;
 
+  class TypeExprVisitor;
+  class TypeExpr;
+  class TypeExprName;
+  class TypeExprGrouped;
+  class TypeExprGeneric;
+  class TypeExprMaybe;
+  class TypeExprIntersection;
+  class TypeExprUnion;
 
-  // Type definitions for expression visitor pointers
+  // Type definitions for pointers
+  using node_ptr = std::shared_ptr<Node>;
+
   using expr_visitor_ptr = std::shared_ptr<ExprVisitor>;
-
-  // Type definitions for expression pointers
   using expr_ptr = std::shared_ptr<Expr>;
   using expr_literal_ptr = std::shared_ptr<ExprLiteral>;
   using expr_sequence_ptr = std::shared_ptr<ExprSequence>;
   using expr_record_ptr = std::shared_ptr<ExprRecord>;
   using expr_name_ptr = std::shared_ptr<ExprName>;
   using expr_function_ptr = std::shared_ptr<ExprFunction>;
+  using expr_function_parameter_ptr = std::shared_ptr<ExprFunctionParameter>;
   using expr_grouped_ptr = std::shared_ptr<ExprGrouped>;
   using expr_call_ptr = std::shared_ptr<ExprCall>;
   using expr_get_ptr = std::shared_ptr<ExprGet>;
@@ -52,6 +63,42 @@ namespace dauw
   using expr_until_ptr = std::shared_ptr<ExprUntil>;
   using expr_block_ptr = std::shared_ptr<ExprBlock>;
   using expr_def_ptr = std::shared_ptr<ExprDef>;
+
+  using type_expr_visitor_ptr = std::shared_ptr<TypeExprVisitor>;
+  using type_expr_ptr = std::shared_ptr<TypeExpr>;
+  using type_expr_name_ptr = std::shared_ptr<TypeExprName>;
+  using type_expr_grouped_ptr = std::shared_ptr<TypeExprGrouped>;
+  using type_expr_generic_ptr = std::shared_ptr<TypeExprGeneric>;
+  using type_expr_maybe_ptr = std::shared_ptr<TypeExprMaybe>;
+  using type_expr_intersection_ptr = std::shared_ptr<TypeExprIntersection>;
+  using type_expr_union_ptr = std::shared_ptr<TypeExprUnion>;
+
+
+  // Base class that defines a node in the abstract syntax tree
+  class Node
+  {
+    private:
+      // The resolved type of the node
+      type_ptr resolved_type_ = nullptr;
+
+
+    public:
+      // Destructor
+      virtual ~Node() = default;
+
+      // Return the resolved type of the node
+      type_ptr& resolved_type();
+
+      // Return if the node has a resolved type
+      bool has_resolved_type();
+
+      // Set the resolved type of the node
+      void set_resolved_type(type_ptr& type);
+      void set_resolved_type_from(node_ptr node);
+
+      // Return the location of the node
+      virtual Location& location() = 0;
+  };
 
 
   // Base class that defines an expression visitor
@@ -67,6 +114,7 @@ namespace dauw
       virtual void visit_record(const expr_record_ptr& expr) = 0;
       virtual void visit_name(const expr_name_ptr& expr) = 0;
       virtual void visit_function(const expr_function_ptr& expr) = 0;
+      virtual void visit_function_parameter(const expr_function_parameter_ptr& expr) = 0;
       virtual void visit_grouped(const expr_grouped_ptr& expr) = 0;
       virtual void visit_call(const expr_call_ptr& expr) = 0;
       virtual void visit_get(const expr_get_ptr& expr) = 0;
@@ -82,31 +130,11 @@ namespace dauw
 
 
   // Base class thet defines an expression
-  class Expr
+  class Expr : public Node
   {
-    private:
-      // The resolved type of the expression
-      std::optional<Type> resolved_type_ = std::nullopt;
-
-
     public:
       // Destructor
       virtual ~Expr() = default;
-
-      // Return the resolved type of the expression
-      Type& resolved_type();
-
-      // Return if the expression has a resolved type
-      bool has_resolved_type();
-
-      // Set the resolved type of the expression
-      void set_resolved_type(Type& type);
-
-      // Set the resolved type of the expression to that of another expression
-      void set_resolved_type_from(expr_ptr expr);
-
-      // Return the location of the expression
-      virtual Location& location() = 0;
 
       // Accept a visitor on the expression
       virtual void accept(const expr_visitor_ptr& visitor) = 0;
@@ -175,8 +203,7 @@ namespace dauw
   {
     public:
       // Type definition for the underlying record container
-      using record_name_type = string_t;
-      using record_type = std::unordered_map<record_name_type, expr_ptr>;
+      using record_type = std::unordered_map<string_t, expr_ptr>;
 
 
     private:
@@ -209,7 +236,7 @@ namespace dauw
   {
     public:
       // Type declaration for the parameter expression
-      using parameters_type = std::vector<Parameter>;
+      using parameters_type = std::vector<expr_function_parameter_ptr>;
 
 
     private:
@@ -220,7 +247,7 @@ namespace dauw
       parameters_type parameters_;
 
       // The return type of the function expression
-      std::optional<expr_ptr> return_type_;
+      std::optional<type_expr_ptr> return_type_;
 
       // The body of the function expression
       expr_ptr body_;
@@ -228,19 +255,51 @@ namespace dauw
 
     public:
       // Constructor
-      ExprFunction(Token token, parameters_type parameters, std::optional<expr_ptr> return_type, expr_ptr body);
+      ExprFunction(Token token, parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body);
 
       // Return the parameters of the function expression
       parameters_type parameters();
 
       // Return the return type of the function expression
-      expr_ptr return_type();
+      type_expr_ptr return_type();
 
       // Return if the function definition has a return type
       bool has_return_type();
 
       // Return the body of the function expression
       expr_ptr body();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+
+
+      // Return the parameter name for a parameter
+
+      // Return the type for a parameter
+  };
+
+
+  // Class that defines a function parameter expression
+  class ExprFunctionParameter : public Expr, public std::enable_shared_from_this<ExprFunctionParameter>
+  {
+    private:
+      // The name token of the function parameter expression
+      Token name_;
+
+      // The type of the function parameter expression
+      type_expr_ptr type_;
+
+
+    public:
+      // Constructor
+      ExprFunctionParameter(Token name, type_expr_ptr type);
+
+      // Return the name of the function parameter expression
+      string_t name();
+
+      // Return the type of the function parameter expression
+      type_expr_ptr type();
 
       // Expression implementation
       virtual Location& location() override;
@@ -575,7 +634,7 @@ namespace dauw
       Token name_;
 
       // The type of the def expression
-      std::optional<expr_ptr> type_;
+      std::optional<type_expr_ptr> type_;
 
       // The value of the def expression
       expr_ptr value_;
@@ -583,13 +642,13 @@ namespace dauw
 
     public:
       // Constructor
-      ExprDef(Token name, std::optional<expr_ptr> type, expr_ptr value);
+      ExprDef(Token name, std::optional<type_expr_ptr> type, expr_ptr value);
 
       // Return the name of the def expression
       string_t name();
 
       // Return the type of the def expression
-      expr_ptr type();
+      type_expr_ptr type();
 
       // Return if the def expression has a type
       bool has_type();
@@ -600,5 +659,187 @@ namespace dauw
       // Expression implementation
       virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Base class that defines an expression visitor
+  class TypeExprVisitor
+  {
+    public:
+      // Destructor
+      virtual ~TypeExprVisitor() = default;
+
+      // Visit type expressions
+      virtual void visit_type_name(const type_expr_name_ptr& expr) = 0;
+      virtual void visit_type_grouped(const type_expr_grouped_ptr& expr) = 0;
+      virtual void visit_type_generic(const type_expr_generic_ptr& expr) = 0;
+      virtual void visit_type_maybe(const type_expr_maybe_ptr& expr) = 0;
+      virtual void visit_type_intersection(const type_expr_intersection_ptr& expr) = 0;
+      virtual void visit_type_union(const type_expr_union_ptr& expr) = 0;
+  };
+
+
+  // Base class thet defines a type expression
+  class TypeExpr : public Node
+  {
+    public:
+      // Destructor
+      virtual ~TypeExpr() = default;
+
+      // Accept a visitor on the type expression
+      virtual void accept(const type_expr_visitor_ptr& visitor) = 0;
+  };
+
+
+  // Class that defines a name type expression
+  class TypeExprName : public TypeExpr, public std::enable_shared_from_this<TypeExprName>
+  {
+    private:
+      // The name token of the name type expression
+      Token name_;
+
+
+    public:
+      // Constructor
+      TypeExprName(Token name);
+
+      // Return the name of the name type expression
+      string_t name();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const type_expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a grouped type expression
+  class TypeExprGrouped : public TypeExpr, public std::enable_shared_from_this<TypeExprGrouped>
+  {
+    private:
+      // The nested type expression of the grouped type expression
+      type_expr_ptr expr_;
+
+
+    public:
+      // Constructor
+      TypeExprGrouped(type_expr_ptr expr);
+
+      // Return the nested type expression of the grouped type expression
+      type_expr_ptr expr();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const type_expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a generic type expression
+  class TypeExprGeneric : public TypeExpr, public std::enable_shared_from_this<TypeExprGeneric>
+  {
+    public:
+      // Type definition for the underlying generic container
+      using generic_type = std::vector<type_expr_ptr>;
+
+
+    private:
+      // The base type of the generic type expression
+      type_expr_ptr base_;
+
+      // The token of the generic type expression
+      Token token_;
+
+      // The generic arguments of the generic type expression
+      generic_type arguments_;
+
+
+    public:
+      // Constructor
+      TypeExprGeneric(type_expr_ptr base, Token token, generic_type arguments);
+
+      // Return the base of the generic type expression
+      type_expr_ptr base();
+
+      // Return the generic arguments of the generic type expression
+      generic_type arguments();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const type_expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines a maybe type expression
+  class TypeExprMaybe : public TypeExpr, public std::enable_shared_from_this<TypeExprMaybe>
+  {
+    private:
+      // The base type of the maybe type expression
+      type_expr_ptr base_;
+
+      // The operator of the maybe type expression
+      Token op_;
+
+
+    public:
+      // Constructor
+      TypeExprMaybe(type_expr_ptr base, Token op);
+
+      // Return the base of the maybe type expression
+      type_expr_ptr base();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const type_expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines an intersection type expression
+  class TypeExprIntersection : public TypeExpr, public std::enable_shared_from_this<TypeExprIntersection>
+  {
+    private:
+      // The operator of the intersection type expression
+      Token op_;
+
+      // The operands of the intersection type expression
+      type_expr_ptr left_;
+      type_expr_ptr right_;
+
+
+    public:
+      // Constructor
+      TypeExprIntersection(type_expr_ptr left, Token op, type_expr_ptr right);
+
+      // Return the operands of the intersection type expression
+      type_expr_ptr left();
+      type_expr_ptr right();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const type_expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines an union type expression
+  class TypeExprUnion : public TypeExpr, public std::enable_shared_from_this<TypeExprUnion>
+  {
+    private:
+      // The operator of the intersection type expression
+      Token op_;
+
+      // The operands of the union type expression
+      type_expr_ptr left_;
+      type_expr_ptr right_;
+
+
+    public:
+      // Constructor
+      TypeExprUnion(type_expr_ptr left, Token op, type_expr_ptr right);
+
+      // Return the operands of the union type expression
+      type_expr_ptr left();
+      type_expr_ptr right();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 }

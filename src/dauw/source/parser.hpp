@@ -3,7 +3,6 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/ast/ast.hpp>
-#include <dauw/ast/parameter.hpp>
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/value.hpp>
 #include <dauw/source/lexer.hpp>
@@ -48,9 +47,10 @@ namespace dauw
       void synchronize();
 
       // Parser helper functions
-      expr_ptr parse_as_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_as_single_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_as_unary(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_infix_op(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_infix_op_single(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_prefix_op(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_prefix_op_single(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
 
       // Parsers for expressions
       expr_ptr parse_script();
@@ -82,9 +82,18 @@ namespace dauw
       expr_ptr parse_lambda();
       expr_ptr parse_grouped();
 
+      // Parser for type expressions
+      type_expr_ptr parse_type();
+      type_expr_ptr parse_type_union();
+      type_expr_ptr parse_type_intersection();
+      type_expr_ptr parse_type_maybe();
+      type_expr_ptr parse_type_generic();
+      type_expr_ptr parse_type_grouped();
+
       // Parsers for specialized types
       ExprFunction::parameters_type parse_parameters();
       ExprSequence::sequence_type parse_arguments();
+      TypeExprGeneric::generic_type parse_type_arguments();
 
       // Parsers for values
       Value value_int(string_t value);

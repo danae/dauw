@@ -2,29 +2,29 @@
 
 namespace dauw
 {
-  // Return the resolved type of the expression
-  Type& Expr::resolved_type()
+  // Return the resolved type of the node
+  type_ptr& Node::resolved_type()
   {
-    return resolved_type_.value();
+    return resolved_type_;
   }
 
-  // Return if the expression has a resolved type
-  bool Expr::has_resolved_type()
+  // Return if the node has a resolved type
+  bool Node::has_resolved_type()
   {
-    return resolved_type_.has_value();
+    return resolved_type_ != nullptr;
   }
 
-  // Set the resolved type of the expression
-  void Expr::set_resolved_type(Type& type)
+  // Set the resolved type of the node
+  void Node::set_resolved_type(type_ptr& type)
   {
-    resolved_type_ = std::make_optional(type);
+    resolved_type_ = type;
   }
 
-  // Set the resolved type of the expression to that of another expression
-  void Expr::set_resolved_type_from(expr_ptr expr)
+  // Set the resolved type of the node to that of another node
+  void Node::set_resolved_type_from(node_ptr node)
   {
-    if (expr->has_resolved_type())
-      set_resolved_type(expr->resolved_type());
+    if (node->has_resolved_type())
+      set_resolved_type(node->resolved_type());
   }
 
   // --------------------------------------------------------------------------
@@ -155,7 +155,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a function definition expression
-  ExprFunction::ExprFunction(Token token, ExprFunction::parameters_type parameters, std::optional<expr_ptr> return_type, expr_ptr body)
+  ExprFunction::ExprFunction(Token token, ExprFunction::parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body)
     : token_(token), parameters_(parameters), return_type_(return_type), body_(body)
   {
   }
@@ -167,7 +167,7 @@ namespace dauw
   }
 
   // Return the return type of the function expression
-  expr_ptr ExprFunction::return_type()
+  type_expr_ptr ExprFunction::return_type()
   {
     return return_type_.value();
   }
@@ -198,6 +198,38 @@ namespace dauw
 
   // --------------------------------------------------------------------------
 
+  // Constructor for a function parameter expression
+  ExprFunctionParameter::ExprFunctionParameter(Token name, type_expr_ptr type)
+    : name_(name), type_(type)
+  {
+  }
+
+  // Return the name of the function parameter expression
+  string_t ExprFunctionParameter::name()
+  {
+    return name_.value();
+  }
+
+  // Return the type of the function parameter expression
+  type_expr_ptr ExprFunctionParameter::type()
+  {
+    return type_;
+  }
+
+  // Return the location of the function parameter expression
+  Location& ExprFunctionParameter::location()
+  {
+    return name_.location();
+  }
+
+  // Accept a visitor on a function parameter expression
+  void ExprFunctionParameter::accept(const expr_visitor_ptr& visitor)
+  {
+    visitor->visit_function_parameter(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
   // Constructor for a grouped expression
   ExprGrouped::ExprGrouped(expr_ptr expr)
     : expr_(expr)
@@ -210,7 +242,7 @@ namespace dauw
     return expr_;
   }
 
-  // Return the location of the grouped
+  // Return the location of the grouped expression
   Location& ExprGrouped::location()
   {
     return expr_->location();
@@ -541,7 +573,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a def expression
-  ExprDef::ExprDef(Token name, std::optional<expr_ptr> type, expr_ptr value)
+  ExprDef::ExprDef(Token name, std::optional<type_expr_ptr> type, expr_ptr value)
     : name_(name), type_(type), value_(value)
   {
   }
@@ -553,7 +585,7 @@ namespace dauw
   }
 
   // Return the type of the def expression
-  expr_ptr ExprDef::type()
+  type_expr_ptr ExprDef::type()
   {
     return type_.value();
   }
@@ -580,5 +612,175 @@ namespace dauw
   void ExprDef::accept(const expr_visitor_ptr& visitor)
   {
     visitor->visit_def(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Constructor for a name type expression
+  TypeExprName::TypeExprName(Token name)
+    : name_(name)
+  {
+  }
+
+  // Return the name of the name type expression
+  string_t TypeExprName::name()
+  {
+    return name_.value();
+  }
+
+  // Return the location of the name type expression
+  Location& TypeExprName::location()
+  {
+    return name_.location();
+  }
+
+  // Accept a visitor on a name type expression
+  void TypeExprName::accept(const type_expr_visitor_ptr& visitor)
+  {
+    visitor->visit_type_name(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Constructor for a grouped type expression
+  TypeExprGrouped::TypeExprGrouped(type_expr_ptr expr)
+    : expr_(expr)
+  {
+  }
+
+  // Return the nested type expression of the grouped type expression
+  type_expr_ptr TypeExprGrouped::expr()
+  {
+    return expr_;
+  }
+
+  // Return the location of the grouped type expression
+  Location& TypeExprGrouped::location()
+  {
+    return expr_->location();
+  }
+
+  // Accept a visitor on a grouped type expression
+  void TypeExprGrouped::accept(const type_expr_visitor_ptr& visitor)
+  {
+    visitor->visit_type_grouped(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Constructor for a generic type expression
+  TypeExprGeneric::TypeExprGeneric(type_expr_ptr base, Token token, TypeExprGeneric::generic_type arguments)
+    : base_(base), token_(token), arguments_(arguments)
+  {
+  }
+
+  // Return the base of the generic type expression
+  type_expr_ptr TypeExprGeneric::base()
+  {
+    return base_;
+  }
+
+  // Return the generic arguments of the generic type expression
+  TypeExprGeneric::generic_type TypeExprGeneric::arguments()
+  {
+    return arguments_;
+  }
+
+  // Return the location of the generic type expression
+  Location& TypeExprGeneric::location()
+  {
+    return token_.location();
+  }
+
+  // Accept a visitor on a generic type expression
+  void TypeExprGeneric::accept(const type_expr_visitor_ptr& visitor)
+  {
+    visitor->visit_type_generic(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Constructor for a maybe type expression
+  TypeExprMaybe::TypeExprMaybe(type_expr_ptr base, Token op)
+    : base_(base), op_(op)
+  {
+  }
+
+  // Return the base of the maybe type expression
+  type_expr_ptr TypeExprMaybe::base()
+  {
+    return base_;
+  }
+
+  // Return the location of the maybe type expression
+  Location& TypeExprMaybe::location()
+  {
+    return op_.location();
+  }
+
+  // Accept a visitor on a maybe type expression
+  void TypeExprMaybe::accept(const type_expr_visitor_ptr& visitor)
+  {
+    visitor->visit_type_maybe(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Constructor for an intersection type expression
+  TypeExprIntersection::TypeExprIntersection(type_expr_ptr left, Token op, type_expr_ptr right)
+    : left_(left), op_(op), right_(right)
+  {
+  }
+
+  // Return the operands of the intersection type expression
+  type_expr_ptr TypeExprIntersection::left()
+  {
+    return left_;
+  }
+  type_expr_ptr TypeExprIntersection::right()
+  {
+    return right_;
+  }
+
+  // Return the location of the intersection type expression
+  Location& TypeExprIntersection::location()
+  {
+    return op_.location();
+  }
+
+  // Accept a visitor on an intersection type expression
+  void TypeExprIntersection::accept(const type_expr_visitor_ptr& visitor)
+  {
+    visitor->visit_type_intersection(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Constructor for an union type expression
+  TypeExprUnion::TypeExprUnion(type_expr_ptr left, Token op, type_expr_ptr right)
+    : left_(left), op_(op), right_(right)
+  {
+  }
+
+  // Return the operands of the union type expression
+  type_expr_ptr TypeExprUnion::left()
+  {
+    return left_;
+  }
+  type_expr_ptr TypeExprUnion::right()
+  {
+    return right_;
+  }
+
+  // Return the location of the union type expression
+  Location& TypeExprUnion::location()
+  {
+    return op_.location();
+  }
+
+  // Accept a visitor on an union type expression
+  void TypeExprUnion::accept(const type_expr_visitor_ptr& visitor)
+  {
+    visitor->visit_type_union(shared_from_this());
   }
 }

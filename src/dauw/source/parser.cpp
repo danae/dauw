@@ -6,7 +6,26 @@ namespace dauw
   Parser::Parser(Lexer::token_list_type tokens, ErrorReporter* error_reporter, VM* vm)
     : tokens_(tokens), error_reporter_(error_reporter), vm_(vm)
   {
+    index_ = 0;
   }
+
+  // Parse a deque of tokens into an expression
+  expr_ptr Parser::parse()
+  {
+    // Parse the script
+    try
+    {
+      return parse_script();
+    }
+    catch (SyntaxError& ex)
+    {
+      return nullptr;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // BASIC PARSER FUNCTIONALITY
+  // --------------------------------------------------------------------------
 
   // Return the current token
   Token Parser::current()
@@ -94,87 +113,63 @@ namespace dauw
     }
   }
 
+  // --------------------------------------------------------------------------
+  // PARSER HELPER FUNCTIONS
+  // --------------------------------------------------------------------------
 
-  // Parse a binary expression
-  expr_ptr Parser::parse_as_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  // Parse an infix operation
+  expr_ptr Parser::parse_infix_op(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
   {
-    // Parse the left operand
     auto left = parse_operand(this);
-
-    // Check if we match the binary operator
     while (match(op_names))
     {
-      // Set the operator token
       auto op = current();
-
-      // Parse the right operand
       auto right = parse_operand(this);
-
-      // Create the binary expression
       left = std::make_shared<ExprBinary>(left, op, right);
     }
-
-    // Return the expression
     return left;
   }
 
-  // Parse a single binary expression
-  expr_ptr Parser::parse_as_single_binary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  // Parse an infix operation that is not allowed to chain
+  expr_ptr Parser::parse_infix_op_single(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
   {
-    // Parse the left operand
     auto left = parse_operand(this);
-
-    // Check if we match the binary operator
     if (match(op_names))
     {
-      // Set the operator token
       auto op = current();
-
-      // Parse the right operand
       auto right = parse_operand(this);
-
-      // Return the binary expression
       return std::make_shared<ExprBinary>(left, op, right);
     }
-
-    // Return the expression
     return left;
   }
 
-  // Parse an unary expression
-  expr_ptr Parser::parse_as_unary(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
+  // Parse a prefix operation
+  expr_ptr Parser::parse_prefix_op(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
   {
-    // Check if we match the unary operator
     if (match(op_names))
     {
-      // Set the operand token
       auto op = current();
-
-      // Parse the operand as another unary expression
-      auto right = parse_as_unary(op_names, parse_operand);
-
-      // Return the unary expression
+      auto right = parse_prefix_op(op_names, parse_operand);
       return std::make_shared<ExprUnary>(op, right);
     }
-
-    // Parse the operand
     return parse_operand(this);
   }
 
-
-  // Parse a deque of tokens into an expression
-  expr_ptr Parser::parse()
+  // Parse a prefix operation that is not allowed to chain
+  expr_ptr Parser::parse_prefix_op_single(std::initializer_list<string_t> op_names, parser_function_type parse_operand)
   {
-    // Parse the script
-    try
+    if (match(op_names))
     {
-      return parse_script();
+      auto op = current();
+      auto right = parse_operand(this);
+      return std::make_shared<ExprUnary>(op, right);
     }
-    catch (SyntaxError& ex)
-    {
-      return nullptr;
-    }
+    return parse_operand(this);
   }
+
+  // --------------------------------------------------------------------------
+  // PARSERS FOR EXPRESSIONS
+  // --------------------------------------------------------------------------
 
   // Parse a script
   // script → line* EOF
@@ -243,7 +238,7 @@ namespace dauw
   }
 
   // Parse a def declaration
-  // def → 'def' IDENTIFIER ('(' parameters ')')? (':' simple)? '=' assignment
+  // def → 'def' IDENTIFIER ('(' parameters ')')? (':' type)? '=' assignment
   expr_ptr Parser::parse_def()
   {
     // Set the keyword
@@ -264,9 +259,9 @@ namespace dauw
       auto parameters = parse_parameters();
 
       // Parse the return type
-      std::optional<expr_ptr> return_type = std::nullopt;
+      std::optional<type_expr_ptr> return_type = std::nullopt;
       if (match("symbol_colon"))
-        return_type = std::make_optional(parse_simple());
+        return_type = std::make_optional(parse_type());
 
       // Parse the body
       consume("operator_assign", "in def declaration");
@@ -282,9 +277,9 @@ namespace dauw
       // The def declaration is a name declaration
 
       // Parse the type
-      std::optional<expr_ptr> type = std::nullopt;
+      std::optional<type_expr_ptr> type = std::nullopt;
       if (match("symbol_colon"))
-        type = std::make_optional(parse_simple());
+        type = std::make_optional(parse_type());
 
       // Parse the value
       consume("operator_assign", "in def declaration");
@@ -296,7 +291,7 @@ namespace dauw
   }
 
   // Parse an assignment expression
-  // assignment → (call '.')? IDENTIFIER (':' simple)? '=' assignment | control
+  // assignment → (call '.')? IDENTIFIER '=' assignment | control
   expr_ptr Parser::parse_assignment()
   {
     // TODO: Parse an assignment expression
@@ -379,7 +374,7 @@ namespace dauw
   }
 
   // Parse a while expression
-  // while → 'while' assignment 'do' expression
+  // while → 'while' simple 'do' expression
   expr_ptr Parser::parse_while()
   {
     // Set the keyword
@@ -397,7 +392,7 @@ namespace dauw
   }
 
   // Parse an until expression
-  // until → 'until' assignment 'do' expression
+  // until → 'until' simple 'do' expression
   expr_ptr Parser::parse_until()
   {
     // Set the keyword
@@ -446,70 +441,70 @@ namespace dauw
   // logic_or → logic_and ('or' logic_and)*
   expr_ptr Parser::parse_logic_or()
   {
-    return parse_as_binary({"operator_logical_or"}, &Parser::parse_logic_and);
+    return parse_infix_op({"operator_logical_or"}, &Parser::parse_logic_and);
   }
 
   // Parse a logic and expression
   // logic_and → logic_not ('and' logic_not)*
   expr_ptr Parser::parse_logic_and()
   {
-    return parse_as_binary({"operator_logical_and"}, &Parser::parse_logic_not);
+    return parse_infix_op({"operator_logical_and"}, &Parser::parse_logic_not);
   }
 
   // Parse a logic not expression
   // logic_not → 'not' logic_not | equality
   expr_ptr Parser::parse_logic_not()
   {
-    return parse_as_unary({"operator_logical_not"}, &Parser::parse_equality);
+    return parse_prefix_op({"operator_logical_not"}, &Parser::parse_equality);
   }
 
   // Parse an equality expression
   // equality → comparison (('==' | '<>' | '~') comparison)*
   expr_ptr Parser::parse_equality()
   {
-    return parse_as_binary({"operator_equal", "operator_not_equal", "operator_match"}, &Parser::parse_comparison);
+    return parse_infix_op({"operator_equal", "operator_not_equal", "operator_match"}, &Parser::parse_comparison);
   }
 
   // Parse a comparison expression
   // comparison → threeway (('<' | '<=' | '>' | '>=' | '%%') threeway)*
   expr_ptr Parser::parse_comparison()
   {
-    return parse_as_binary({"operator_less", "operator_less_equal", "operator_greater", "operator_greater_equal", "operator_divisible"}, &Parser::parse_threeway);
+    return parse_infix_op({"operator_less", "operator_less_equal", "operator_greater", "operator_greater_equal", "operator_divisible"}, &Parser::parse_threeway);
   }
 
   // Parse a threeway expression
   // threeway → range ('<=>' range)*
   expr_ptr Parser::parse_threeway()
   {
-    return parse_as_binary({"operator_threeway"}, &Parser::parse_range);
+    return parse_infix_op({"operator_threeway"}, &Parser::parse_range);
   }
 
   // Parse a range expression
   // range → term ('..' term)?
   expr_ptr Parser::parse_range()
   {
-    return parse_as_single_binary({"operator_range"}, &Parser::parse_term);
+    return parse_infix_op_single({"operator_range"}, &Parser::parse_term);
   }
 
   // Parse a term expression
   // term → factor (('+' | '-') factor)*
   expr_ptr Parser::parse_term()
   {
-    return parse_as_binary({"operator_add", "operator_subtract"}, &Parser::parse_factor);
+    return parse_infix_op({"operator_add", "operator_subtract"}, &Parser::parse_factor);
   }
 
   // Parse a factor expression
   // factor → unary (('*' | '/' | '//' | '%') unary)*
   expr_ptr Parser::parse_factor()
   {
-    return parse_as_binary({"operator_multiply", "operator_divide", "operator_floor_divide", "operator_modulo"}, &Parser::parse_unary);
+    return parse_infix_op({"operator_multiply", "operator_divide", "operator_floor_divide", "operator_modulo"}, &Parser::parse_unary);
   }
 
   // Parse an unary expression
   // unary → ('-' | '#' | '$') unary | primary
   expr_ptr Parser::parse_unary()
   {
-    return parse_as_unary({"operator_subtract", "operator_length", "operator_string"}, &Parser::parse_primary);
+    return parse_prefix_op({"operator_subtract", "operator_length", "operator_string"}, &Parser::parse_primary);
   }
 
   // Parse a primary expression
@@ -670,7 +665,7 @@ namespace dauw
   }
 
   // Parse a lambda expression
-  // lambda → '\' '(' parameters? ')' '=' assignment
+  // lambda → '\' '(' parameters? ')' (':' type)? '=' assignment
   expr_ptr Parser::parse_lambda()
   {
     // Set the token
@@ -681,9 +676,9 @@ namespace dauw
     auto parameters = parse_parameters();
 
     // Parse the return type
-    std::optional<expr_ptr> return_type = std::nullopt;
+    std::optional<type_expr_ptr> return_type = std::nullopt;
     if (match("symbol_colon"))
-      return_type = std::make_optional(parse_simple());
+      return_type = std::make_optional(parse_type());
 
     // Parse the body
     consume("operator_assign", "in lambda atom");
@@ -707,32 +702,136 @@ namespace dauw
     return std::make_shared<ExprGrouped>(expr);
   }
 
-  // Parse arguments
-  // arguments → simple (',' simple)*
-  ExprSequence::sequence_type Parser::parse_arguments()
+  // --------------------------------------------------------------------------
+  // PARSERS FOR TYPE EXPRESSIONS
+  // --------------------------------------------------------------------------
+
+  // Parse a type expression
+  // type → type_union
+  type_expr_ptr Parser::parse_type()
   {
-    // Create a vector to store the arguments
-    ExprSequence::sequence_type arguments;
-
-    // Loop until we encounter a closing parenthesis
-    if (!check("parenthesis_right"))
-    {
-      do
-      {
-        // Parse the expression and add it to the arguments
-        arguments.push_back(parse_simple());
-      } while (match("symbol_comma"));
-    }
-
-    // Consume the closing parenthesis
-    consume("parenthesis_right", "in arguments");
-
-    // Return the arguments
-    return arguments;
+    // Parse an union type expression
+    return parse_type_union();
   }
 
+  // Parse an union type expression
+  // type_union → type_intersection ('&' type_intersection)*
+  type_expr_ptr Parser::parse_type_union()
+  {
+    // Parse the left operand
+    auto left = parse_type_intersection();
+
+    // Match the operator
+    while (match("operator_union"))
+    {
+      // Set the operator
+      auto op = current();
+
+      // Parse the right operand
+      auto right = parse_type_intersection();
+
+      // Create the union type expression
+      left = std::make_shared<TypeExprUnion>(left, op, right);
+    }
+
+    // Return the type expression
+    return left;
+  }
+
+  // Parse an intersection type expression
+  // type_intersection → type_maybe ('|' type_maybe)*
+  type_expr_ptr Parser::parse_type_intersection()
+  {
+    // Parse the left operand
+    auto left = parse_type_maybe();
+
+    // Match the operator
+    while (match("operator_intersection"))
+    {
+      // Set the operator
+      auto op = current();
+
+      // Parse the right operand
+      auto right = parse_type_maybe();
+
+      // Create the union type expression
+      left = std::make_shared<TypeExprUnion>(left, op, right);
+    }
+
+    // Return the type expression
+    return left;
+  }
+
+  // Parse a maybe type expression
+  // type_maybe → type_generic ('?')?
+  type_expr_ptr Parser::parse_type_maybe()
+  {
+    // Parse a generic type
+    auto expr = parse_type_generic();
+
+    // Match the operator
+    if (match("operator_maybe"))
+    {
+      // Set the operator
+      auto op = current();
+
+      // Create the maybe expression
+      return std::make_shared<TypeExprMaybe>(expr, op);
+    }
+
+    // Return the expression
+    return expr;
+  }
+
+  // Parse a generic type expression
+  // type_generic → IDENTIFIER ('[' type_arguments ']')? | type_grouped
+  type_expr_ptr Parser::parse_type_generic()
+  {
+    // Check for a grouped type expression
+    if (match("parenthesis_left"))
+      return parse_type_grouped();
+
+    // Parse the name
+    auto name = consume("identifier", "in type");
+    auto expr = std::make_shared<TypeExprName>(name);
+
+    // Check for generic arguments
+    if (match("square_bracket_left"))
+    {
+      // Set the token
+      auto token = current();
+
+      // Parse the generic arguments
+      auto arguments = parse_type_arguments();
+
+      // Create the generic expression
+      return std::make_shared<TypeExprGeneric>(expr, token, arguments);
+    }
+
+    // Return the expression
+    return expr;
+  }
+
+  // Parse a grouped type expression
+  // type_grouped → '(' type ')'
+  type_expr_ptr Parser::parse_type_grouped()
+  {
+    // Parse the grouped expression
+    auto expr = parse_type();
+
+    // Consume the closing parenthesis
+    consume("parenthesis_right", "in grouped type");
+
+    // Return the grouped expression
+    return std::make_shared<TypeExprGrouped>(expr);
+  }
+
+  // --------------------------------------------------------------------------
+  // PARSERS FOR SPECIALIZED TYPES
+  // --------------------------------------------------------------------------
+
   // Parse parameters
-  // parameters → (IDENTIFIER ':' simple) (',' IDENTIFIER ':' simple)*)?
+  // parameters → (IDENTIFIER ':' type) (',' IDENTIFIER ':' type)*)?
   ExprFunction::parameters_type Parser::parse_parameters()
   {
     // Create a vector to store the parameters
@@ -745,14 +844,13 @@ namespace dauw
       {
         // Parse the name
         auto name = consume("identifier", "in parameters");
-        consume("symbol_colon", "in parameters");
 
         // Parse the type
-        // TODO: Make a parser for actual types
-        auto type = consume("identifier", "in parameters");
+        consume("symbol_colon", "in parameters");
+        auto type = parse_type();
 
         // Create the expression and add it to the parameters
-        parameters.push_back(Parameter(name, Type(type.value())));
+        parameters.push_back(std::make_shared<ExprFunctionParameter>(name, type));
       } while (match("symbol_comma"));
     }
 
@@ -763,6 +861,57 @@ namespace dauw
     return parameters;
   }
 
+  // Parse arguments
+  // arguments → assignment (',' assignment)*
+  ExprSequence::sequence_type Parser::parse_arguments()
+  {
+    // Create a vector to store the arguments
+    ExprSequence::sequence_type arguments;
+
+    // Loop until we encounter a closing parenthesis
+    if (!check("parenthesis_right"))
+    {
+      do
+      {
+        // Parse the expression and add it to the arguments
+        arguments.push_back(parse_assignment());
+      } while (match("symbol_comma"));
+    }
+
+    // Consume the closing parenthesis
+    consume("parenthesis_right", "in arguments");
+
+    // Return the arguments
+    return arguments;
+  }
+
+  // Parse type arguments
+  // type_arguments → type (',' type)*
+  TypeExprGeneric::generic_type Parser::parse_type_arguments()
+  {
+    // Create a vector to store the arguments
+    TypeExprGeneric::generic_type arguments;
+
+    // Loop until we encounter a closing square bracket
+    if (check("square_bracket_right"))
+      throw error_reporter_->report_syntax_error(next().location(), "Expected type, but found square_bracket_right");
+
+    do
+    {
+      // Parse the expression and add it to the arguments
+      arguments.push_back(parse_type());
+    } while (match("symbol_comma"));
+
+    // Consume the closing parenthesis
+    consume("square_bracket_right", "in type arguments");
+
+    // Return the arguments
+    return arguments;
+  }
+
+  // --------------------------------------------------------------------------
+  // PARSERS FOR VALUES
+  // --------------------------------------------------------------------------
 
   // Parse an int literal
   Value Parser::value_int(string_t value)
@@ -825,7 +974,7 @@ namespace dauw
       auto string_value = vm_->allocate_string(value.c_str());
 
       // Return the value
-      return Value::of_obj(string_value, type_string);
+      return Value::of_obj(string_value, std::make_shared<Type>(TypeKind::STRING));
   }
 
   // Parse a regex literal
@@ -840,6 +989,6 @@ namespace dauw
     auto string_value = vm_->allocate_string(value.c_str());
 
     // Return the value
-    return Value::of_obj(string_value, type_string);
+    return Value::of_obj(string_value, std::make_shared<Type>(TypeKind::STRING));
   }
 }

@@ -1,4 +1,4 @@
-#include "type_resolver.hpp"
+#include "analyzer.hpp"
 
 namespace dauw
 {
@@ -17,8 +17,8 @@ namespace dauw
   void TypeResolver::resolve_subtype_of(const expr_ptr& expr, Type& type)
   {
     // TODO: Implement proper subtype check
-    if (expr->resolved_type() != type)
-      throw RuntimeError(expr->location(), fmt::format("Expected a subtype of {}, but found {}", expr->resolved_type().name(), type.name()));
+    //if (expr->resolved_type() != type)
+    //  throw RuntimeError(expr->location(), fmt::format("Expected a subtype of {}, but found {}", expr->resolved_type().name(), type.name()));
   }
 
   // Visit a literal expression
@@ -66,6 +66,12 @@ namespace dauw
 
     // The type of the function declaration expression is thate of its value
     expr->set_resolved_type_from(expr->body());
+  }
+
+  // Visit a function parameter expression
+  void TypeResolver::visit_function_parameter(const expr_function_parameter_ptr& expr)
+  {
+    // TODO
   }
 
   // Visit a grouped expression
@@ -176,5 +182,41 @@ namespace dauw
 
     // The type of the def expression is that of its value
     expr->set_resolved_type_from(expr->value());
+  }
+
+  // Visit a name type expression
+  void TypeResolver::visit_type_name(const type_expr_name_ptr& expr)
+  {
+    // TODO
+  }
+
+  // Visit a grouped type expression
+  void TypeResolver::visit_type_grouped(const type_expr_grouped_ptr& expr)
+  {
+    // TODO
+  }
+
+  // Visit a generic type expression
+  void TypeResolver::visit_type_generic(const type_expr_generic_ptr& expr)
+  {
+    // TODO
+  }
+
+  // Visit a maybe type expression
+  void TypeResolver::visit_type_maybe(const type_expr_maybe_ptr& expr)
+  {
+    // TODO
+  }
+
+  // Visit an intersection type expression
+  void TypeResolver::visit_type_intersection(const type_expr_intersection_ptr& expr)
+  {
+    // TODO
+  }
+
+  // Visit an union type expression
+  void TypeResolver::visit_type_union(const type_expr_union_ptr& expr)
+  {
+    // TODO
   }
 }
