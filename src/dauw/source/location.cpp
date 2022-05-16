@@ -39,14 +39,14 @@ namespace dauw
     return line_ == other.line_ && col_ == other.col_;
   }
 
-  // Compare the location to another location
-  std::strong_ordering Location::operator<=>(const Location& other)
+  // Return if the location must be sorted before another location
+  bool Location::operator<(const Location& other)
   {
-    auto line_cmp = line_ <=> other.line_;
-    if (line_cmp != std::strong_ordering::equal)
-      return line_cmp;
-
-    auto col_cmp = col_ <=> other.col_;
-    return col_cmp;
+    if (line_ < other.line_)
+      return true;
+    else if (col_ < other.col_)
+      return true;
+    else
+      return false;
   }
 }

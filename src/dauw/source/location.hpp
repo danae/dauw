@@ -47,7 +47,7 @@ namespace dauw
 
       // Operator overloads
       bool operator==(const Location& other);
-      std::strong_ordering operator<=>(const Location& other);
+      bool operator<(const Location& other);
 
 
       // Friend classes

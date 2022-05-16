@@ -42,7 +42,7 @@ namespace dauw
 
       // Operator overloads
       bool operator==(const Token& other);
-      std::strong_ordering operator<=>(const Token& other);
+      bool operator<(const Token& other);
   };
 }
 
