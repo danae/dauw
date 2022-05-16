@@ -2,8 +2,8 @@
 
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
-#include <dauw/source/location.hpp>
-#include <dauw/source/token.hpp>
+#include <dauw/frontend/location.hpp>
+#include <dauw/frontend/token.hpp>
 
 
 namespace dauw

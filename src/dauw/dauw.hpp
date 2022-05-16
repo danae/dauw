@@ -6,9 +6,9 @@
 #include <dauw/ast/compiler.hpp>
 #include <dauw/backend/chunk.hpp>
 #include <dauw/backend/vm.hpp>
-#include <dauw/source/lexer.hpp>
-#include <dauw/source/location.hpp>
-#include <dauw/source/parser.hpp>
+#include <dauw/frontend/lexer.hpp>
+#include <dauw/frontend/location.hpp>
+#include <dauw/frontend/parser.hpp>
 
 #include <filesystem>
 #include <fstream>

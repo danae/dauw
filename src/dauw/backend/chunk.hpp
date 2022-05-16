@@ -1,9 +1,9 @@
 #pragma once
 
 #include <dauw/common.hpp>
+#include <dauw/frontend/location.hpp>
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/value.hpp>
-#include <dauw/source/location.hpp>
 
 
 namespace dauw
@@ -17,7 +17,7 @@ namespace dauw
   {
     // Nop
     NOP,
-    
+
     // Push to the stack
     PUSH_NOTHING,
     PUSH_FALSE,

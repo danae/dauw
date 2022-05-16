@@ -6,9 +6,9 @@
 #include <dauw/backend/vm.hpp>
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/value.hpp>
-#include <dauw/source/lexer.hpp>
-#include <dauw/source/location.hpp>
-#include <dauw/source/token.hpp>
+#include <dauw/frontend/lexer.hpp>
+#include <dauw/frontend/location.hpp>
+#include <dauw/frontend/token.hpp>
 
 
 namespace dauw

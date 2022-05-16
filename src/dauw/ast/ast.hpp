@@ -1,10 +1,10 @@
 #pragma once
 
 #include <dauw/common.hpp>
+#include <dauw/frontend/location.hpp>
+#include <dauw/frontend/token.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
-#include <dauw/source/location.hpp>
-#include <dauw/source/token.hpp>
 
 
 namespace dauw

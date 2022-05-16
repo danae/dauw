@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/source/location.hpp>
+#include <dauw/frontend/location.hpp>
 
 
 namespace dauw
