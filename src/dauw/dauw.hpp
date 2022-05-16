@@ -2,12 +2,13 @@
 
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
-#include <dauw/ast/interpreter.hpp>
-#include <dauw/ast/type_resolver.hpp>
+#include <dauw/ast/analyzer.hpp>
+#include <dauw/ast/compiler.hpp>
+#include <dauw/backend/chunk.hpp>
+#include <dauw/backend/vm.hpp>
 #include <dauw/source/lexer.hpp>
 #include <dauw/source/location.hpp>
 #include <dauw/source/parser.hpp>
-#include <dauw/vm/vm.hpp>
 
 #include <filesystem>
 #include <fstream>

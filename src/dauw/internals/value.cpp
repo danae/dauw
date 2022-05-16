@@ -3,12 +3,12 @@
 namespace dauw
 {
   // Constructor for a value
-  Value::Value(value_t value, Type type) : value_(value), type_(type)
+  Value::Value(value_t value, type_ptr type) : value_(value), type_(type)
   {
   }
 
   // Return the type of the value
-  Type& Value::type()
+  type_ptr& Value::type()
   {
     return type_;
   }
@@ -34,7 +34,7 @@ namespace dauw
   // Convert a bool type to a value
   Value Value::of_bool(bool bool_value)
   {
-    return Value(bool_value ? VAL_TRUE : VAL_FALSE, type_bool);
+    return Value(bool_value ? VAL_TRUE : VAL_FALSE, std::make_shared<Type>(TypeKind::BOOL));
   }
 
   // Return if the value represents a bool type
@@ -63,7 +63,7 @@ namespace dauw
         throw std::out_of_range(fmt::format("{} exceeds the valid range of an int; it exceeds 48 bits of storage", int_value));
     }
 
-    return Value((value_t)(BITMASK_QNAN | TAG_INT | ((value_t)int_value & BITMASK_VALUE)), type_int);
+    return Value((value_t)(BITMASK_QNAN | TAG_INT | ((value_t)int_value & BITMASK_VALUE)), std::make_shared<Type>(TypeKind::INT));
   }
 
   // Return if the value represents an int type
@@ -93,7 +93,7 @@ namespace dauw
     if (rune_value >= RUNE_SURROGATE_MIN && rune_value <= RUNE_SURROGATE_MAX)
       throw std::out_of_range(fmt::format("U+{:06X} exceeds the valid range of a rune; it specifies a surrogate code point", rune_value));
 
-    return Value((value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE)), type_rune);
+    return Value((value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE)), std::make_shared<Type>(TypeKind::RUNE));
   }
 
   // Return if the value represents an rune type
@@ -126,7 +126,7 @@ namespace dauw
     if ((value & BITMASK_QNAN) == BITMASK_QNAN)
       throw std::out_of_range("Value exceeds the valid range of a real; it contains a quiet NaN");
 
-    return Value(value, type_real);
+    return Value(value, std::make_shared<Type>(TypeKind::REAL));
   }
 
   // Return if the value represents a real type
@@ -150,7 +150,7 @@ namespace dauw
   }
 
   // Convert an object type to a value
-  Value Value::of_obj(Obj* object_value, Type object_type)
+  Value Value::of_obj(Obj* object_value, type_ptr object_type)
   {
     return Value((value_t)(BITMASK_QNAN | BITMASK_SIGN | (value_t)(uintptr_t)object_value & BITMASK_VALUE), object_type);
   }
@@ -174,7 +174,10 @@ namespace dauw
   Value Value::operator=(const Value& other)
   {
     if (this != &other)
+    {
       value_ = other.value_;
+      type_ = other.type_;
+    }
     return *this;
   }
 
@@ -189,6 +192,25 @@ namespace dauw
   bool Value::operator!=(const Value& other)
   {
     return !(*this == other);
+  }
+
+  // Return the truth value of the value
+  bool Value::truth_value()
+  {
+    if (is_nothing())
+      return false;
+    else if (is_bool())
+      return is_true();
+    else if (is_int())
+      return as_int() != 0;
+    else if (is_rune())
+      return as_rune() != 0;
+    else if (is_real())
+      return as_real() != 0;
+    else if (is_obj())
+      return true;
+    else
+      return false;
   }
 
   // Return a representative string representation of the value

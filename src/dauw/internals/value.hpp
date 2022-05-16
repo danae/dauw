@@ -53,15 +53,15 @@ namespace dauw
       value_t value_;
 
       // The type of the value
-      Type type_;
+      type_ptr type_;
 
 
     public:
       // Constructor
-      Value(value_t value, Type type);
+      Value(value_t value, type_ptr type);
 
       // Return the type of the value
-      Type& type();
+      type_ptr& type();
 
       // Value that represents a constant type
       bool is_nothing() const;
@@ -89,7 +89,7 @@ namespace dauw
       double as_real() const;
 
       // Value that represents an object type
-      static Value of_obj(Obj* object_value, Type object_type);
+      static Value of_obj(Obj* object_value, type_ptr object_type);
       bool is_obj() const;
       Obj* as_obj() const;
 
@@ -100,15 +100,18 @@ namespace dauw
       bool operator==(const Value& other);
       bool operator!=(const Value& other);
 
+      // Return the truth value of the value
+      bool truth_value();
+
       // Return a representative string representation of the value
       string_t to_string();
   };
 
 
   // Definitions for primitive values
-  const Value value_nothing = Value(VAL_NOTHING, type_nothing);
-  const Value value_false = Value(VAL_FALSE, type_bool);
-  const Value value_true = Value(VAL_TRUE, type_bool);
+  const Value value_nothing = Value(VAL_NOTHING, std::make_shared<Type>(TypeKind::NOTHING));
+  const Value value_false = Value(VAL_FALSE, std::make_shared<Type>(TypeKind::BOOL));
+  const Value value_true = Value(VAL_TRUE, std::make_shared<Type>(TypeKind::BOOL));
 }
 
 

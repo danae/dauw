@@ -60,7 +60,6 @@ namespace dauw
 
     // Tokenize the source string
     auto tokens = Lexer(source, source_name).tokenize();
-    print_tokens(tokens);
 
     // Parse the tokens and exit the application if a parser error occurred
     auto expr = Parser(tokens, error_reporter.get(), vm_.get()).parse();
@@ -76,14 +75,19 @@ namespace dauw
     //type_resolver->resolve(expr);
 
     // Execute the expression and exit the application if a runtime error occurred
-    auto interpreter = std::make_shared<Interpreter>();
-    interpreter->print(expr);
+    auto chunk = std::make_shared<Chunk>();
+    auto compiler = std::make_shared<Compiler>(chunk.get());
+    compiler->compile(expr);
     if (error_reporter->has_errors())
     {
       error_reporter->print_errors(current_source_);
       error_reporter->clear_errors();
       return DAUW_EXIT_SOFTWAREERR;
     }
+
+    // Run the compiled chunk
+    //chunk->disassemble(current_source_name_);
+    vm_->run(chunk.get());
 
     // Quit with an ok exit code
     return DAUW_EXIT_OK;

@@ -3,12 +3,12 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/ast/ast.hpp>
+#include <dauw/backend/vm.hpp>
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/value.hpp>
 #include <dauw/source/lexer.hpp>
 #include <dauw/source/location.hpp>
 #include <dauw/source/token.hpp>
-#include <dauw/vm/vm.hpp>
 
 
 namespace dauw
