@@ -92,9 +92,9 @@ namespace dauw
     if (match(name))
       return current();
     else if (!context.empty())
-      throw reporter_->report_syntax_error(next().location(), fmt::format("Expected {} {}, but found {}", name, context, next().name()));
+      throw reporter_->report_syntax_error(next().location(), fmt::format("Syntax error: Expected {} {}, but found {}", name, context, next().name()));
     else
-      throw reporter_->report_syntax_error(next().location(), fmt::format("Expected {}, but found {}", name, next().name()));
+      throw reporter_->report_syntax_error(next().location(), fmt::format("Syntax error: Expected {}, but found {}", name, next().name()));
   }
 
   // Synchronize the parser after an error
@@ -220,7 +220,6 @@ namespace dauw
     catch (SyntaxError& ex)
     {
       synchronize();
-      fmt::print("{} at {}\n", ex.message(), ex.location());
       return nullptr;
     }
   }
@@ -596,17 +595,17 @@ namespace dauw
         return parse_grouped();
 
       // No suitable expression found, so throw an error
-      throw reporter_->report_syntax_error(next().location(), fmt::format("Expected atom, but found {}", next().name()));
+      throw reporter_->report_syntax_error(next().location(), fmt::format("Syntax error: Expected atom, but found {}", next().name()));
     }
     catch (std::invalid_argument& ex)
     {
       // Found a literal that is malformed
-      throw reporter_->report_syntax_error(current().location(), ex.what());
+      throw reporter_->report_syntax_error(current().location(), fmt::format("Syntax error: {}", ex.what()));
     }
     catch (std::out_of_range& ex)
     {
       // Found a literal whose value is out of range
-      throw reporter_->report_syntax_error(current().location(), ex.what());
+      throw reporter_->report_syntax_error(current().location(), fmt::format("Syntax error: {}", ex.what()));
     }
   }
 
@@ -894,7 +893,7 @@ namespace dauw
 
     // Loop until we encounter a closing square bracket
     if (check("square_bracket_right"))
-      throw reporter_->report_syntax_error(next().location(), "Expected type, but found square_bracket_right");
+      throw reporter_->report_syntax_error(next().location(), "Syntax error: Expected type, but found square_bracket_right");
 
     do
     {

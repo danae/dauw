@@ -123,7 +123,7 @@ namespace dauw
         return disassemble_simple("rune.conv_int", offset);
 
       default:
-        fmt::print("<Unknown instruction>\n", static_cast<uint8_t>(instruction));
+        fmt::print("<unknown instruction>\n", static_cast<uint8_t>(instruction));
         return offset + 1;
     }
   }
