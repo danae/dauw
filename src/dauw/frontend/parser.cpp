@@ -3,8 +3,8 @@
 namespace dauw
 {
   // Constructor for the parser
-  Parser::Parser(Lexer::token_list_type tokens, ErrorReporter* error_reporter, VM* vm)
-    : tokens_(tokens), error_reporter_(error_reporter), vm_(vm)
+  Parser::Parser(Lexer::token_list_type tokens, ErrorReporter* reporter, VM* vm)
+    : tokens_(tokens), reporter_(reporter), vm_(vm)
   {
     index_ = 0;
   }
@@ -92,9 +92,9 @@ namespace dauw
     if (match(name))
       return current();
     else if (!context.empty())
-      throw error_reporter_->report_syntax_error(next().location(), fmt::format("Expected {} {}, but found {}", name, context, next().name()));
+      throw reporter_->report_syntax_error(next().location(), fmt::format("Expected {} {}, but found {}", name, context, next().name()));
     else
-      throw error_reporter_->report_syntax_error(next().location(), fmt::format("Expected {}, but found {}", name, next().name()));
+      throw reporter_->report_syntax_error(next().location(), fmt::format("Expected {}, but found {}", name, next().name()));
   }
 
   // Synchronize the parser after an error
@@ -596,17 +596,17 @@ namespace dauw
         return parse_grouped();
 
       // No suitable expression found, so throw an error
-      throw error_reporter_->report_syntax_error(next().location(), fmt::format("Expected atom, but found {}", next().name()));
+      throw reporter_->report_syntax_error(next().location(), fmt::format("Expected atom, but found {}", next().name()));
     }
     catch (std::invalid_argument& ex)
     {
       // Found a literal that is malformed
-      throw error_reporter_->report_syntax_error(current().location(), ex.what());
+      throw reporter_->report_syntax_error(current().location(), ex.what());
     }
     catch (std::out_of_range& ex)
     {
       // Found a literal whose value is out of range
-      throw error_reporter_->report_syntax_error(current().location(), ex.what());
+      throw reporter_->report_syntax_error(current().location(), ex.what());
     }
   }
 
@@ -894,7 +894,7 @@ namespace dauw
 
     // Loop until we encounter a closing square bracket
     if (check("square_bracket_right"))
-      throw error_reporter_->report_syntax_error(next().location(), "Expected type, but found square_bracket_right");
+      throw reporter_->report_syntax_error(next().location(), "Expected type, but found square_bracket_right");
 
     do
     {

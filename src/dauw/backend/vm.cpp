@@ -3,7 +3,8 @@
 namespace dauw
 {
   // Constructor
-  VM::VM()
+  VM::VM(ErrorReporter* reporter)
+    : reporter_(reporter)
   {
   }
 

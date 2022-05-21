@@ -44,8 +44,11 @@ namespace dauw
   // Constructor
   Dauw::Dauw()
   {
+    // Create the error reporter
+    reporter_ = std::make_shared<ErrorReporter>();
+
     // Create the virtual machine
-    vm_ = std::make_shared<VM>();
+    vm_ = std::make_shared<VM>(reporter_.get());
   }
 
   // Interpret a source string
@@ -55,18 +58,21 @@ namespace dauw
     current_source_ = source;
     current_source_name_ = source_name;
 
-    // Create the error reporter
-    auto error_reporter = std::make_shared<ErrorReporter>();
-
     // Tokenize the source string
-    auto tokens = Lexer(source, source_name).tokenize();
+    auto tokens = Lexer(source, source_name, reporter_.get()).tokenize();
+    if (reporter_->has_errors())
+    {
+      reporter_->print_errors(current_source_);
+      reporter_->clear_errors();
+      return DAUW_EXIT_DATAERR;
+    }
 
     // Parse the tokens and exit the application if a parser error occurred
-    auto expr = Parser(tokens, error_reporter.get(), vm_.get()).parse();
-    if (error_reporter->has_errors())
+    auto expr = Parser(tokens, reporter_.get(), vm_.get()).parse();
+    if (reporter_->has_errors())
     {
-      error_reporter->print_errors(current_source_);
-      error_reporter->clear_errors();
+      reporter_->print_errors(current_source_);
+      reporter_->clear_errors();
       return DAUW_EXIT_DATAERR;
     }
 
@@ -78,16 +84,22 @@ namespace dauw
     auto chunk = std::make_shared<Chunk>();
     auto compiler = std::make_shared<Compiler>(chunk.get());
     compiler->compile(expr);
-    if (error_reporter->has_errors())
+    if (reporter_->has_errors())
     {
-      error_reporter->print_errors(current_source_);
-      error_reporter->clear_errors();
+      reporter_->print_errors(current_source_);
+      reporter_->clear_errors();
       return DAUW_EXIT_SOFTWAREERR;
     }
 
     // Run the compiled chunk
     //chunk->disassemble(current_source_name_);
     vm_->run(chunk.get());
+    if (reporter_->has_errors())
+    {
+      reporter_->print_errors(current_source_);
+      reporter_->clear_errors();
+      return DAUW_EXIT_SOFTWAREERR;
+    }
 
     // Quit with an ok exit code
     return DAUW_EXIT_OK;

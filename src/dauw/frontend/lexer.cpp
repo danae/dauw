@@ -29,16 +29,14 @@ namespace dauw
   }
 
 
+  // Initialize the regex patterns for the lexer
+  regex_t Lexer::comment_pattern_ = regex_t("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
+  regex_t Lexer::whitespace_pattern_ = regex_t("[ \\t]+");
+
   // Constructor for the lexer
-  Lexer::Lexer(string_t source, string_t source_name)
+  Lexer::Lexer(string_t source, string_t source_name, ErrorReporter* reporter)
+    : source_(source), source_name_(source_name), reporter_(reporter)
   {
-    source_ = source;
-    source_name_ = source_name;
-
-    // Initialize the regex patterns
-    comment_pattern_ = regex_t("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
-    whitespace_pattern_ = regex_t("[ \\t]+");
-
     // Initialize the rules
     rule_("parenthesis_left", regex_t("\\("));
     rule_("parenthesis_right", regex_t("\\)"));
@@ -135,7 +133,10 @@ namespace dauw
       {
         // If this is the first line of the source, then ignore the shebang, otherwise report an error
         if (location.line() != 0)
-          throw SyntaxError(location, "A shebang is only allowed at the first line of the source");
+        {
+          reporter_->report_syntax_error(location, "Syntax error: A shebang is only allowed at the first line of the source");
+          return token_list_type({});
+        }
 
         // Increase the position to past the shebang
         location.increase_line_();
@@ -158,7 +159,10 @@ namespace dauw
       {
         // Check if the indent is on the first line, because that's an Error
         if (location.line() == 0)
-          throw SyntaxError(location, "The first line of the source should never be indented");
+        {
+          reporter_->report_syntax_error(location, "Syntax error: The first line of the source should never be indented");
+          return token_list_type({});
+        }
 
         // If the indent is bigger than the last indent, then add an indent token
         indents.push_back(indent);
@@ -174,7 +178,10 @@ namespace dauw
 
      // If the indent doesn't match the current indentation level, then report an error
       if (indent != indents.back())
-        throw SyntaxError(location, "The indentation does not match any outer indentation level");
+      {
+        reporter_->report_syntax_error(location, "Syntax error: The indentation does not match any outer indentation level");
+        return token_list_type({});
+      }
 
       location.increase_col_(indent);
 
@@ -217,7 +224,10 @@ namespace dauw
 
         // If there are no matched tokens, then we've encountered a syntax Error
         if (matched_tokens.empty())
-          throw SyntaxError(location, fmt::format("Invalid character '{}'", line.substr(location.col(), 1)));
+        {
+          reporter_->report_syntax_error(location, fmt::format("Syntax error: Invalid character '{}'", line.substr(location.col(), 1)));
+          return token_list_type({});
+        }
 
         // if there is more than one matched token, then sort the current matched tokens
         if (matched_tokens.size() > 1)

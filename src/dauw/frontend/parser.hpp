@@ -29,7 +29,7 @@ namespace dauw
 
       // References to application components
       VM* vm_;
-      ErrorReporter* error_reporter_;
+      ErrorReporter* reporter_;
 
       // The last full line comment that has been parsed
       string_t line_comment_;
@@ -105,7 +105,7 @@ namespace dauw
 
     public:
       // Constructor
-      Parser(Lexer::token_list_type tokens, ErrorReporter* error_reporter, VM* vm);
+      Parser(Lexer::token_list_type tokens, ErrorReporter* reporter, VM* vm);
 
       // Parse a deque of tokens into an expression
       expr_ptr parse();

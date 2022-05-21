@@ -22,6 +22,9 @@ namespace dauw
   class Dauw : public std::enable_shared_from_this<Dauw>
   {
     private:
+      // The error reporter for the application
+      std::shared_ptr<ErrorReporter> reporter_;
+
       // The virtual machine for the application
       std::shared_ptr<VM> vm_;
 

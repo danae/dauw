@@ -21,10 +21,13 @@ namespace dauw
       // Linked list of defined objects
       std::forward_list<Obj*> objects_;
 
+      // Reference to the error reporter
+      ErrorReporter* reporter_;
+
 
     public:
       // Constructor
-      VM();
+      VM(ErrorReporter* reporter);
 
       // Descructor
       ~VM();

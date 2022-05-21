@@ -45,18 +45,22 @@ namespace dauw
       using token_list_type = std::deque<Token>;
 
     private:
+      // Regex patterns for comments and whitespaces
+      static regex_t comment_pattern_;
+      static regex_t whitespace_pattern_;
+
+
       // The source string
       string_t source_;
 
       // The name of the source string
       string_t source_name_;
 
-      // Regex patterns for comments and whitespaces
-      regex_t comment_pattern_;
-      regex_t whitespace_pattern_;
-
       // Vector of rules that the lexer uses for tokenizing
       std::vector<LexerRule> rules_;
+
+      // Reference to the error reporter
+      ErrorReporter* reporter_;
 
 
       // Add a rule to the lexer
@@ -67,7 +71,7 @@ namespace dauw
 
     public:
       // Constructor
-      Lexer(string_t source, string_t source_name);
+      Lexer(string_t source, string_t source_name, ErrorReporter* reporter);
 
       // Convert a string into a token iterator
       token_list_type tokenize();
