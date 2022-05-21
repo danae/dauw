@@ -1,7 +1,10 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/backend/chunk.hpp>
+#include <dauw/errors.hpp>
+#include <dauw/backend/code.hpp>
+#include <dauw/backend/disassemble.hpp>
+#include <dauw/backend/instruction.hpp>
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/string.hpp>
 #include <dauw/internals/value.hpp>
@@ -11,7 +14,15 @@
 
 namespace dauw
 {
-  // Class that defines a virtual machine for executing Dauw bytecode
+  // Enum that defines the result of executing code in the virtual machine
+  enum class VMResult {
+    SUCCESS,
+    COMPILE_ERROR,
+    RUNTIME_ERROR,
+  };
+
+
+  // Class that defines the virtual machine
   class VM
   {
     private:
@@ -35,12 +46,14 @@ namespace dauw
       // Allocate a string
       String* allocate_string(const char* bytes);
 
-      // Run a chunk
-      int run(Chunk* chunk);
+      // Execute a block of code
+      VMResult run(Code* code);
 
-      // Manipulate the stack of the virtual machine
+      // Push a value onto the stack of the virtual machine
       void push_stack(Value value);
-      Value peek_stack();
+
+      // Pop a value from the stack of the virtual machine
       Value pop_stack();
+
   };
 }

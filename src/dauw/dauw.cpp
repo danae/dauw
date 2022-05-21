@@ -81,8 +81,8 @@ namespace dauw
     //type_resolver->resolve(expr);
 
     // Execute the expression and exit the application if a runtime error occurred
-    auto chunk = std::make_shared<Chunk>();
-    auto compiler = std::make_shared<Compiler>(chunk.get());
+    auto code = std::make_shared<Code>();
+    auto compiler = std::make_shared<Compiler>(code.get());
     compiler->compile(expr);
     if (reporter_->has_errors())
     {
@@ -91,9 +91,9 @@ namespace dauw
       return DAUW_EXIT_SOFTWAREERR;
     }
 
-    // Run the compiled chunk
-    //chunk->disassemble(current_source_name_);
-    vm_->run(chunk.get());
+    // Run the compiled code
+    //code->disassemble(current_source_name_);
+    vm_->run(code.get());
     if (reporter_->has_errors())
     {
       reporter_->print_errors(current_source_);

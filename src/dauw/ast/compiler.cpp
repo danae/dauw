@@ -3,8 +3,8 @@
 namespace dauw
 {
   // Constructor for the compiler
-  Compiler::Compiler(Chunk* chunk)
-    : chunk_(chunk)
+  Compiler::Compiler(Code* code)
+    : code_(code)
   {
   }
 
@@ -20,13 +20,32 @@ namespace dauw
     auto value = expr->value();
 
     if (value.is_nothing())
-      chunk_->write(Operation::PUSH_NOTHING, expr->location());
+    {
+      code_->emit(Instruction::NIL, expr->location());
+    }
     else if (value.is_false())
-      chunk_->write(Operation::PUSH_FALSE, expr->location());
+    {
+      code_->emit(Instruction::BOOL_FALSE, expr->location());
+    }
     else if (value.is_true())
-      chunk_->write(Operation::PUSH_TRUE, expr->location());
-    else
-      chunk_->write(Operation::PUSH_CONSTANT, chunk_->make_constant(value), expr->location());
+    {
+      code_->emit(Instruction::BOOL_TRUE, expr->location());
+    }
+    else if (value.is_int())
+    {
+      code_->emit(Instruction::INT_CONST, expr->location());
+      code_->emit(code_->make_constant(value), expr->location());
+    }
+    else if (value.is_real())
+    {
+      code_->emit(Instruction::REAL_CONST, expr->location());
+      code_->emit(code_->make_constant(value), expr->location());
+    }
+    else if (value.is_rune())
+    {
+      code_->emit(Instruction::RUNE_CONST, expr->location());
+      code_->emit(code_->make_constant(value), expr->location());
+    }
   }
 
   // Visit a sequence expression
@@ -100,11 +119,17 @@ namespace dauw
     // Check and compile the operator
     // TODO: Add type checking
     if (expr->op() == "-")
-      chunk_->write(Operation::OP_NEGATE, expr->location());
+    {
+      code_->emit(Instruction::REAL_NEG, expr->location());
+    }
     else if (expr->op() == "#")
-      chunk_->write(Operation::OP_LENGTH, expr->location());
+    {
+      //code_->emit(Instruction::UNARY_LENGTH, expr->location());
+    }
     else if (expr->op() == "$")
-      chunk_->write(Operation::OP_STRING, expr->location());
+    {
+      //code_->emit(Instruction::UNARY_STRING, expr->location());
+    }
   }
 
   // Visit a binary expression
@@ -121,37 +146,70 @@ namespace dauw
     // Check and compile the operator
     // TODO: Add type checking
     if (expr->op() == "*")
-      chunk_->write(Operation::OP_MULTIPLY, expr->location());
+    {
+      code_->emit(Instruction::REAL_MUL, expr->location());
+    }
     else if (expr->op() == "/")
-      chunk_->write(Operation::OP_DIVIDE, expr->location());
+    {
+      code_->emit(Instruction::REAL_DIV, expr->location());
+    }
     else if (expr->op() == "//")
-      chunk_->write(Operation::OP_FLOOR_DIVIDE, expr->location());
+    {
+      code_->emit(Instruction::REAL_FDIV, expr->location());
+    }
     else if (expr->op() == "%")
-      chunk_->write(Operation::OP_MODULO, expr->location());
+    {
+      code_->emit(Instruction::REAL_MOD, expr->location());
+    }
     else if (expr->op() == "+")
-      chunk_->write(Operation::OP_ADD, expr->location());
+    {
+      code_->emit(Instruction::REAL_ADD, expr->location());
+    }
     else if (expr->op() == "-")
-      chunk_->write(Operation::OP_SUBTRACT, expr->location());
+    {
+      code_->emit(Instruction::REAL_SUB, expr->location());
+    }
     else if (expr->op() == "..")
-      chunk_->write(Operation::OP_RANGE, expr->location());
+    {
+      //code_->emit(Instruction::REAL_RANGE, expr->location());
+    }
     else if (expr->op() == "<=>")
-      chunk_->write(Operation::OP_THREEWAY, expr->location());
+    {
+      code_->emit(Instruction::REAL_CMP, expr->location());
+    }
     else if (expr->op() == "<")
-      chunk_->write(Operation::OP_LESS, expr->location());
+    {
+      code_->emit(Instruction::REAL_LT, expr->location());
+    }
     else if (expr->op() == "<=")
-      chunk_->write(Operation::OP_LESS_EQUAL, expr->location());
+    {
+      code_->emit(Instruction::REAL_LTE, expr->location());
+    }
     else if (expr->op() == ">")
-      chunk_->write(Operation::OP_GREATER, expr->location());
+    {
+      code_->emit(Instruction::REAL_GT, expr->location());
+    }
     else if (expr->op() == ">=")
-      chunk_->write(Operation::OP_GREATER_EQUAL, expr->location());
+    {
+      code_->emit(Instruction::REAL_GTE, expr->location());
+    }
     else if (expr->op() == "%%")
-      chunk_->write(Operation::OP_DIVISIBLE, expr->location());
+    {
+      code_->emit(Instruction::REAL_MOD, expr->location());
+      code_->emit(Instruction::REAL_ISZERO, expr->location());
+    }
     else if (expr->op() == "==")
-      chunk_->write(Operation::OP_EQUAL, expr->location());
+    {
+      code_->emit(Instruction::REAL_EQ, expr->location());
+    }
     else if (expr->op() == "<>")
-      chunk_->write(Operation::OP_NOT_EQUAL, expr->location());
+    {
+      code_->emit(Instruction::REAL_NEQ, expr->location());
+    }
     else if (expr->op() == "~")
-      chunk_->write(Operation::OP_MATCH, expr->location());
+    {
+      //code_->write(Instruction::REAL_MATCH, expr->location());
+    }
   }
 
   // Visit an if expression

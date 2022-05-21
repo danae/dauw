@@ -2,7 +2,7 @@
 
 #include <dauw/common.hpp>
 #include <dauw/ast/ast.hpp>
-#include <dauw/backend/chunk.hpp>
+#include <dauw/backend/code.hpp>
 #include <dauw/internals/value.hpp>
 
 
@@ -12,13 +12,13 @@ namespace dauw
   class Compiler : public ExprVisitor, public TypeExprVisitor, public std::enable_shared_from_this<Compiler>
   {
     private:
-      // The chunk that is being created by the compiler
-      Chunk* chunk_;
+      // The code that is being created by the compiler
+      Code* code_;
 
 
     public:
       // Constructor
-      Compiler(Chunk* chunk);
+      Compiler(Code* code);
 
       // Compile an expression
       void compile(const expr_ptr& expr);

@@ -4,7 +4,7 @@
 #include <dauw/errors.hpp>
 #include <dauw/ast/analyzer.hpp>
 #include <dauw/ast/compiler.hpp>
-#include <dauw/backend/chunk.hpp>
+#include <dauw/backend/code.hpp>
 #include <dauw/backend/vm.hpp>
 #include <dauw/frontend/lexer.hpp>
 #include <dauw/frontend/location.hpp>
