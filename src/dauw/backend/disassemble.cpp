@@ -14,7 +14,7 @@ namespace dauw
     // Print the location of the byte
     auto location = code_->location_at(offset);
     auto byte = code_->byte_at(offset);
-    fmt::print("{:04X}  {:>4d}:{:<4d}  {:02X} ", offset, location.line(), location.col(), byte);
+    fmt::print("{:04X}  {:>4d}:{:<4d}  {:02X} ", offset, location.line() + 1, location.col() + 1, byte);
 
     // Select the instruction
     auto instruction = static_cast<Instruction>(byte);
@@ -22,6 +22,8 @@ namespace dauw
     {
       case Instruction::NOP:
         return disassemble_simple("nop", offset);
+      case Instruction::ECHO:
+        return disassemble_simple("echo", offset);
       case Instruction::RETURN:
         return disassemble_simple("return", offset);
 

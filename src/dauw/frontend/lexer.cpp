@@ -78,6 +78,7 @@ namespace dauw
 
     rule_("keyword_def", regex_t("def"));
     rule_("keyword_do", regex_t("do"));
+    rule_("keyword_echo", regex_t("echo"));
     rule_("keyword_else", regex_t("else"));
     rule_("keyword_false", regex_t("false"));
     rule_("keyword_for", regex_t("for"));

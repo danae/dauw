@@ -212,6 +212,13 @@ namespace dauw
     }
   }
 
+  // Visit an echo expression
+  void Compiler::visit_echo(const expr_echo_ptr& expr)
+  {
+    compile(expr->expr());
+    code_->emit(Instruction::ECHO, expr->location());
+  }
+
   // Visit an if expression
   void Compiler::visit_if(const expr_if_ptr& expr)
   {

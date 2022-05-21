@@ -35,6 +35,7 @@ namespace dauw
       virtual void visit_get(const expr_get_ptr& expr) override;
       virtual void visit_unary(const expr_unary_ptr& expr) override;
       virtual void visit_binary(const expr_binary_ptr& expr) override;
+      virtual void visit_echo(const expr_echo_ptr& expr) override;
       virtual void visit_if(const expr_if_ptr& expr) override;
       virtual void visit_for(const expr_for_ptr& expr) override;
       virtual void visit_while(const expr_while_ptr& expr) override;

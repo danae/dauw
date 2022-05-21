@@ -389,6 +389,32 @@ namespace dauw
 
   // --------------------------------------------------------------------------
 
+  // Constructor for an echo expression
+  ExprEcho::ExprEcho(Token keyword, expr_ptr expr)
+    : keyword_(keyword), expr_(expr)
+  {
+  }
+
+  // Return the nested expression of the echo expression
+  expr_ptr ExprEcho::expr()
+  {
+    return expr_;
+  }
+
+  // Return the location of the echo expression
+  Location& ExprEcho::location()
+  {
+    return keyword_.location();
+  }
+
+  // Accept a visitor on an echo expression
+  void ExprEcho::accept(const expr_visitor_ptr& visitor)
+  {
+    visitor->visit_echo(shared_from_this());
+  }
+
+  // --------------------------------------------------------------------------
+
   // Constructor for an if expression
   ExprIf::ExprIf(Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch)
     : keyword_(keyword), condition_(condition), true_branch_(true_branch), false_branch_(false_branch)

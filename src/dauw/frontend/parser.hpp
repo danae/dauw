@@ -59,6 +59,7 @@ namespace dauw
       expr_ptr parse_def();
       expr_ptr parse_assignment();
       expr_ptr parse_control();
+      expr_ptr parse_echo();
       expr_ptr parse_if();
       expr_ptr parse_for();
       expr_ptr parse_while();

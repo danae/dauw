@@ -124,6 +124,15 @@ namespace dauw
     // TODO: Implement type resolving for binary expressions
   }
 
+  // Visit an echo expression
+  void TypeResolver::visit_echo(const expr_echo_ptr& expr)
+  {
+    // Resolve the nested expression
+    resolve(expr->expr());
+
+    // TODO: Implement type resolving for echoß expressions
+  }
+
   // Visit an if expression
   void TypeResolver::visit_if(const expr_if_ptr& expr)
   {

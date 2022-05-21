@@ -11,6 +11,9 @@ namespace dauw
     // [] → []: Do nothing
     NOP,
 
+    // [Any] → []: Pop the top of the stack and print its value to the console
+    ECHO,
+
     // Return
     RETURN,
 

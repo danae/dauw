@@ -25,6 +25,7 @@ namespace dauw
   class ExprGet;
   class ExprUnary;
   class ExprBinary;
+  class ExprEcho;
   class ExprIf;
   class ExprFor;
   class ExprWhile;
@@ -57,6 +58,7 @@ namespace dauw
   using expr_get_ptr = std::shared_ptr<ExprGet>;
   using expr_unary_ptr = std::shared_ptr<ExprUnary>;
   using expr_binary_ptr = std::shared_ptr<ExprBinary>;
+  using expr_echo_ptr = std::shared_ptr<ExprEcho>;
   using expr_if_ptr = std::shared_ptr<ExprIf>;
   using expr_for_ptr = std::shared_ptr<ExprFor>;
   using expr_while_ptr = std::shared_ptr<ExprWhile>;
@@ -120,6 +122,7 @@ namespace dauw
       virtual void visit_get(const expr_get_ptr& expr) = 0;
       virtual void visit_unary(const expr_unary_ptr& expr) = 0;
       virtual void visit_binary(const expr_binary_ptr& expr) = 0;
+      virtual void visit_echo(const expr_echo_ptr& expr) = 0;
       virtual void visit_if(const expr_if_ptr& expr) = 0;
       virtual void visit_for(const expr_for_ptr& expr) = 0;
       virtual void visit_while(const expr_while_ptr& expr) = 0;
@@ -455,6 +458,30 @@ namespace dauw
       // Return the operands of the unary expression
       expr_ptr left();
       expr_ptr right();
+
+      // Expression implementation
+      virtual Location& location() override;
+      virtual void accept(const expr_visitor_ptr& visitor) override;
+  };
+
+
+  // Class that defines an echo expression
+  class ExprEcho : public Expr, public std::enable_shared_from_this<ExprEcho>
+  {
+    private:
+      // The keyword token of the echo expression
+      Token keyword_;
+
+      // The nested expression of the echo expression
+      expr_ptr expr_;
+
+
+    public:
+      // Constructor
+      ExprEcho(Token keyword, expr_ptr expr);
+
+      // Return the nested expression of the echo expression
+      expr_ptr expr();
 
       // Expression implementation
       virtual Location& location() override;

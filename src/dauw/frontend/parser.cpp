@@ -300,9 +300,13 @@ namespace dauw
   }
 
   // Parse a control flow expression
-  // control → if | for | while | until | block | simple
+  // control → echo | if | for | while | until | block | simple
   expr_ptr Parser::parse_control()
   {
+    // Check for an echo expression
+    if (match("keyword_echo"))
+      return parse_echo();
+
     // Check for an if expression
     if (match("keyword_if"))
       return parse_if();
@@ -325,6 +329,20 @@ namespace dauw
 
     // Parse a simple expression
     return parse_simple();
+  }
+
+  // Parse an echo expression
+  // echo → 'echo' simple
+  expr_ptr Parser::parse_echo()
+  {
+    // Set the keyword
+    auto keyword = current();
+
+    // Parse a simple expression
+    auto expr = parse_simple();
+
+    // Return the expression
+    return std::make_shared<ExprEcho>(keyword, expr);
   }
 
   // Parse an if expression
