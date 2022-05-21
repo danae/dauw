@@ -19,16 +19,11 @@ namespace dauw
     return value_ == VAL_NOTHING;
   }
 
-  // Return if the value represents false
-  bool Value::is_false() const
+  // Convert a value to a nothing type
+  void Value::as_nothing() const
   {
-    return value_ == VAL_FALSE;
-  }
-
-  // Return if the value represents true
-  bool Value::is_true() const
-  {
-    return value_ == VAL_TRUE;
+    if (!is_nothing())
+      throw std::domain_error("The value does not represent a valid nothing type");
   }
 
   // Convert a bool type to a value
@@ -41,6 +36,18 @@ namespace dauw
   bool Value::is_bool() const
   {
     return value_ == VAL_FALSE || value_ == VAL_TRUE;
+  }
+
+  // Return if the value represents false
+  bool Value::is_false() const
+  {
+    return value_ == VAL_FALSE;
+  }
+
+  // Return if the value represents true
+  bool Value::is_true() const
+  {
+    return value_ == VAL_TRUE;
   }
 
   // Convert a value to a bool type

@@ -47,6 +47,29 @@ using match_optional_t = std::optional<match_t>;
 
 namespace dauw
 {
+  // Namespace that defines math utilities
+  namespace math_utils
+  {
+    // Return the signum of an integer
+    int64_t sign(int64_t num);
+
+    // Returns the floor division of two integers
+    int64_t floordiv(int64_t numerator, int64_t denominator);
+
+    // Returns the floor remainder of two integers
+    int64_t floormod(int64_t numerator, int64_t denominator);
+
+    // Returns the signum of a real
+    double sign(double num);
+
+    // Returns the floor division of two reals
+    double floordiv(double numerator, double denominator);
+
+    // Returns the floor remainder of two reals
+    double floormod(double numerator, double denominator);
+  }
+
+
   // Namespace that defines string utilities
   namespace string_utils
   {

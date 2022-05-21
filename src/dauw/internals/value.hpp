@@ -65,12 +65,13 @@ namespace dauw
 
       // Value that represents a constant type
       bool is_nothing() const;
-      bool is_false() const;
-      bool is_true() const;
+      void as_nothing() const;
 
       // Value tha trepresents a bool type
       static Value of_bool(bool bool_value);
       bool is_bool() const;
+      bool is_false() const;
+      bool is_true() const;
       bool as_bool() const;
 
       // Value that represents an int type

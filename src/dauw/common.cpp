@@ -2,6 +2,60 @@
 
 namespace dauw
 {
+  // Namespace that defines math utilities
+  namespace math_utils
+  {
+    // Return the signum of an integer
+    int64_t sign(int64_t num)
+    {
+      return (num > 0) ? 1 : ((num < 0) ? -1 : 0);
+    }
+
+    // Returns the floor division of two integers
+    int64_t floordiv(int64_t numerator, int64_t denominator)
+    {
+      if (denominator == 0)
+        throw std::domain_error("Division by zero");
+      else
+        return (int)(std::floor((double)numerator / (double)denominator));
+    }
+
+    // Returns the floor remainder of two integers
+    int64_t floormod(int64_t numerator, int64_t denominator)
+    {
+      auto quotient = floordiv(numerator, denominator);
+      return numerator - quotient * denominator;
+    }
+
+    // Returns the signum of a real
+    double sign(double num)
+    {
+      if (std::isnan(num))
+        return std::nan("Sign with NaN operand");
+      else
+        return (num > 0.0) ? 1.0 : ((num < 0.0) ? -1.0 : 0.0);
+    }
+
+    // Returns the floor division of two reals
+    double floordiv(double numerator, double denominator)
+    {
+      if (std::isnan(numerator) || std::isnan(denominator))
+        return std::nan("Division with NaN operands");
+      else if (denominator == 0.0)
+        return std::nan("Division by zero");
+      else
+        return std::floor(numerator / denominator);
+    }
+
+    // Returns the floor remainder of two reals
+    double floormod(double numerator, double denominator)
+    {
+      auto quotient = floordiv(numerator, denominator);
+      return numerator - quotient * denominator;
+    }
+  }
+
+
   // Namespace that defines string utilities
   namespace string_utils
   {
