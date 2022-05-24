@@ -12,9 +12,6 @@ namespace dauw
   class Location
   {
     private:
-      // The name of the source of the location
-      string_t name_;
-
       // The line of the location
       size_t line_;
 
@@ -31,13 +28,8 @@ namespace dauw
 
     public:
       // Constructor
-      Location(string_t name, size_t line, size_t col)
-        : name_(name), line_(line), col_(col) { }
-      Location(string_t name)
-        : Location(name, 0, 0) { }
-
-      // Return the name of the source of the location
-      string_t& name();
+      Location(size_t line, size_t col);
+      Location();
 
       // Return the line of the location
       size_t& line();
@@ -50,23 +42,29 @@ namespace dauw
       bool operator<(const Location& other);
 
 
-      // Friend classes
-      friend class Lexer;
+    // Friend classes
+    friend class Lexer;
   };
 }
 
 
 namespace fmt
 {
+  using namespace dauw;
+
   // Class that defines a formatter for a location
   template <>
-  struct formatter<dauw::Location> : formatter<string_view_t>
+  struct formatter<Location> : formatter<string_view_t>
   {
-    template <typename FormatContext>
-    auto format(dauw::Location location, FormatContext& ctx)
+    inline string_t stringify(Location location)
     {
-      string_t format = fmt::format("{}, line {}, col {}", location.name(), location.line() + 1, location.col() + 1);
-      return formatter<string_view_t>::format(format, ctx);
+      return fmt::format("line {}, col {}", location.line() + 1, location.col() + 1);
+    }
+
+    template <typename FormatContext>
+    auto format(Location location, FormatContext& ctx)
+    {
+      return formatter<string_view_t>::format(stringify(location), ctx);
     }
   };
 }

@@ -2,115 +2,98 @@
 
 namespace dauw
 {
-  // Constructor for a lexer rule
-  LexerRule::LexerRule(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement)
-  {
-    name_ = name;
-    pattern_ = pattern;
-    replacement_ = replacement;
-  }
-
-  // Return the name of the rule
-  string_t LexerRule::name()
-  {
-    return name_;
-  }
-
-  // Return the pattern of the rule
-  regex_t LexerRule::pattern()
-  {
-    return pattern_;
-  }
-
-  // Replace a match using this rule
-  string_t LexerRule::replace(match_t match)
-  {
-    return replacement_(match);
-  }
-
-
   // Initialize the regex patterns for the lexer
-  regex_t Lexer::comment_pattern_ = regex_t("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
-  regex_t Lexer::whitespace_pattern_ = regex_t("[ \\t]+");
+  regex_t Lexer::comment_pattern_("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
+  regex_t Lexer::whitespace_pattern_("[ \\t]+");
+  regex_t Lexer::identifier_pattern_("[A-Za-z_][A-Za-z0-9_]*|`((?:[^\\\\`]|\\\\.)+)`");
+  regex_t Lexer::int_pattern_("0[Xx][0-9A-Fa-f][0-9A-Fa-f_]*|-?(?:0|[1-9][0-9_]*)");
+  regex_t Lexer::real_pattern_("-?(?:0|[1-9][0-9_]*)(?:\\.[0-9][0-9_]*(?:[Ee][+-]?(?:0|[1-9][0-9_]*))?|[Ee][+-]?(?:0|[1-9][0-9_]*))");
+  regex_t Lexer::rune_pattern_("'((?:[^\\\\']|\\\\.)*)'");
+  regex_t Lexer::string_pattern_("\"((?:[^\\\\\"]|\\\\.)*)\"");
+  regex_t Lexer::regex_pattern_("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*");
+
+  // Rule functions for the lexer
+  Lexer::rule_function_type Lexer::identifier_function_ = [](match_t match)->string_t {
+    return match.length(1) < 0 ? match.str(1) : match.str(0);
+  };
+
+  // Initialize the rules for the lexer
+  std::vector<Lexer::rule_type> Lexer::rules_({
+    // Delimiters
+    std::make_tuple(TokenKind::PARENTHESIS_LEFT, regex_t("\\("), rule_replacement_type()),
+    std::make_tuple(TokenKind::PARENTHESIS_RIGHT, regex_t("\\)"), rule_replacement_type()),
+    std::make_tuple(TokenKind::SQUARE_BRACKET_LEFT, regex_t("\\["), rule_replacement_type()),
+    std::make_tuple(TokenKind::SQUARE_BRACKET_RIGHT, regex_t("\\]"), rule_replacement_type()),
+    std::make_tuple(TokenKind::CURLY_BRACKET_LEFT, regex_t("\\{"), rule_replacement_type()),
+    std::make_tuple(TokenKind::CURLY_BRACKET_RIGHT, regex_t("\\}"), rule_replacement_type()),
+
+    // Symbols
+    std::make_tuple(TokenKind::SYMBOL_COLON, regex_t(":"), rule_replacement_type()),
+    std::make_tuple(TokenKind::SYMBOL_COMMA, regex_t(","), rule_replacement_type()),
+    std::make_tuple(TokenKind::SYMBOL_DOT, regex_t("\\."), rule_replacement_type()),
+    std::make_tuple(TokenKind::SYMBOL_BACKSLASH, regex_t("\\\\"), rule_replacement_type()),
+
+    // Operators
+    std::make_tuple(TokenKind::OPERATOR_MAYBE, regex_t("\\?"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_INTERSECTION, regex_t("&"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_UNION, regex_t("\\|"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_LENGTH, regex_t("#"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_STRING, regex_t("\\$"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_EXPONENT, regex_t("\\^"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_MULTIPLY, regex_t("\\*"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_DIVIDE, regex_t("/"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_QUOTIENT, regex_t("//"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_REMAINDER, regex_t("%"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_ADD, regex_t("\\+"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_SUBTRACT, regex_t("-"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_RANGE, regex_t("\\.\\."), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_COMPARE, regex_t("<=>"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_LESS, regex_t("<"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_LESS_EQUAL, regex_t("<="), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_GREATER, regex_t(">"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_GREATER_EQUAL, regex_t(">="), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_MATCH, regex_t("=~"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_NOT_MATCH, regex_t("!~"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_EQUAL, regex_t("=="), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_NOT_EQUAL, regex_t("!="), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_IDENTICAL, regex_t("==="), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_NOT_IDENTICAL, regex_t("!=="), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_LOGIC_NOT, regex_t("not"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_LOGIC_AND, regex_t("and"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_LOGIC_OR, regex_t("or"), rule_replacement_type(0)),
+    std::make_tuple(TokenKind::OPERATOR_ASSIGN, regex_t("="), rule_replacement_type(0)),
+
+    // Keywords
+    std::make_tuple(TokenKind::KEYWORD_DEF, regex_t("def"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_DO, regex_t("do"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_ECHO, regex_t("echo"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_ELSE, regex_t("else"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_FALSE, regex_t("false"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_FOR, regex_t("for"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_IF, regex_t("if"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_IN, regex_t("in"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_NOTHING, regex_t("nothing"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_THEN, regex_t("then"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_TRUE, regex_t("true"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_UNTIL, regex_t("until"), rule_replacement_type()),
+    std::make_tuple(TokenKind::KEYWORD_WHILE, regex_t("while"), rule_replacement_type()),
+
+    // Identifiers
+    std::make_tuple(TokenKind::IDENTIFIER, identifier_pattern_, rule_replacement_type(identifier_function_)),
+
+    // Literals
+    std::make_tuple(TokenKind::LITERAL_INT, int_pattern_, rule_replacement_type(0)),
+    std::make_tuple(TokenKind::LITERAL_REAL, real_pattern_, rule_replacement_type(0)),
+    std::make_tuple(TokenKind::LITERAL_RUNE, rune_pattern_, rule_replacement_type(1)),
+    std::make_tuple(TokenKind::LITERAL_STRING, string_pattern_, rule_replacement_type(1)),
+    std::make_tuple(TokenKind::LITERAL_REGEX, regex_pattern_, rule_replacement_type(0)),
+  });
+
 
   // Constructor for the lexer
   Lexer::Lexer(string_t source, string_t source_name, ErrorReporter* reporter)
     : source_(source), source_name_(source_name), reporter_(reporter)
   {
-    // Initialize the rules
-    rule_("parenthesis_left", regex_t("\\("));
-    rule_("parenthesis_right", regex_t("\\)"));
-    rule_("square_bracket_left", regex_t("\\["));
-    rule_("square_bracket_right", regex_t("\\]"));
-    rule_("curly_bracket_left", regex_t("\\{"));
-    rule_("curly_bracket_right", regex_t("\\}"));
-
-    rule_("symbol_colon", regex_t(":"));
-    rule_("symbol_comma", regex_t(","));
-    rule_("symbol_dot", regex_t("\\."));
-    rule_("symbol_lambda", regex_t("\\\\"));
-
-    rule_("operator_maybe", regex_t("\\?"), 0);
-    rule_("operator_union", regex_t("\\|"), 0);
-    rule_("operator_intersection", regex_t("&"), 0);
-    rule_("operator_length", regex_t("#"), 0);
-    rule_("operator_string", regex_t("\\$"), 0);
-    rule_("operator_multiply", regex_t("\\*"), 0);
-    rule_("operator_divide", regex_t("/"), 0);
-    rule_("operator_floor_divide", regex_t("//"), 0);
-    rule_("operator_modulo", regex_t("%"), 0);
-    rule_("operator_add", regex_t("\\+"), 0);
-    rule_("operator_subtract", regex_t("-"), 0);
-    rule_("operator_range", regex_t("\\.\\."), 0);
-    rule_("operator_threeway", regex_t("<=>"), 0);
-    rule_("operator_less", regex_t("<"), 0);
-    rule_("operator_less_equal", regex_t("<="), 0);
-    rule_("operator_greater", regex_t(">"), 0);
-    rule_("operator_greater_equal", regex_t(">="), 0);
-    rule_("operator_divisible", regex_t("%%"), 0);
-    rule_("operator_equal", regex_t("=="), 0);
-    rule_("operator_not_equal", regex_t("<>"), 0);
-    rule_("operator_match", regex_t("~"), 0);
-    rule_("operator_logical_not", regex_t("not"), 0);
-    rule_("operator_logical_and", regex_t("and"), 0);
-    rule_("operator_logical_or", regex_t("or"), 0);
-    rule_("operator_assign", regex_t("="), 0);
-
-    rule_("keyword_def", regex_t("def"));
-    rule_("keyword_do", regex_t("do"));
-    rule_("keyword_echo", regex_t("echo"));
-    rule_("keyword_else", regex_t("else"));
-    rule_("keyword_false", regex_t("false"));
-    rule_("keyword_for", regex_t("for"));
-    rule_("keyword_if", regex_t("if"));
-    rule_("keyword_in", regex_t("in"));
-    rule_("keyword_nothing", regex_t("nothing"));
-    rule_("keyword_then", regex_t("then"));
-    rule_("keyword_true", regex_t("true"));
-    rule_("keyword_until", regex_t("until"));
-    rule_("keyword_while", regex_t("while"));
-
-    rule_("identifier", regex_t("[A-Za-z_][A-Za-z0-9_]*|`((?:[^\\\\`]|\\\\.)+)`"), [](match_t match)->string_t { return match.str(1) != "" ? match.str(1) : match.str(0); });
-
-    rule_("int", regex_t("0[Xx][0-9A-Fa-f][0-9A-Fa-f_]*|-?(?:0|[1-9][0-9_]*)"), 0);
-    rule_("real", regex_t("-?(?:0|[1-9][0-9_]*)(?:\\.[0-9][0-9_]*(?:[Ee][+-]?(?:0|[1-9][0-9_]*))?|[Ee][+-]?(?:0|[1-9][0-9_]*))"), 0);
-    rule_("rune", regex_t("'((?:[^\\\\']|\\\\.)*)'"), 1);
-    rule_("string", regex_t("\"((?:[^\\\\\"]|\\\\.)*)\""), 1);
-    rule_("regex", regex_t("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*"), 0);
-  }
-
-  // Add a rule to the lexer
-  void Lexer::rule_(string_t name, regex_t pattern, std::function<string_t(match_t)> replacement)
-  {
-    rules_.push_back(LexerRule(name, pattern, replacement));
-  }
-  void Lexer::rule_(string_t name, regex_t pattern, size_t replacement)
-  {
-    rule_(name, pattern, [replacement](match_t match)->string_t { return match[replacement].str(); });
-  }
-  void Lexer::rule_(string_t name, regex_t pattern)
-  {
-    rule_(name, pattern, [](match_t match)->string_t { return ""; });
   }
 
   // Convert a string into a deque of tokens
@@ -120,14 +103,13 @@ namespace dauw
     token_list_type tokens;
 
     // Initialize a stack to store the indentation levels
-    std::deque<int> indents;
-    indents.push_back(0);
+    std::deque<int> indents({0});
 
-    // Reset the state of the lexer
-    Location location(source_name_);
+    // ReInitialize a location for the lexer
+    Location location;
 
     // Iterate over the lines in the source
-    for (auto line : regex_utils::split_lines(source_))
+    for (auto line : dauw::common::str_split_lines(source_))
     {
       // Check for a shebang at the start of the source
       if (line.rfind("#!", 0) == 0)
@@ -167,14 +149,14 @@ namespace dauw
 
         // If the indent is bigger than the last indent, then add an indent token
         indents.push_back(indent);
-        tokens.push_back(Token("indent", location));
+        tokens.push_back(Token(TokenKind::INDENT, location));
       }
 
       while (indent < indents.back())
       {
         // If the indent is smaller than the last indent, then add as much dedent tokens until the indent matches one on the stack
         indents.pop_back();
-        tokens.push_back(Token("dedent", location));
+        tokens.push_back(Token(TokenKind::DEDENT, location));
       }
 
      // If the indent doesn't match the current indentation level, then report an error
@@ -190,36 +172,36 @@ namespace dauw
       while (location.col() < line.length())
       {
         // Check for comments at the current position
-        auto comment_match = regex_utils::match(comment_pattern_, line, location.col());
-        if (comment_match.has_value())
+        match_t comment_match = dauw::common::regex_match(comment_pattern_, line, location.col());
+        if (!comment_match.empty() && comment_match.str(1) != "")
         {
-          auto match = comment_match.value();
-          if (match.str(1) != "")
-          {
-            tokens.push_back(Token("comment", match.str(1), location, match.length()));
-            location.increase_col_(match.length());
-            continue;
-          }
+          tokens.push_back(Token(TokenKind::COMMENT, comment_match.str(1), location));
+          location.increase_col_(comment_match.length());
+          continue;
         }
 
         // Check for whitespaces at the current position
-        auto whitespace_match = regex_utils::match(whitespace_pattern_, line, location.col());
-        if (whitespace_match.has_value())
+        match_t whitespace_match = dauw::common::regex_match(whitespace_pattern_, line, location.col());
+        if (!whitespace_match.empty())
         {
-          auto match = whitespace_match.value();
-          location.increase_col_(match.length());
+          location.increase_col_(whitespace_match.length());
           continue;
         }
 
         // Iterate over the rules to see if they match
-        std::vector<Token> matched_tokens;
+        std::vector<matched_token_type> matched_tokens;
         for (auto rule : rules_)
         {
-          auto rule_match = regex_utils::match(rule.pattern(), line, location.col());
-          if (rule_match.has_value())
+          match_t rule_match = dauw::common::regex_match(std::get<1>(rule), line, location.col());
+          if (!rule_match.empty())
           {
-            auto match = rule_match.value();
-            matched_tokens.push_back(Token(rule.name(), rule.replace(match), location, match.length()));
+            auto rule_replace = std::get<2>(rule);
+            string_t replacement;
+            if (std::holds_alternative<int>(rule_replace))
+              replacement = rule_match.str(std::get<int>(rule_replace));
+            else if (std::holds_alternative<rule_function_type>(rule_replace))
+              replacement = std::get<rule_function_type>(rule_replace)(rule_match);
+            matched_tokens.push_back(std::make_tuple(Token(std::get<0>(rule), replacement, location), rule_match.length()));
           }
         }
 
@@ -232,16 +214,20 @@ namespace dauw
 
         // if there is more than one matched token, then sort the current matched tokens
         if (matched_tokens.size() > 1)
-          std::sort(matched_tokens.begin(), matched_tokens.end());
+        {
+          std::sort(matched_tokens.begin(), matched_tokens.end(), [](matched_token_type a, matched_token_type b)->bool {
+            return std::get<0>(a) < std::get<0>(b) || std::get<1>(a) > std::get<1>(b);
+          });
+        }
 
         // Add the first token and increase the position to past the token
         auto token = *matched_tokens.begin();
-        tokens.push_back(token);
-        location.increase_col_(token.length());
+        tokens.push_back(std::get<0>(token));
+        location.increase_col_(std::get<1>(token));
       }
 
       // Add a newline at the end of the line and update the location to the next line
-      tokens.push_back(Token("newline", location));
+      tokens.push_back(Token(TokenKind::NEWLINE, location));
       location.increase_line_();
     }
 
@@ -249,11 +235,11 @@ namespace dauw
     while (indents.back() > 0)
     {
       indents.pop_back();
-      tokens.push_back(Token("dedent", location));
+      tokens.push_back(Token(TokenKind::DEDENT, location));
     }
 
-    // Add eof token
-    tokens.push_back(Token("eof", location));
+    // Add an end token
+    tokens.push_back(Token(TokenKind::END, location));
 
     // Return the tokens
     return tokens;

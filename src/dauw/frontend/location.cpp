@@ -2,10 +2,16 @@
 
 namespace dauw
 {
-  // Return the name of the source of the location
-  string_t& Location::name()
+  // Constructor for a location
+  Location::Location(size_t line, size_t col)
+    : line_(line), col_(col)
   {
-    return name_;
+  }
+
+  // Constructor for a location at the begin of a source string
+  Location::Location()
+    : Location(0, 0)
+  {
   }
 
   // Return the line of the location

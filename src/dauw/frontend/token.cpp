@@ -3,19 +3,19 @@
 namespace dauw
 {
   // Constructor for a token
-  Token::Token(string_t name, string_t value, Location location, size_t length)
-    : name_(name), value_(value), location_(location), length_(length)
+  Token::Token(TokenKind kind, string_t value, Location location)
+    : kind_(kind), value_(value), location_(location)
   {
   }
-  Token::Token(string_t name, Location location, size_t length)
-    : Token(name, "", location, length)
+  Token::Token(TokenKind kind, Location location)
+    : Token(kind, "", location)
   {
   }
 
-  // Return the name of the token
-  string_t& Token::name()
+  // Return the kind of the token
+  TokenKind& Token::kind()
   {
-    return name_;
+    return kind_;
   }
 
   // Return the value of the token
@@ -30,26 +30,15 @@ namespace dauw
     return location_;
   }
 
-  // Return the length of the token
-  size_t& Token::length()
-  {
-    return length_;
-  }
-
   // Return if the token equals another token
   bool Token::operator==(const Token& other)
   {
-    return name_ == other.name_ && value_ == other.value_ && location_ == other.location_ && length_ == other.length_;
+    return kind_ == other.kind_ && value_ == other.value_ && location_ == other.location_;
   }
 
   // Return if the token must be sorted before another token
   bool Token::operator<(const Token& other)
   {
-    if (location_ < other.location_)
-      return true;
-    else if (length_ > other.length_)
-      return true;
-    else
-      return false;
+     return location_ < other.location_;
   }
 }

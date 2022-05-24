@@ -328,9 +328,9 @@ namespace dauw
   }
 
   // Return the operator of the unary expression
-  string_t ExprUnary::op()
+  TokenKind ExprUnary::op()
   {
-    return op_.value();
+    return op_.kind();
   }
 
   // Return the operand of the unary expression
@@ -360,9 +360,9 @@ namespace dauw
   }
 
   // Return the operator of the binary expression
-  string_t ExprBinary::op()
+  TokenKind ExprBinary::op()
   {
-    return op_.value();
+    return op_.kind();
   }
 
   // Return the operands of the binary expression

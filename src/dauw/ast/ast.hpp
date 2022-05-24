@@ -425,7 +425,7 @@ namespace dauw
       ExprUnary(Token op, expr_ptr right);
 
       // Return the operator of the unary expression
-      string_t op();
+      TokenKind op();
 
       // Return the operand of the unary expression
       expr_ptr right();
@@ -453,7 +453,7 @@ namespace dauw
       ExprBinary(expr_ptr left, Token op, expr_ptr right);
 
       // Return the operator of the unary expression
-      string_t op();
+      TokenKind op();
 
       // Return the operands of the unary expression
       expr_ptr left();

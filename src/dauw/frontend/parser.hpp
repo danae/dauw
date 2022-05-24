@@ -40,17 +40,17 @@ namespace dauw
       Token current();
       Token next();
       Token advance();
-      bool check(string_t name);
-      bool match(string_t name);
-      bool match(std::initializer_list<string_t> names);
-      Token consume(string_t name, string_t context);
+      bool check(TokenKind kind);
+      bool match(TokenKind kind);
+      bool match(std::initializer_list<TokenKind> kinds);
+      Token consume(TokenKind kind, string_t context);
       void synchronize();
 
       // Parser helper functions
-      expr_ptr parse_infix_op(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_infix_op_single(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_prefix_op(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
-      expr_ptr parse_prefix_op_single(std::initializer_list<string_t> op_names, parser_function_type parse_operand);
+      expr_ptr parse_infix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      expr_ptr parse_infix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      expr_ptr parse_prefix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      expr_ptr parse_prefix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
 
       // Parsers for expressions
       expr_ptr parse_script();
@@ -65,7 +65,7 @@ namespace dauw
       expr_ptr parse_while();
       expr_ptr parse_until();
       expr_ptr parse_block();
-      expr_ptr parse_simple();
+      expr_ptr parse_operation();
       expr_ptr parse_logic_or();
       expr_ptr parse_logic_and();
       expr_ptr parse_logic_not();
@@ -75,6 +75,7 @@ namespace dauw
       expr_ptr parse_range();
       expr_ptr parse_term();
       expr_ptr parse_factor();
+      expr_ptr parse_exponent();
       expr_ptr parse_unary();
       expr_ptr parse_primary();
       expr_ptr parse_atom();
