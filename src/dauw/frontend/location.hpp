@@ -3,7 +3,7 @@
 #include <dauw/common.hpp>
 
 
-namespace dauw
+namespace dauw::frontend
 {
   // Forward declarations
   class Lexer;
@@ -51,6 +51,7 @@ namespace dauw
 namespace fmt
 {
   using namespace dauw;
+  using namespace dauw::frontend;
 
   // Class that defines a formatter for a location
   template <>

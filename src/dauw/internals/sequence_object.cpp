@@ -1,10 +1,10 @@
-#include "list.hpp"
+#include "sequence_object.hpp"
 
-namespace dauw
+namespace dauw::internals
 {
-  // Constructor for a list
-  List::List(std::initializer_list<Value> items)
-    : Obj(ObjType::LIST)
+  // Constructor for a sequence
+  Sequence::Sequence(std::initializer_list<Value> items)
+    : Obj(ObjKind::LIST, Type::type_sequence)
   {
     if (items.size() > 0)
       container_ = container_type(items.begin(), items.end());
@@ -13,17 +13,17 @@ namespace dauw
   }
 
   // Iterate over the items in the container
-  List::container_type::const_iterator List::begin()
+  Sequence::container_type::const_iterator Sequence::begin()
   {
     return container_.cbegin();
   }
-  List::container_type::const_iterator List::end()
+  Sequence::container_type::const_iterator Sequence::end()
   {
     return container_.cend();
   }
 
   // Return an iterator at a specified index
-  List::container_type::const_iterator List::pos(int index)
+  Sequence::container_type::const_iterator Sequence::pos(int index)
   {
     if (index >= 0 && index < container_.size())
     {
@@ -44,7 +44,7 @@ namespace dauw
   }
 
   // Return if the collection contains the specified item
-  bool List::contains(Value item)
+  bool Sequence::contains(Value item)
   {
     for (auto it = container_.cbegin(); it != container_.cend(); it ++)
     {
@@ -55,39 +55,39 @@ namespace dauw
   }
 
   // Return the number of items in the container
-  int List::length()
+  int Sequence::length()
   {
     return container_.size();
   }
 
   // Return if the collection contains no items
-  bool List::empty()
+  bool Sequence::empty()
   {
     return container_.empty();
   }
 
   // Return the item at the specified index in the sequence
-  Value List::at(int index)
+  Value Sequence::at(int index)
   {
     auto it = pos(index);
     return *it;
   }
 
   // Add the specified item to the collection
-  void List::add(Value item)
+  void Sequence::add(Value item)
   {
     container_.push_back(item);
   }
 
   // Add all of the items in the specified collection to the collection
-  void List::add_all(List items)
+  void Sequence::add_all(Sequence items)
   {
     for (auto it = items.container_.cbegin(); it != items.container_.cend(); it ++)
       add(*it);
   }
 
   // Remove a single instance of the specified item from the collection
-  void List::remove(Value item)
+  void Sequence::remove(Value item)
   {
     for (auto it = container_.cbegin(); it != container_.cend(); it ++)
     {
@@ -97,7 +97,7 @@ namespace dauw
   }
 
   // Remove all of the items in the specified collection from the collection
-  void List::remove_all(List items)
+  void Sequence::remove_all(Sequence items)
   {
     for (auto items_it = items.container_.cbegin(); items_it != items.container_.cend(); items_it ++)
     {
@@ -107,7 +107,7 @@ namespace dauw
   }
 
   // Remove all of the items in the collection apart from the items in the specified collection
-  void List::retain_all(List items)
+  void Sequence::retain_all(Sequence items)
   {
     for (auto items_it = items.container_.cbegin(); items_it != items.container_.cend(); items_it ++)
     {
@@ -117,20 +117,20 @@ namespace dauw
   }
 
   // Removes all of the items in the collection
-  void List::clear()
+  void Sequence::clear()
   {
     container_.clear();
   }
 
   // Insert the specified item at the specified index to the sequence
-  void List::insert(int index, Value item)
+  void Sequence::insert(int index, Value item)
   {
     auto it = pos(index);
     container_.insert(it, item);
   }
 
   // Replace the specified item at the specified index in the sequence
-  void List::replace(int index, Value item)
+  void Sequence::replace(int index, Value item)
   {
     auto it = pos(index);
     auto insert_it = container_.erase(it);
@@ -138,7 +138,7 @@ namespace dauw
   }
 
   // Erase the specified item at the specified index in the sequence
-  void List::erase(int index)
+  void Sequence::erase(int index)
   {
     auto it = pos(index);
     container_.erase(it);

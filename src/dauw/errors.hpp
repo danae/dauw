@@ -2,71 +2,206 @@
 
 #include <dauw/common.hpp>
 #include <dauw/frontend/location.hpp>
+#include <dauw/frontend/source.hpp>
+
+#include <utility>
 
 
 namespace dauw
 {
-  // Class that defines a general error in the execution of the interpreter
-  class Error
+  // Class that defines an error
+  class Error : public Exception
   {
     private:
       // The location where the error occurred
-      Location location_;
+      frontend::Location location_;
 
-      // The message of the error
-      string_t message_;
-
-      // The previous error that caused the error to happen
-      Error* previous_;
 
     public:
       // Constructor
-      Error(Location location, string_t message, Error* previous);
-      Error(Location location, string_t message);
+      inline Error(frontend::Location location, string_t message, Exception* previous) : Exception(message, previous), location_(location) {}
+      inline Error(frontend::Location location, string_t message)  : Error(location, message, nullptr) {}
 
-      // Return the fields of the error
-      string_t message() { return message_; }
-      Location location() { return location_; }
-      Error* previous() { return previous_; }
+      // Return the location where the error occurred
+      inline frontend::Location& location() { return location_; }
+
+      // Return the type of the error as a string
+      inline virtual string_t type() { return "Error"; }
   };
 
 
-  // Class that defines a syntax error
-  class SyntaxError : public Error
+  // Error thrown when compiling a source file fails
+  class CompilerError : public Error
+  {
+    public:
+      inline CompilerError(frontend::Location location, string_t message, Exception* previous) : Error(location, message, previous) {}
+      inline CompilerError(frontend::Location location, string_t message) : Error(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "CompilerError"; }
+  };
+
+  // Error thrown when lexing or parsing a source file fails
+  class SyntaxError : public CompilerError
+  {
+    public:
+      inline SyntaxError(frontend::Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
+      inline SyntaxError(frontend::Location location, string_t message) : CompilerError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "SyntaxError"; }
+  };
+
+  // Error thrown when resolving a type fails
+  class TypeError : public CompilerError
   {
     public:
       // Constructor
-      SyntaxError(Location location, string_t message, Error* previous);
-      SyntaxError(Location location, string_t message);
+      inline TypeError(frontend::Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
+      inline TypeError(frontend::Location location, string_t message) : CompilerError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "TypeError"; }
   };
 
+  // Error thrown when a type cannot be resolved
+  class TypeUnresolvedError : public TypeError
+  {
+    public:
+      inline TypeUnresolvedError(frontend::Location location, string_t message, Exception* previous) : TypeError(location, message, previous) {}
+      inline TypeUnresolvedError(frontend::Location location, string_t message) : TypeError(location, message, nullptr) {}
 
-  // Class that defines a runtime error
+      inline virtual string_t type() override { return "TypeUnresolvedError"; }
+  };
+
+  // Error thrown when a type does not match an already declared type
+  class TypeMismatchError : public TypeError
+  {
+    public:
+      inline TypeMismatchError(frontend::Location location, string_t message, Exception* previous) : TypeError(location, message, previous) {}
+      inline TypeMismatchError(frontend::Location location, string_t message) : TypeError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "TypeMismatchError"; }
+  };
+
+  // Error thrown when processing a value fails
+  class ValueError : public CompilerError
+  {
+    public:
+      inline ValueError(frontend::Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
+      inline ValueError(frontend::Location location, string_t message) : CompilerError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "ValueError"; }
+  };
+
+  // Error thrown when a value is not of the expected value type
+  class ValueMismatchError : public ValueError
+  {
+    public:
+      inline ValueMismatchError(frontend::Location location, string_t message, Exception* previous) : ValueError(location, message, previous) {}
+      inline ValueMismatchError(frontend::Location location, string_t message) : ValueError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "ValueMismatchError"; }
+  };
+
+  // Error thrown when a value exceeds the range of the expected value type
+  class ValueOverflowError : public ValueError
+  {
+    public:
+      inline ValueOverflowError(frontend::Location location, string_t message, Exception* previous) : ValueError(location, message, previous) {}
+      inline ValueOverflowError(frontend::Location location, string_t message) : ValueError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "ValueOverflowError"; }
+  };
+
+  // Error thrown when running a compiled a source file fails
   class RuntimeError : public Error
   {
     public:
-      // Constructor
-      RuntimeError(Location location, string_t message, Error* previous);
-      RuntimeError(Location location, string_t message);
+      inline RuntimeError(frontend::Location location, string_t message, Exception* previous) : Error(location, message, previous) {}
+      inline RuntimeError(frontend::Location location, string_t message) : Error(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "RuntimeError"; }
+  };
+
+  // Error thrown when an aritmethic operation fails
+  class ArithmeticError : public RuntimeError
+  {
+    public:
+      inline ArithmeticError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline ArithmeticError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "ArithmeticError"; }
+  };
+
+  // Error thrown when a value is divided by zero
+  class DivisionByZeroError : public ArithmeticError
+  {
+    public:
+      inline DivisionByZeroError(frontend::Location location, string_t message, Exception* previous) : ArithmeticError(location, message, previous) {}
+      inline DivisionByZeroError(frontend::Location location, string_t message) : ArithmeticError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "DivisionByZeroError"; }
+  };
+
+  // Error thrown when a value cannot be converted in an arithmetic operation
+  class ConversionError : public ArithmeticError
+  {
+    public:
+      inline ConversionError(frontend::Location location, string_t message, Exception* previous) : ArithmeticError(location, message, previous) {}
+      inline ConversionError(frontend::Location location, string_t message) : ArithmeticError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "ConversionError"; }
+  };
+
+  // Error thrown when the stack of the virtual machine overflows, i.e. has reached its maximum capacity
+  class StackOverflowError : public RuntimeError
+  {
+    public:
+      inline StackOverflowError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline StackOverflowError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "StackOverflowError"; }
+  };
+
+  // Error thrown when the stack of the virtual machine underflows, i.e. has no more values
+  class StackUnderflowError : public RuntimeError
+  {
+    public:
+      inline StackUnderflowError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline StackUnderflowError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "StackUnderflowError"; }
+  };
+
+  // Error thrown when an operation is not implemented
+  class UnimplementedError : public RuntimeError
+  {
+    public:
+      inline UnimplementedError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline UnimplementedError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+
+      inline virtual string_t type() override { return "UnimplementedError"; }
   };
 
 
-  // Class that defines error reporter behaviour
-  class ErrorReporter
+  // Class that defines an error reporter
+  class Reporter
   {
-    public:
-      // Type definition for the error list type
-      using error_list_type = std::vector<Error>;
-
-
     private:
+      // The source file which errors are reported for
+      frontend::Source* source_;
+
       // The list of reported errors
-      error_list_type errors_;
+      std::vector<Error> errors_;
 
 
     public:
+      // Constructor
+      Reporter(frontend::Source* source);
+
+      // Return the source file which errors are reported for
+      frontend::Source* source();
+
       // Return the reported errors
-      error_list_type errors();
+      std::vector<Error> errors();
 
       // Return if the reporter has reported errors
       bool has_errors();
@@ -75,13 +210,39 @@ namespace dauw
       void clear_errors();
 
       // Print the reported errors
-      void print_errors(string_t source);
+      void print_errors();
 
       // Print an error
-      void print_error(Error error, string_t source);
+      void print_error(Error error);
 
-      // Report an error at a location
-      SyntaxError report_syntax_error(Location location, string_t message);
-      RuntimeError report_runtime_error(Location location, string_t message);
+      // Report an error
+      template <typename T, typename std::enable_if<std::is_base_of<Error, T>::value>::type* = nullptr>
+      inline T report(frontend::Location location, string_t message, Exception* previous = nullptr)
+      {
+        T error(location, message, previous);
+        errors_.push_back(error);
+        return error;
+      }
+  };
+
+
+  // Class that defines another class to be aware of an error reporter
+  class ReporterAware
+  {
+    private:
+      // Reference to the error reporter
+      Reporter* reporter_;
+
+
+    public:
+      // Constructor
+      inline ReporterAware(Reporter* reporter) : reporter_(reporter) {}
+
+      // Report an error
+      template <typename T, typename std::enable_if<std::is_base_of<Error, T>::value>::type* = nullptr>
+      inline T report(frontend::Location location, string_t message, Exception* previous = nullptr)
+      {
+        return reporter_->report<T>(location, message, previous);
+      }
   };
 }

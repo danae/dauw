@@ -1,48 +1,21 @@
-#include "ast.hpp"
+#include "ast_expr.hpp"
 
-namespace dauw
+namespace dauw::ast
 {
-  // Return the resolved type of the node
-  type_ptr& Node::resolved_type()
-  {
-    return resolved_type_;
-  }
-
-  // Return if the node has a resolved type
-  bool Node::has_resolved_type()
-  {
-    return resolved_type_ != nullptr;
-  }
-
-  // Set the resolved type of the node
-  void Node::set_resolved_type(type_ptr& type)
-  {
-    resolved_type_ = type;
-  }
-
-  // Set the resolved type of the node to that of another node
-  void Node::set_resolved_type_from(node_ptr node)
-  {
-    if (node->has_resolved_type())
-      set_resolved_type(node->resolved_type());
-  }
-
-  // --------------------------------------------------------------------------
-
   // Constructor for a literal expression
-  ExprLiteral::ExprLiteral(Value value, Location location)
+  ExprLiteral::ExprLiteral(internals::Value value, frontend::Location location)
     : value_(value), location_(location)
   {
   }
 
   // Return the value of the literal expression
-  Value ExprLiteral::value()
+  internals::Value& ExprLiteral::value()
   {
     return value_;
   }
 
   // Return the location of the literal expression
-  Location& ExprLiteral::location()
+  frontend::Location& ExprLiteral::location()
   {
     return location_;
   }
@@ -56,7 +29,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a sequence expression
-  ExprSequence::ExprSequence(Token token, ExprSequence::sequence_type items)
+  ExprSequence::ExprSequence(frontend::Token token, ExprSequence::sequence_type items)
     : token_(token), items_(items)
   {
   }
@@ -78,7 +51,7 @@ namespace dauw
   }
 
   // Return the location of the sequence expression
-  Location& ExprSequence::location()
+  frontend::Location& ExprSequence::location()
   {
     return token_.location();
   }
@@ -92,7 +65,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a record expression
-  ExprRecord::ExprRecord(Token token, ExprRecord::record_type items)
+  ExprRecord::ExprRecord(frontend::Token token, ExprRecord::record_type items)
     : token_(token), items_(items)
   {
   }
@@ -114,7 +87,7 @@ namespace dauw
   }
 
   // Return the location of the record expression
-  Location& ExprRecord::location()
+  frontend::Location& ExprRecord::location()
   {
     return token_.location();
   }
@@ -129,7 +102,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a name expression
-  ExprName::ExprName(Token name)
+  ExprName::ExprName(frontend::Token name)
     : name_(name)
   {
   }
@@ -141,7 +114,7 @@ namespace dauw
   }
 
   // Return the location of the expression
-  Location& ExprName::location()
+  frontend::Location& ExprName::location()
   {
     return name_.location();
   }
@@ -155,7 +128,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a function definition expression
-  ExprFunction::ExprFunction(Token token, ExprFunction::parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body)
+  ExprFunction::ExprFunction(frontend::Token token, ExprFunction::parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body)
     : token_(token), parameters_(parameters), return_type_(return_type), body_(body)
   {
   }
@@ -185,7 +158,7 @@ namespace dauw
   }
 
   // Return the location of the function expression
-  Location& ExprFunction::location()
+  frontend::Location& ExprFunction::location()
   {
     return token_.location();
   }
@@ -199,7 +172,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a function parameter expression
-  ExprFunctionParameter::ExprFunctionParameter(Token name, type_expr_ptr type)
+  ExprFunctionParameter::ExprFunctionParameter(frontend::Token name, type_expr_ptr type)
     : name_(name), type_(type)
   {
   }
@@ -217,7 +190,7 @@ namespace dauw
   }
 
   // Return the location of the function parameter expression
-  Location& ExprFunctionParameter::location()
+  frontend::Location& ExprFunctionParameter::location()
   {
     return name_.location();
   }
@@ -243,7 +216,7 @@ namespace dauw
   }
 
   // Return the location of the grouped expression
-  Location& ExprGrouped::location()
+  frontend::Location& ExprGrouped::location()
   {
     return expr_->location();
   }
@@ -257,7 +230,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a call expression
-  ExprCall::ExprCall(expr_ptr callee, Token token, expr_sequence_ptr arguments)
+  ExprCall::ExprCall(expr_ptr callee, frontend::Token token, expr_sequence_ptr arguments)
     : callee_(callee), token_(token), arguments_(arguments)
   {
   }
@@ -275,7 +248,7 @@ namespace dauw
   }
 
   // Return the location of the call expression
-  Location& ExprCall::location()
+  frontend::Location& ExprCall::location()
   {
     return token_.location();
   }
@@ -289,7 +262,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a get expression
-  ExprGet::ExprGet(expr_ptr object, Token name)
+  ExprGet::ExprGet(expr_ptr object, frontend::Token name)
     : object_(object), name_(name)
   {
   }
@@ -307,7 +280,7 @@ namespace dauw
   }
 
   // Return the location of the get expression
-  Location& ExprGet::location()
+  frontend::Location& ExprGet::location()
   {
     return name_.location();
   }
@@ -322,13 +295,13 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an unary expression
-  ExprUnary::ExprUnary(Token op, expr_ptr right)
+  ExprUnary::ExprUnary(frontend::Token op, expr_ptr right)
     : op_(op), right_(right)
   {
   }
 
   // Return the operator of the unary expression
-  TokenKind ExprUnary::op()
+  frontend::TokenKind ExprUnary::op()
   {
     return op_.kind();
   }
@@ -339,8 +312,14 @@ namespace dauw
     return right_;
   }
 
+  // Return if the resolved types of the operand matches the specified type
+  bool ExprUnary::check_operand_type(internals::Type right_type)
+  {
+    return right_->check_type(right_type);
+  }
+
   // Return the location of the unary expression
-  Location& ExprUnary::location()
+  frontend::Location& ExprUnary::location()
   {
     return op_.location();
   }
@@ -354,13 +333,13 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a binary expression
-  ExprBinary::ExprBinary(expr_ptr left, Token op, expr_ptr right)
+  ExprBinary::ExprBinary(expr_ptr left, frontend::Token op, expr_ptr right)
     : left_(left), op_(op), right_(right)
   {
   }
 
   // Return the operator of the binary expression
-  TokenKind ExprBinary::op()
+  frontend::TokenKind ExprBinary::op()
   {
     return op_.kind();
   }
@@ -375,8 +354,14 @@ namespace dauw
     return right_;
   }
 
+  // Return if the resolved types of the operands match the specified types
+  bool ExprBinary::check_operand_type(internals::Type left_type, internals::Type right_type)
+  {
+    return left_->check_type(left_type) && right_->check_type(right_type);
+  }
+
   // Return the location of the binary expression
-  Location& ExprBinary::location()
+  frontend::Location& ExprBinary::location()
   {
     return op_.location();
   }
@@ -390,7 +375,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an echo expression
-  ExprEcho::ExprEcho(Token keyword, expr_ptr expr)
+  ExprEcho::ExprEcho(frontend::Token keyword, expr_ptr expr)
     : keyword_(keyword), expr_(expr)
   {
   }
@@ -402,7 +387,7 @@ namespace dauw
   }
 
   // Return the location of the echo expression
-  Location& ExprEcho::location()
+  frontend::Location& ExprEcho::location()
   {
     return keyword_.location();
   }
@@ -416,7 +401,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an if expression
-  ExprIf::ExprIf(Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch)
+  ExprIf::ExprIf(frontend::Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch)
     : keyword_(keyword), condition_(condition), true_branch_(true_branch), false_branch_(false_branch)
   {
   }
@@ -446,7 +431,7 @@ namespace dauw
   }
 
   // Return the location of the if expression
-  Location& ExprIf::location()
+  frontend::Location& ExprIf::location()
   {
     return keyword_.location();
   }
@@ -460,7 +445,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a for expression
-  ExprFor::ExprFor(Token keyword, Token name, expr_ptr iterable, expr_ptr body)
+  ExprFor::ExprFor(frontend::Token keyword, frontend::Token name, expr_ptr iterable, expr_ptr body)
     : keyword_(keyword), name_(name), iterable_(iterable), body_(body)
   {
   }
@@ -484,7 +469,7 @@ namespace dauw
   }
 
   // Return the location of the for expression
-  Location& ExprFor::location()
+  frontend::Location& ExprFor::location()
   {
     return keyword_.location();
   }
@@ -498,7 +483,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a while expression
-  ExprWhile::ExprWhile(Token keyword, expr_ptr condition, expr_ptr body)
+  ExprWhile::ExprWhile(frontend::Token keyword, expr_ptr condition, expr_ptr body)
     : keyword_(keyword), condition_(condition), body_(body)
   {
   }
@@ -516,7 +501,7 @@ namespace dauw
   }
 
   // Return the location of the while expression
-  Location& ExprWhile::location()
+  frontend::Location& ExprWhile::location()
   {
     return keyword_.location();
   }
@@ -530,7 +515,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an until expression
-  ExprUntil::ExprUntil(Token keyword, expr_ptr condition, expr_ptr body)
+  ExprUntil::ExprUntil(frontend::Token keyword, expr_ptr condition, expr_ptr body)
     : keyword_(keyword), condition_(condition), body_(body)
   {
   }
@@ -548,7 +533,7 @@ namespace dauw
   }
 
   // Return the location of the until expression
-  Location& ExprUntil::location()
+  frontend::Location& ExprUntil::location()
   {
     return keyword_.location();
   }
@@ -562,31 +547,32 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a block expression
-  ExprBlock::ExprBlock(ExprBlock::block_type exprs)
+  ExprBlock::ExprBlock(std::vector<expr_ptr> exprs)
     : exprs_(exprs)
   {
   }
 
   // Return the expressions of the block expression
-  ExprBlock::block_type ExprBlock::exprs()
+  std::vector<expr_ptr> ExprBlock::exprs()
   {
     return exprs_;
   }
 
   // Iterate over the expressions of the block expression
-  ExprBlock::block_type::const_iterator ExprBlock::begin()
+  std::vector<expr_ptr>::const_iterator ExprBlock::begin()
   {
     return exprs_.cbegin();
   }
-  ExprBlock::block_type::const_iterator ExprBlock::end()
+  std::vector<expr_ptr>::const_iterator ExprBlock::end()
   {
     return exprs_.cend();
   }
 
   // Return the location of the block expression
-  Location& ExprBlock::location()
+  frontend::Location& ExprBlock::location()
   {
     // TODO: Possibly use the indent token for the block location
+
     return exprs_[0]->location();
   }
 
@@ -599,7 +585,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a def expression
-  ExprDef::ExprDef(Token name, std::optional<type_expr_ptr> type, expr_ptr value)
+  ExprDef::ExprDef(frontend::Token name, std::optional<type_expr_ptr> type, expr_ptr value)
     : name_(name), type_(type), value_(value)
   {
   }
@@ -629,7 +615,7 @@ namespace dauw
   }
 
   // Return the location of the def expression
-  Location& ExprDef::location()
+  frontend::Location& ExprDef::location()
   {
     return name_.location();
   }
@@ -638,175 +624,5 @@ namespace dauw
   void ExprDef::accept(const expr_visitor_ptr& visitor)
   {
     visitor->visit_def(shared_from_this());
-  }
-
-  // --------------------------------------------------------------------------
-
-  // Constructor for a name type expression
-  TypeExprName::TypeExprName(Token name)
-    : name_(name)
-  {
-  }
-
-  // Return the name of the name type expression
-  string_t TypeExprName::name()
-  {
-    return name_.value();
-  }
-
-  // Return the location of the name type expression
-  Location& TypeExprName::location()
-  {
-    return name_.location();
-  }
-
-  // Accept a visitor on a name type expression
-  void TypeExprName::accept(const type_expr_visitor_ptr& visitor)
-  {
-    visitor->visit_type_name(shared_from_this());
-  }
-
-  // --------------------------------------------------------------------------
-
-  // Constructor for a grouped type expression
-  TypeExprGrouped::TypeExprGrouped(type_expr_ptr expr)
-    : expr_(expr)
-  {
-  }
-
-  // Return the nested type expression of the grouped type expression
-  type_expr_ptr TypeExprGrouped::expr()
-  {
-    return expr_;
-  }
-
-  // Return the location of the grouped type expression
-  Location& TypeExprGrouped::location()
-  {
-    return expr_->location();
-  }
-
-  // Accept a visitor on a grouped type expression
-  void TypeExprGrouped::accept(const type_expr_visitor_ptr& visitor)
-  {
-    visitor->visit_type_grouped(shared_from_this());
-  }
-
-  // --------------------------------------------------------------------------
-
-  // Constructor for a generic type expression
-  TypeExprGeneric::TypeExprGeneric(type_expr_ptr base, Token token, TypeExprGeneric::generic_type arguments)
-    : base_(base), token_(token), arguments_(arguments)
-  {
-  }
-
-  // Return the base of the generic type expression
-  type_expr_ptr TypeExprGeneric::base()
-  {
-    return base_;
-  }
-
-  // Return the generic arguments of the generic type expression
-  TypeExprGeneric::generic_type TypeExprGeneric::arguments()
-  {
-    return arguments_;
-  }
-
-  // Return the location of the generic type expression
-  Location& TypeExprGeneric::location()
-  {
-    return token_.location();
-  }
-
-  // Accept a visitor on a generic type expression
-  void TypeExprGeneric::accept(const type_expr_visitor_ptr& visitor)
-  {
-    visitor->visit_type_generic(shared_from_this());
-  }
-
-  // --------------------------------------------------------------------------
-
-  // Constructor for a maybe type expression
-  TypeExprMaybe::TypeExprMaybe(type_expr_ptr base, Token op)
-    : base_(base), op_(op)
-  {
-  }
-
-  // Return the base of the maybe type expression
-  type_expr_ptr TypeExprMaybe::base()
-  {
-    return base_;
-  }
-
-  // Return the location of the maybe type expression
-  Location& TypeExprMaybe::location()
-  {
-    return op_.location();
-  }
-
-  // Accept a visitor on a maybe type expression
-  void TypeExprMaybe::accept(const type_expr_visitor_ptr& visitor)
-  {
-    visitor->visit_type_maybe(shared_from_this());
-  }
-
-  // --------------------------------------------------------------------------
-
-  // Constructor for an intersection type expression
-  TypeExprIntersection::TypeExprIntersection(type_expr_ptr left, Token op, type_expr_ptr right)
-    : left_(left), op_(op), right_(right)
-  {
-  }
-
-  // Return the operands of the intersection type expression
-  type_expr_ptr TypeExprIntersection::left()
-  {
-    return left_;
-  }
-  type_expr_ptr TypeExprIntersection::right()
-  {
-    return right_;
-  }
-
-  // Return the location of the intersection type expression
-  Location& TypeExprIntersection::location()
-  {
-    return op_.location();
-  }
-
-  // Accept a visitor on an intersection type expression
-  void TypeExprIntersection::accept(const type_expr_visitor_ptr& visitor)
-  {
-    visitor->visit_type_intersection(shared_from_this());
-  }
-
-  // --------------------------------------------------------------------------
-
-  // Constructor for an union type expression
-  TypeExprUnion::TypeExprUnion(type_expr_ptr left, Token op, type_expr_ptr right)
-    : left_(left), op_(op), right_(right)
-  {
-  }
-
-  // Return the operands of the union type expression
-  type_expr_ptr TypeExprUnion::left()
-  {
-    return left_;
-  }
-  type_expr_ptr TypeExprUnion::right()
-  {
-    return right_;
-  }
-
-  // Return the location of the union type expression
-  Location& TypeExprUnion::location()
-  {
-    return op_.location();
-  }
-
-  // Accept a visitor on an union type expression
-  void TypeExprUnion::accept(const type_expr_visitor_ptr& visitor)
-  {
-    visitor->visit_type_union(shared_from_this());
   }
 }

@@ -1,10 +1,10 @@
-#include "record.hpp"
+#include "record_object.hpp"
 
-namespace dauw
+namespace dauw::internals
 {
   // Constructor for a record
   Record::Record(std::initializer_list<Record::container_value_type> items)
-    : Obj(ObjType::RECORD)
+    : Obj(ObjKind::RECORD, Type::type_record)
   {
     if (items.size() > 0)
       container_ = container_type(items.begin(), items.end());

@@ -1,10 +1,10 @@
-#include "string.hpp"
+#include "string_object.hpp"
 
-namespace dauw
+namespace dauw::internals
 {
   // Constructor for a string
   String::String(size_t length, char* bytes)
-    : Obj(ObjType::STRING)
+    : Obj(ObjKind::STRING, Type::type_string)
   {
     if (!utf8::is_valid(bytes, bytes + length))
       throw std::out_of_range(fmt::format("\"{}\" is not a valid UTF-8 encoded string", bytes));
@@ -15,7 +15,7 @@ namespace dauw
 
   // Constructor for a string that copies the specified bytes
   String::String(const char* bytes)
-    : Obj(ObjType::STRING)
+    : Obj(ObjKind::STRING, Type::type_string)
   {
     length_ = strlen(bytes);
     bytes_ = (char*)malloc(sizeof(char) * (length_ + 1));

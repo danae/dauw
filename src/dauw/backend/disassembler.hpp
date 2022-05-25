@@ -2,10 +2,9 @@
 
 #include <dauw/common.hpp>
 #include <dauw/backend/code.hpp>
-#include <dauw/backend/instruction.hpp>
 
 
-namespace dauw
+namespace dauw::backend
 {
   // Class that defines a disassembler for a block of code
   class Disassembler

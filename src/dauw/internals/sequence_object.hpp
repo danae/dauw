@@ -7,10 +7,10 @@
 #include <list>
 
 
-namespace dauw
+namespace dauw::internals
 {
   // Class that defines a implementation for Sequence[T] using std::list<T>
-  class List : public Obj
+  class Sequence : public Obj
   {
     public:
       // Type definition for the backing C++ container
@@ -18,7 +18,7 @@ namespace dauw
 
 
     private:
-      // The backing C++ container of the list
+      // The backing C++ container of the sequence
       container_type container_;
 
       // Iterate over the items in the container
@@ -31,7 +31,7 @@ namespace dauw
 
     public:
       // Constructor
-      List(std::initializer_list<Value> items = {});
+      Sequence(std::initializer_list<Value> items = {});
 
       // Return if the collection contains the specified item
       bool contains(Value item);
@@ -49,16 +49,16 @@ namespace dauw
       void add(Value item);
 
       // Add all of the items in the specified collection to the collection
-      void add_all(List items);
+      void add_all(Sequence items);
 
       // Remove a single instance of the specified item from the collection
       void remove(Value item);
 
       // Remove all of the items in the specified collection from the collection
-      void remove_all(List items);
+      void remove_all(Sequence items);
 
       // Remove all of the items in the collection apart from the items in the specified collection
-      void retain_all(List items);
+      void retain_all(Sequence items);
 
       // Removes all of the items in the collection
       void clear();

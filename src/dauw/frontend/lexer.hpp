@@ -9,10 +9,10 @@
 #include <variant>
 
 
-namespace dauw
+namespace dauw::frontend
 {
  // Class that defines the lexer
-  class Lexer
+  class Lexer : public ReporterAware
   {
     public:
       // Type definition for a rule
@@ -48,16 +48,10 @@ namespace dauw
       // The source string
       string_t source_;
 
-      // The name of the source string
-      string_t source_name_;
-
-      // Reference to the error reporter
-      ErrorReporter* reporter_;
-
 
     public:
       // Constructor
-      Lexer(string_t source, string_t source_name, ErrorReporter* reporter);
+      Lexer(Reporter* reporter, string_t source);
 
       // Convert a string into a token iterator
       token_list_type tokenize();

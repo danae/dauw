@@ -4,7 +4,7 @@
 #include <dauw/frontend/location.hpp>
 
 
-namespace dauw
+namespace dauw::frontend
 {
   // Enum that defines the kind of a token in a source string
   enum class TokenKind : uint8_t
@@ -36,7 +36,6 @@ namespace dauw
     OPERATOR_UNION,
     OPERATOR_LENGTH,
     OPERATOR_STRING,
-    OPERATOR_EXPONENT,
     OPERATOR_MULTIPLY,
     OPERATOR_DIVIDE,
     OPERATOR_QUOTIENT,
@@ -125,6 +124,7 @@ namespace dauw
 namespace fmt
 {
   using namespace dauw;
+  using namespace dauw::frontend;
 
   // Class that defines a formatter for a token kind
   template <>
@@ -155,7 +155,6 @@ namespace fmt
         case TokenKind::OPERATOR_UNION: return "union operator";
         case TokenKind::OPERATOR_LENGTH: return "length operator";
         case TokenKind::OPERATOR_STRING: return "string operator";
-        case TokenKind::OPERATOR_EXPONENT: return "exponent operator";
         case TokenKind::OPERATOR_MULTIPLY: return "multiply operator";
         case TokenKind::OPERATOR_DIVIDE: return "divide operator";
         case TokenKind::OPERATOR_QUOTIENT: return "quotient operator";

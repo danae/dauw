@@ -1,6 +1,6 @@
 #include "lexer.hpp"
 
-namespace dauw
+namespace dauw::frontend
 {
   // Initialize the regex patterns for the lexer
   regex_t Lexer::comment_pattern_("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
@@ -39,7 +39,6 @@ namespace dauw
     std::make_tuple(TokenKind::OPERATOR_UNION, regex_t("\\|"), rule_replacement_type(0)),
     std::make_tuple(TokenKind::OPERATOR_LENGTH, regex_t("#"), rule_replacement_type(0)),
     std::make_tuple(TokenKind::OPERATOR_STRING, regex_t("\\$"), rule_replacement_type(0)),
-    std::make_tuple(TokenKind::OPERATOR_EXPONENT, regex_t("\\^"), rule_replacement_type(0)),
     std::make_tuple(TokenKind::OPERATOR_MULTIPLY, regex_t("\\*"), rule_replacement_type(0)),
     std::make_tuple(TokenKind::OPERATOR_DIVIDE, regex_t("/"), rule_replacement_type(0)),
     std::make_tuple(TokenKind::OPERATOR_QUOTIENT, regex_t("//"), rule_replacement_type(0)),
@@ -91,8 +90,8 @@ namespace dauw
 
 
   // Constructor for the lexer
-  Lexer::Lexer(string_t source, string_t source_name, ErrorReporter* reporter)
-    : source_(source), source_name_(source_name), reporter_(reporter)
+  Lexer::Lexer(Reporter* reporter, string_t source)
+    : ReporterAware(reporter), source_(source)
   {
   }
 
@@ -109,7 +108,7 @@ namespace dauw
     Location location;
 
     // Iterate over the lines in the source
-    for (auto line : dauw::common::str_split_lines(source_))
+    for (auto line : utils::string::split_lines(source_))
     {
       // Check for a shebang at the start of the source
       if (line.rfind("#!", 0) == 0)
@@ -117,7 +116,7 @@ namespace dauw
         // If this is the first line of the source, then ignore the shebang, otherwise report an error
         if (location.line() != 0)
         {
-          reporter_->report_syntax_error(location, "Syntax error: A shebang is only allowed at the first line of the source");
+          report<SyntaxError>(location, "A shebang is only allowed at the first line of the source");
           return token_list_type({});
         }
 
@@ -143,7 +142,7 @@ namespace dauw
         // Check if the indent is on the first line, because that's an Error
         if (location.line() == 0)
         {
-          reporter_->report_syntax_error(location, "Syntax error: The first line of the source should never be indented");
+          report<SyntaxError>(location, "The first line of the source should never be indented");
           return token_list_type({});
         }
 
@@ -162,7 +161,7 @@ namespace dauw
      // If the indent doesn't match the current indentation level, then report an error
       if (indent != indents.back())
       {
-        reporter_->report_syntax_error(location, "Syntax error: The indentation does not match any outer indentation level");
+        report<SyntaxError>(location, "The indentation does not match any outer indentation level");
         return token_list_type({});
       }
 
@@ -172,7 +171,7 @@ namespace dauw
       while (location.col() < line.length())
       {
         // Check for comments at the current position
-        match_t comment_match = dauw::common::regex_match(comment_pattern_, line, location.col());
+        match_t comment_match = utils::regex::match(comment_pattern_, line, location.col());
         if (!comment_match.empty() && comment_match.str(1) != "")
         {
           tokens.push_back(Token(TokenKind::COMMENT, comment_match.str(1), location));
@@ -181,7 +180,7 @@ namespace dauw
         }
 
         // Check for whitespaces at the current position
-        match_t whitespace_match = dauw::common::regex_match(whitespace_pattern_, line, location.col());
+        match_t whitespace_match = utils::regex::match(whitespace_pattern_, line, location.col());
         if (!whitespace_match.empty())
         {
           location.increase_col_(whitespace_match.length());
@@ -192,7 +191,7 @@ namespace dauw
         std::vector<matched_token_type> matched_tokens;
         for (auto rule : rules_)
         {
-          match_t rule_match = dauw::common::regex_match(std::get<1>(rule), line, location.col());
+          match_t rule_match = utils::regex::match(std::get<1>(rule), line, location.col());
           if (!rule_match.empty())
           {
             auto rule_replace = std::get<2>(rule);
@@ -208,7 +207,7 @@ namespace dauw
         // If there are no matched tokens, then we've encountered a syntax Error
         if (matched_tokens.empty())
         {
-          reporter_->report_syntax_error(location, fmt::format("Syntax error: Invalid character '{}'", line.substr(location.col(), 1)));
+          report<SyntaxError>(location, fmt::format("Invalid character '{}'", line.substr(location.col(), 1)));
           return token_list_type({});
         }
 

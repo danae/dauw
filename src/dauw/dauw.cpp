@@ -3,101 +3,67 @@
 
 namespace dauw
 {
-  void print_tokens(Lexer::token_list_type tokens)
-  {
-    int indent = 0;
-    for (auto token : tokens)
-    {
-      auto indent_str = string_utils::repeat("    ", indent);
-
-      if (token.name() == "newline")
-      {
-        fmt::print(fmt::fg(fmt::color::gold), "{}{}\n", indent_str, token);
-      }
-      else if (token.name() == "indent")
-      {
-        fmt::print(fmt::fg(fmt::color::light_green), "{}{}\n", indent_str, token);
-        indent ++;
-      }
-      else if (token.name() == "dedent")
-      {
-        indent --;
-        indent_str = string_utils::repeat("    ", indent);
-        fmt::print(fmt::fg(fmt::color::light_pink), "{}{}\n", indent_str, token);
-      }
-      else if (token.name() == "eof")
-      {
-        fmt::print(fmt::fg(fmt::color::tomato), "{}{}\n", indent_str, token);
-      }
-      else if (token.name() == "comment")
-      {
-        fmt::print(fmt::fg(fmt::color::gray), "{}{}\n", indent_str, token);
-      }
-      else
-      {
-        fmt::print("{}{}\n", indent_str, token);
-      }
-    }
-  }
-
-
   // Constructor
   Dauw::Dauw()
   {
-    // Create the error reporter
-    reporter_ = std::make_shared<ErrorReporter>();
-
-    // Create the virtual machine
-    vm_ = std::make_shared<VM>(reporter_.get());
   }
 
-  // Interpret a source string
-  int Dauw::run(string_t source, string_t source_name)
+  // Run code from a source file
+  int Dauw::run(frontend::Source* source)
   {
-    // Set the current source and error indicator
-    current_source_ = source;
-    current_source_name_ = source_name;
+    // TODO: Create a global reporter and VM
+
+    // Create the error reporter
+    auto reporter = std::make_shared<Reporter>(source);
+
+    // Create the virtual machine
+    auto vm = std::make_shared<backend::VM>(reporter.get());
 
     // Tokenize the source string
-    auto tokens = Lexer(source, source_name, reporter_.get()).tokenize();
-    if (reporter_->has_errors())
+    auto tokens = frontend::Lexer(reporter.get(), source->source()).tokenize();
+    if (reporter->has_errors())
     {
-      reporter_->print_errors(current_source_);
-      reporter_->clear_errors();
+      reporter->print_errors();
+      reporter->clear_errors();
       return DAUW_EXIT_DATAERR;
     }
 
     // Parse the tokens and exit the application if a parser error occurred
-    auto expr = Parser(tokens, reporter_.get(), vm_.get()).parse();
-    if (reporter_->has_errors())
+    auto expr = frontend::Parser(reporter.get(), vm.get(), tokens).parse();
+    if (reporter->has_errors())
     {
-      reporter_->print_errors(current_source_);
-      reporter_->clear_errors();
+      reporter->print_errors();
+      reporter->clear_errors();
       return DAUW_EXIT_DATAERR;
     }
 
     // Resolve the types of the expression
-    //auto type_resolver = std::make_shared<TypeResolver>();
-    //type_resolver->resolve(expr);
+    auto type_resolver = std::make_shared<backend::TypeResolver>(reporter.get());
+    type_resolver->resolve(expr);
+    if (reporter->has_errors())
+    {
+      reporter->print_errors();
+      reporter->clear_errors();
+      return DAUW_EXIT_SOFTWAREERR;
+    }
 
     // Execute the expression and exit the application if a runtime error occurred
-    auto code = std::make_shared<Code>();
-    auto compiler = std::make_shared<Compiler>(code.get());
+    auto code = std::make_shared<backend::Code>();
+    auto compiler = std::make_shared<backend::Compiler>(reporter.get(), code.get());
     compiler->compile(expr);
-    if (reporter_->has_errors())
+    if (reporter->has_errors())
     {
-      reporter_->print_errors(current_source_);
-      reporter_->clear_errors();
+      reporter->print_errors();
+      reporter->clear_errors();
       return DAUW_EXIT_SOFTWAREERR;
     }
 
     // Run the compiled code
-    //code->disassemble(current_source_name_);
-    vm_->run(code.get());
-    if (reporter_->has_errors())
+    vm->run(code.get());
+    if (reporter->has_errors())
     {
-      reporter_->print_errors(current_source_);
-      reporter_->clear_errors();
+      reporter->print_errors();
+      reporter->clear_errors();
       return DAUW_EXIT_SOFTWAREERR;
     }
 
@@ -122,7 +88,8 @@ namespace dauw
       linenoise::AddHistory(line.c_str());
 
       // Run the line
-  		run(line, "<prompt>");
+      auto source_ptr = std::make_shared<frontend::Source>("<prompt>", line);
+  		run(source_ptr.get());
   	}
 
     // Exit the loop normally
@@ -132,18 +99,16 @@ namespace dauw
   // Run code from a file
   int Dauw::run_file(string_t file)
   {
-    // Check if the file exists
-    if (!std::filesystem::exists(file))
+    try
     {
-      fmt::print(fmt::fg(fmt::color::crimson), "The file '{}' does not exist", file);
+      // Run the source from the specified file
+      auto source_ptr = std::shared_ptr<frontend::Source>(frontend::Source::read(file));
+  	  return run(source_ptr.get());
+    }
+    catch (frontend::SourceException& ex)
+    {
+      fmt::print(fmt::fg(fmt::color::crimson), "{}\n", ex.message());
       return DAUW_EXIT_IOERR;
     }
-
-    // Read the source string from the absolute file
-    std::ifstream stream(file);
-  	string_t source((std::istreambuf_iterator<char>(stream)), (std::istreambuf_iterator<char>()));
-
-    // Run the source string
-  	return run(source, std::filesystem::canonical(file));
   }
 }

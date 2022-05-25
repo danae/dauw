@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 
-namespace dauw
+namespace dauw::internals
 {
   // Class that defines a implementation for Record using std::unordered_map<T>
   class Record : public Obj

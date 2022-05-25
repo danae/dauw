@@ -3,9 +3,6 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/internals/object.hpp>
-#include <dauw/internals/type.hpp>
-
-#include <memory>
 
 
 // Type definition for the value type
@@ -15,6 +12,7 @@ using value_t = uint64_t;
 #define BITMASK_SIGN        ((value_t)0x8000'0000'0000'0000)
 #define BITMASK_QNAN        ((value_t)0x7ff8'0000'0000'0000)
 #define BITMASK_TAG         ((value_t)0x0007'0000'0000'0000)
+#define BITMASK_SIGNATURE   ((value_t)0xffff'0000'0000'0000)
 #define BITMASK_VALUE       ((value_t)0x0000'ffff'ffff'ffff)
 
 // Defines for tags of primitives
@@ -32,18 +30,13 @@ using value_t = uint64_t;
 #define VAL_TRUE            ((value_t)(BITMASK_QNAN | TAG_TRUE))
 
 // Defines for allowed value ranges
-#define INT_RANGE_CHECK     ((int64_t)0xffff'0000'0000'0000)
-#define INT_OF_NEG_CHECK    ((int64_t)0xffff'8000'0000'0000)
-#define INT_OF_NEG_MASK     ((int64_t)0x0000'ffff'ffff'ffff)
-#define INT_AS_NEG_CHECK    ((int64_t)0x0000'8000'0000'0000)
-#define INT_AS_NEG_VAL      ((int64_t)0xffff'0000'0000'0000)
-
+#define INT_NEGATIVE        ((int64_t)0x0000'8000'0000'0000)
 #define RUNE_MAX            ((uint32_t)0x10ffff)
 #define RUNE_SURROGATE_MIN  ((uint32_t)0x00d800)
 #define RUNE_SURROGATE_MAX  ((uint32_t)0x00dfff)
 
 
-namespace dauw
+namespace dauw::internals
 {
   // Class that represents a value in stack memory
   class Value
@@ -52,47 +45,44 @@ namespace dauw
       // The actual value
       value_t value_;
 
-      // The type of the value
-      type_ptr type_;
-
 
     public:
       // Constructor
-      Value(value_t value, type_ptr type);
-
-      // Return the type of the value
-      type_ptr& type();
+      Value(value_t value);
 
       // Value that represents a constant type
       bool is_nothing() const;
       void as_nothing() const;
 
       // Value tha trepresents a bool type
-      static Value of_bool(bool bool_value);
+      static Value of_bool(dauw_bool_t bool_value);
       bool is_bool() const;
       bool is_false() const;
       bool is_true() const;
-      bool as_bool() const;
+      dauw_bool_t as_bool() const;
 
       // Value that represents an int type
-      static Value of_int(int64_t int_value);
+      static Value of_int(dauw_int_t int_value);
       bool is_int() const;
-      int64_t as_int() const;
+      dauw_int_t as_int() const;
 
       // Value that represents a rune type
-      static Value of_rune(uint32_t rune_value);
+      static Value of_rune(dauw_rune_t rune_value);
       bool is_rune() const;
-      uint32_t as_rune() const;
+      dauw_rune_t as_rune() const;
 
       // Value that represents a real type
-      static Value of_real(double real_value);
+      static Value of_real(dauw_real_t real_value);
       bool is_real() const;
-      double as_real() const;
+      dauw_real_t as_real() const;
 
       // Value that represents an object type
-      static Value of_obj(Obj* object_value, type_ptr object_type);
+      static Value of_obj(Obj* object_value, Type object_type);
       bool is_obj() const;
       Obj* as_obj() const;
+
+      // Return the type of the value
+      Type& type();
 
       // Assign another value to this value
       Value operator=(const Value& other);
@@ -106,28 +96,72 @@ namespace dauw
 
       // Return a representative string representation of the value
       string_t to_string();
+
+
+      // Definitions for global values
+      static Value value_nothing;
+      static Value value_false;
+      static Value value_true;
   };
 
 
-  // Definitions for primitive values
-  const Value value_nothing = Value(VAL_NOTHING, std::make_shared<Type>(TypeKind::NOTHING));
-  const Value value_false = Value(VAL_FALSE, std::make_shared<Type>(TypeKind::BOOL));
-  const Value value_true = Value(VAL_TRUE, std::make_shared<Type>(TypeKind::BOOL));
+  // Exception thrown when processing a value fails
+  class ValueException : public Exception
+  {
+    public:
+      inline ValueException(string_t message, Exception* previous) : Exception(message, previous) {}
+      inline ValueException(string_t message) : Exception(message, nullptr) {}
+  };
+
+  // Exception thrown when a value is not of the expected value type
+  class ValueMismatchException : public ValueException
+  {
+    public:
+      inline ValueMismatchException(string_t message, Exception* previous) : ValueException(message, previous) {}
+      inline ValueMismatchException(string_t message) : ValueException(message, nullptr) {}
+  };
+
+  // Exception thrown when a value exceeds the range of the expected value type
+  class ValueOverflowException : public ValueException
+  {
+    public:
+      inline ValueOverflowException(string_t message, Exception* previous) : ValueException(message, previous) {}
+      inline ValueOverflowException(string_t message) : ValueException(message, nullptr) {}
+  };
 }
 
 
 namespace fmt
 {
   using namespace dauw;
+  using namespace dauw::internals;
 
   // Class that defines a formatter for a value
   template <>
   struct formatter<Value> : formatter<string_view_t>
   {
+    inline string_t stringify(Value value)
+    {
+      if (value.is_nothing())
+        return "nothing";
+      else if (value.is_bool())
+        return fmt::format("{}", value.as_bool() ? "true" : "false");
+      else if (value.is_int())
+        return fmt::format("{}", value.as_int());
+      else if (value.is_rune())
+        return fmt::format("'{}'", dauw::utils::string::rune_pack_to_str(value.as_rune()));
+      else if (value.is_real())
+        return fmt::format("{:#}", value.as_real());
+      else if (value.is_obj())
+        return fmt::format("{}", *value.as_obj());
+      else
+        return fmt::format("<invalid value>");
+    }
+
     template <typename FormatContext>
     auto format(Value value, FormatContext& ctx)
     {
-      return formatter<string_view_t>::format(value.to_string(), ctx);
+      return formatter<string_view_t>::format(stringify(value), ctx);
     }
   };
 }

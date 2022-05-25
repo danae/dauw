@@ -1,16 +1,16 @@
 #include "parser.hpp"
 
-namespace dauw
+namespace dauw::frontend
 {
   // Constructor for the parser
-  Parser::Parser(Lexer::token_list_type tokens, ErrorReporter* reporter, VM* vm)
-    : tokens_(tokens), reporter_(reporter), vm_(vm)
+  Parser::Parser(Reporter* reporter, backend::VM* vm, Lexer::token_list_type tokens)
+    : ReporterAware(reporter), vm_(vm), tokens_(tokens)
   {
     index_ = 0;
   }
 
   // Parse a deque of tokens into an expression
-  expr_ptr Parser::parse()
+  ast::expr_ptr Parser::parse()
   {
     // Parse the script
     try
@@ -92,9 +92,9 @@ namespace dauw
     if (match(kind))
       return current();
     else if (!context.empty())
-      throw reporter_->report_syntax_error(next().location(), fmt::format("Syntax error: Expected {} {}, but found {}", kind, context, next().kind()));
+      throw report<SyntaxError>(next().location(), fmt::format("Expected {} {}, but found {}", kind, context, next().kind()));
     else
-      throw reporter_->report_syntax_error(next().location(), fmt::format("Syntax error: Expected {}, but found {}", kind, next().kind()));
+      throw report<SyntaxError>(next().location(), fmt::format("Expected {}, but found {}", kind, next().kind()));
   }
 
   // Synchronize the parser after an error
@@ -118,51 +118,51 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Parse an infix operation
-  expr_ptr Parser::parse_infix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
+  ast::expr_ptr Parser::parse_infix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
   {
     auto left = parse_operand(this);
     while (match(op_kinds))
     {
       auto op = current();
       auto right = parse_operand(this);
-      left = std::make_shared<ExprBinary>(left, op, right);
+      left = std::make_shared<ast::ExprBinary>(left, op, right);
     }
     return left;
   }
 
   // Parse an infix operation that is not allowed to chain
-  expr_ptr Parser::parse_infix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
+  ast::expr_ptr Parser::parse_infix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
   {
     auto left = parse_operand(this);
     if (match(op_kinds))
     {
       auto op = current();
       auto right = parse_operand(this);
-      return std::make_shared<ExprBinary>(left, op, right);
+      return std::make_shared<ast::ExprBinary>(left, op, right);
     }
     return left;
   }
 
   // Parse a prefix operation
-  expr_ptr Parser::parse_prefix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
+  ast::expr_ptr Parser::parse_prefix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
   {
     if (match(op_kinds))
     {
       auto op = current();
       auto right = parse_prefix_op(op_kinds, parse_operand);
-      return std::make_shared<ExprUnary>(op, right);
+      return std::make_shared<ast::ExprUnary>(op, right);
     }
     return parse_operand(this);
   }
 
   // Parse a prefix operation that is not allowed to chain
-  expr_ptr Parser::parse_prefix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
+  ast::expr_ptr Parser::parse_prefix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand)
   {
     if (match(op_kinds))
     {
       auto op = current();
       auto right = parse_operand(this);
-      return std::make_shared<ExprUnary>(op, right);
+      return std::make_shared<ast::ExprUnary>(op, right);
     }
     return parse_operand(this);
   }
@@ -173,22 +173,22 @@ namespace dauw
 
   // Parse a script
   // script → line* EOF
-  expr_ptr Parser::parse_script()
+  ast::expr_ptr Parser::parse_script()
   {
     // Create a vector to store expressions
-    ExprBlock::block_type exprs;
+    std::vector<ast::expr_ptr> exprs;
 
     // Parse lines until we reach an END token
     while (!at_end())
       exprs.push_back(parse_line());
 
     // Return a block expresssion containing the expressions
-    return std::make_shared<ExprBlock>(exprs);
+    return std::make_shared<ast::ExprBlock>(exprs);
   }
 
   // Parse a line
   // line → (COMMENT | expression COMMENT?) NEWLINE
-  expr_ptr Parser::parse_line()
+  ast::expr_ptr Parser::parse_line()
   {
     try
     {
@@ -226,7 +226,7 @@ namespace dauw
 
   // Parse an expression
   // expression → def | assignment
-  expr_ptr Parser::parse_expression()
+  ast::expr_ptr Parser::parse_expression()
   {
     // Check for a def declaration
     if (match(TokenKind::KEYWORD_DEF))
@@ -238,7 +238,7 @@ namespace dauw
 
   // Parse a def declaration
   // def → 'def' IDENTIFIER ('(' parameters ')')? (':' type)? '=' assignment
-  expr_ptr Parser::parse_def()
+  ast::expr_ptr Parser::parse_def()
   {
     // Set the keyword
     auto keyword = current();
@@ -258,7 +258,7 @@ namespace dauw
       auto parameters = parse_parameters();
 
       // Parse the return type
-      std::optional<type_expr_ptr> return_type = std::nullopt;
+      std::optional<ast::type_expr_ptr> return_type = std::nullopt;
       if (match(TokenKind::SYMBOL_COLON))
         return_type = std::make_optional(parse_type());
 
@@ -268,15 +268,15 @@ namespace dauw
 
       // Return the declaration
       // TODO: Add the proper function type
-      auto function = std::make_shared<ExprFunction>(token, parameters, return_type, body);
-      return std::make_shared<ExprDef>(name, std::nullopt, function);
+      auto function = std::make_shared<ast::ExprFunction>(token, parameters, return_type, body);
+      return std::make_shared<ast::ExprDef>(name, std::nullopt, function);
     }
     else
     {
       // The def declaration is a name declaration
 
       // Parse the type
-      std::optional<type_expr_ptr> type = std::nullopt;
+      std::optional<ast::type_expr_ptr> type = std::nullopt;
       if (match(TokenKind::SYMBOL_COLON))
         type = std::make_optional(parse_type());
 
@@ -285,13 +285,13 @@ namespace dauw
       auto value = parse_assignment();
 
       // Return the declaration
-      return std::make_shared<ExprDef>(name, type, value);
+      return std::make_shared<ast::ExprDef>(name, type, value);
     }
   }
 
   // Parse an assignment expression
   // assignment → (call '.')? IDENTIFIER '=' assignment | control
-  expr_ptr Parser::parse_assignment()
+  ast::expr_ptr Parser::parse_assignment()
   {
     // TODO: Parse an assignment expression
 
@@ -301,7 +301,7 @@ namespace dauw
 
   // Parse a control flow expression
   // control → echo | if | for | while | until | block | operation
-  expr_ptr Parser::parse_control()
+  ast::expr_ptr Parser::parse_control()
   {
     // Check for an echo expression
     if (match(TokenKind::KEYWORD_ECHO))
@@ -333,7 +333,7 @@ namespace dauw
 
   // Parse an echo expression
   // echo → 'echo' operation
-  expr_ptr Parser::parse_echo()
+  ast::expr_ptr Parser::parse_echo()
   {
     // Set the keyword
     auto keyword = current();
@@ -342,12 +342,12 @@ namespace dauw
     auto expr = parse_operation();
 
     // Return the expression
-    return std::make_shared<ExprEcho>(keyword, expr);
+    return std::make_shared<ast::ExprEcho>(keyword, expr);
   }
 
   // Parse an if expression
   // if → 'if' operation 'then' expression ('else' expression)?
-  expr_ptr Parser::parse_if()
+  ast::expr_ptr Parser::parse_if()
   {
     // Set the keyword
     auto keyword = current();
@@ -360,17 +360,17 @@ namespace dauw
     auto true_branch = parse_expression();
 
     // Parse the false branch
-    std::optional<expr_ptr> false_branch = std::nullopt;
+    std::optional<ast::expr_ptr> false_branch = std::nullopt;
     if (match(TokenKind::KEYWORD_ELSE))
       false_branch = std::make_optional(parse_expression());
 
     // Return the expression
-    return std::make_shared<ExprIf>(keyword, condition, true_branch, false_branch);
+    return std::make_shared<ast::ExprIf>(keyword, condition, true_branch, false_branch);
   }
 
   // Parse a for expression
   // for → 'for' IDENTIFIER 'in' operation 'do' expression
-  expr_ptr Parser::parse_for()
+  ast::expr_ptr Parser::parse_for()
   {
     // Set the keyword
     auto keyword = current();
@@ -387,12 +387,12 @@ namespace dauw
     auto body = parse_expression();
 
     // Return the expression
-    return std::make_shared<ExprFor>(keyword, name, iterable, body);
+    return std::make_shared<ast::ExprFor>(keyword, name, iterable, body);
   }
 
   // Parse a while expression
   // while → 'while' operation 'do' expression
-  expr_ptr Parser::parse_while()
+  ast::expr_ptr Parser::parse_while()
   {
     // Set the keyword
     auto keyword = current();
@@ -405,12 +405,12 @@ namespace dauw
     auto body = parse_expression();
 
     // Return the expression
-    return std::make_shared<ExprWhile>(keyword, condition, body);
+    return std::make_shared<ast::ExprWhile>(keyword, condition, body);
   }
 
   // Parse an until expression
   // until → 'until' operation 'do' expression
-  expr_ptr Parser::parse_until()
+  ast::expr_ptr Parser::parse_until()
   {
     // Set the keyword
     auto keyword = current();
@@ -423,18 +423,18 @@ namespace dauw
     auto body = parse_expression();
 
     // Return the expression
-    return std::make_shared<ExprUntil>(keyword, condition, body);
+    return std::make_shared<ast::ExprUntil>(keyword, condition, body);
   }
 
   // Parse a block expression
   // block → NEWLINE INDENT line+ DEDENT
-  expr_ptr Parser::parse_block()
+  ast::expr_ptr Parser::parse_block()
   {
     // Consume an INDENT token
     consume(TokenKind::INDENT, "in block");
 
     // Create a vector to store expressions
-    ExprBlock::block_type exprs;
+    std::vector<ast::expr_ptr> exprs;
 
     // Parse lines until we reach a DEDENT token
     do
@@ -444,19 +444,19 @@ namespace dauw
     } while (!match(TokenKind::DEDENT));
 
     // Return a block expresssion containing the expressions
-    return std::make_shared<ExprBlock>(exprs);
+    return std::make_shared<ast::ExprBlock>(exprs);
   }
 
   // Parse an operation expression
   // operation → logic_or
-  expr_ptr Parser::parse_operation()
+  ast::expr_ptr Parser::parse_operation()
   {
     return parse_logic_or();
   }
 
   // Parse a logic or expression
   // logic_or → logic_and ('or' logic_and)*
-  expr_ptr Parser::parse_logic_or()
+  ast::expr_ptr Parser::parse_logic_or()
   {
     return parse_infix_op({
       TokenKind::OPERATOR_LOGIC_OR,
@@ -465,7 +465,7 @@ namespace dauw
 
   // Parse a logic and expression
   // logic_and → logic_not ('and' logic_not)*
-  expr_ptr Parser::parse_logic_and()
+  ast::expr_ptr Parser::parse_logic_and()
   {
     return parse_infix_op({
       TokenKind::OPERATOR_LOGIC_AND,
@@ -474,7 +474,7 @@ namespace dauw
 
   // Parse a logic not expression
   // logic_not → 'not' logic_not | equality
-  expr_ptr Parser::parse_logic_not()
+  ast::expr_ptr Parser::parse_logic_not()
   {
     return parse_prefix_op({
       TokenKind::OPERATOR_LOGIC_NOT,
@@ -483,7 +483,7 @@ namespace dauw
 
   // Parse an equality expression
   // equality → comparison (('==' | '!=' | '===' | '!==') comparison)?
-  expr_ptr Parser::parse_equality()
+  ast::expr_ptr Parser::parse_equality()
   {
     return parse_infix_op_single({
       TokenKind::OPERATOR_EQUAL,
@@ -495,7 +495,7 @@ namespace dauw
 
   // Parse a comparison expression
   // comparison → threeway (('<' | '<=' | '>' | '>=' | '=~' | '!~') threeway)?
-  expr_ptr Parser::parse_comparison()
+  ast::expr_ptr Parser::parse_comparison()
   {
     return parse_infix_op_single({
       TokenKind::OPERATOR_LESS,
@@ -509,7 +509,7 @@ namespace dauw
 
   // Parse a threeway expression
   // threeway → range ('<=>' range)?
-  expr_ptr Parser::parse_threeway()
+  ast::expr_ptr Parser::parse_threeway()
   {
     return parse_infix_op_single({
       TokenKind::OPERATOR_COMPARE,
@@ -518,7 +518,7 @@ namespace dauw
 
   // Parse a range expression
   // range → term ('..' term)?
-  expr_ptr Parser::parse_range()
+  ast::expr_ptr Parser::parse_range()
   {
     return parse_infix_op_single({
       TokenKind::OPERATOR_RANGE,
@@ -527,7 +527,7 @@ namespace dauw
 
   // Parse a term expression
   // term → factor (('+' | '-') factor)*
-  expr_ptr Parser::parse_term()
+  ast::expr_ptr Parser::parse_term()
   {
     return parse_infix_op({
       TokenKind::OPERATOR_ADD,
@@ -536,34 +536,27 @@ namespace dauw
   }
 
   // Parse a factor expression
-  // factor → exponent (('*' | '/' | '//' | '%') exponent)*
-  expr_ptr Parser::parse_factor()
+  // factor → unary (('*' | '/' | '//' | '%') unary)*
+  ast::expr_ptr Parser::parse_factor()
   {
     return parse_infix_op({
       TokenKind::OPERATOR_MULTIPLY,
       TokenKind::OPERATOR_DIVIDE,
       TokenKind::OPERATOR_QUOTIENT,
       TokenKind::OPERATOR_REMAINDER,
-    }, &Parser::parse_exponent);
-  }
-
-  // Parse an exponent expression
-  // exponent → unary ('^' unary)*
-  expr_ptr Parser::parse_exponent()
-  {
-    return parse_infix_op({TokenKind::OPERATOR_EXPONENT}, &Parser::parse_unary);
+    }, &Parser::parse_unary);
   }
 
   // Parse an unary expression
   // unary → ('-' | '#' | '$') unary | primary
-  expr_ptr Parser::parse_unary()
+  ast::expr_ptr Parser::parse_unary()
   {
     return parse_prefix_op({TokenKind::OPERATOR_SUBTRACT, TokenKind::OPERATOR_LENGTH, TokenKind::OPERATOR_STRING}, &Parser::parse_primary);
   }
 
   // Parse a primary expression
   // primary → atom ('(' arguments? ')' | '.' IDENTIFIER)*
-  expr_ptr Parser::parse_primary()
+  ast::expr_ptr Parser::parse_primary()
   {
     // Parse an atom
     auto expr = parse_atom();
@@ -578,10 +571,10 @@ namespace dauw
         auto token = current();
 
         // Parse the arguments
-        auto arguments = std::make_shared<ExprSequence>(token, parse_arguments());
+        auto arguments = std::make_shared<ast::ExprSequence>(token, parse_arguments());
 
         // Create the call expression
-        expr = std::make_shared<ExprCall>(expr, token, arguments);
+        expr = std::make_shared<ast::ExprCall>(expr, token, arguments);
       }
 
       // Check for a get postfix
@@ -591,7 +584,7 @@ namespace dauw
         auto name = consume(TokenKind::IDENTIFIER, "in get expression");
 
         // Return the expression
-        expr = std::make_shared<ExprGet>(expr, name);
+        expr = std::make_shared<ast::ExprGet>(expr, name);
       }
 
       // Otherwise break the loop
@@ -607,70 +600,151 @@ namespace dauw
   // atom → literal | name | list | record | lambda | grouped
   // literal → 'nothing' | 'false' | 'true' | INT | REAL | STRING
   // name → IDENTIFIER
-  expr_ptr Parser::parse_atom()
+  ast::expr_ptr Parser::parse_atom()
+  {
+    // Check for a literal expression
+    if (match(TokenKind::KEYWORD_NOTHING))
+      return std::make_shared<ast::ExprLiteral>(internals::Value::value_nothing, current().location());
+    if (match(TokenKind::KEYWORD_FALSE))
+      return std::make_shared<ast::ExprLiteral>(internals::Value::value_false, current().location());
+    if (match(TokenKind::KEYWORD_TRUE))
+      return std::make_shared<ast::ExprLiteral>(internals::Value::value_true, current().location());
+    if (match(TokenKind::LITERAL_INT))
+      return parse_int();
+    if (match(TokenKind::LITERAL_REAL))
+      return parse_real();
+    if (match(TokenKind::LITERAL_RUNE))
+      return parse_rune();
+    if (match(TokenKind::LITERAL_STRING))
+      return parse_string();
+    if (match(TokenKind::LITERAL_REGEX))
+      return parse_regex();
+
+    // Check for a name expression
+    if (match(TokenKind::IDENTIFIER))
+      return std::make_shared<ast::ExprName>(current());
+
+    // Check for a sequence expression
+    if (match(TokenKind::SQUARE_BRACKET_LEFT))
+      return parse_sequence();
+
+    // Check for a record expression
+    if (match(TokenKind::CURLY_BRACKET_LEFT))
+      return parse_record();
+
+    // Check for a lambda expression
+    if (match(TokenKind::SYMBOL_BACKSLASH))
+      return parse_lambda();
+
+    // Check for a grouped expression
+    if (match(TokenKind::PARENTHESIS_LEFT))
+      return parse_grouped();
+
+    // No suitable expression found, so throw an error
+    throw report<SyntaxError>(next().location(), fmt::format("Expected atom, but found {}", next().kind()));
+  }
+
+  // Parse an int literal
+  ast::expr_ptr Parser::parse_int()
   {
     try
     {
-      // Check for a literal expression
-        return std::make_shared<ExprLiteral>(value_nothing, current().location());
-        return std::make_shared<ExprLiteral>(value_false, current().location());
-        return std::make_shared<ExprLiteral>(value_true, current().location());
-      if (match(TokenKind::KEYWORD_NOTHING))
-      if (match(TokenKind::KEYWORD_FALSE))
-      if (match(TokenKind::KEYWORD_TRUE))
-      if (match(TokenKind::LITERAL_INT))
-        return std::make_shared<ExprLiteral>(value_int(current().value()), current().location());
-      if (match(TokenKind::LITERAL_REAL))
-        return std::make_shared<ExprLiteral>(value_real(current().value()), current().location());
-      if (match(TokenKind::LITERAL_RUNE))
-        return std::make_shared<ExprLiteral>(value_rune(current().value()), current().location());
-      if (match(TokenKind::LITERAL_STRING))
-        return std::make_shared<ExprLiteral>(value_string(current().value()), current().location());
-      if (match(TokenKind::LITERAL_REGEX))
-        return std::make_shared<ExprLiteral>(value_regex(current().value()), current().location());
-
-      // Check for a name expression
-      if (match(TokenKind::IDENTIFIER))
-        return std::make_shared<ExprName>(current());
-
-      // Check for a sequence expression
-      if (match(TokenKind::SQUARE_BRACKET_LEFT))
-        return parse_sequence();
-
-      // Check for a record expression
-      if (match(TokenKind::CURLY_BRACKET_LEFT))
-        return parse_record();
-
-      // Check for a lambda expression
-      if (match(TokenKind::SYMBOL_BACKSLASH))
-        return parse_lambda();
-
-      // Check for a grouped expression
-      if (match(TokenKind::PARENTHESIS_LEFT))
-        return parse_grouped();
-
-      // No suitable expression found, so throw an error
-      throw reporter_->report_syntax_error(next().location(), fmt::format("Syntax error: Expected atom, but found {}", next().kind()));
+      auto int_value = utils::string::parse_int(current().value());
+      auto value = internals::Value::of_int(int_value);
+      return std::make_shared<ast::ExprLiteral>(value, current().location());
     }
-    catch (std::invalid_argument& ex)
+    catch (internals::ValueMismatchException& ex)
     {
-      // Found a literal that is malformed
-      throw reporter_->report_syntax_error(current().location(), fmt::format("Syntax error: {}", ex.what()));
+      report<ValueMismatchError>(current().location(), ex.message());
+      return nullptr;
     }
-    catch (std::out_of_range& ex)
+    catch (internals::ValueOverflowException& ex)
     {
-      // Found a literal whose value is out of range
-      throw reporter_->report_syntax_error(current().location(), fmt::format("Syntax error: {}", ex.what()));
+      report<ValueOverflowError>(current().location(), ex.message());
+      return nullptr;
+    }
+  }
+
+  // Parse a real literal
+  ast::expr_ptr Parser::parse_real()
+  {
+    try
+    {
+      auto real_value = utils::string::parse_real(current().value());
+      auto value = internals::Value::of_real(real_value);
+      return std::make_shared<ast::ExprLiteral>(value, current().location());
+    }
+    catch (internals::ValueMismatchException& ex)
+    {
+      throw report<ValueMismatchError>(current().location(), ex.message());
+    }
+    catch (internals::ValueOverflowException& ex)
+    {
+      throw report<ValueOverflowError>(current().location(), ex.message());
+    }
+  }
+
+  // Parse a rune literal
+  ast::expr_ptr Parser::parse_rune()
+  {
+    try
+    {
+      auto rune_value = utils::string::parse_rune(current().value());
+      auto value = internals::Value::of_rune(rune_value);
+      return std::make_shared<ast::ExprLiteral>(value, current().location());
+    }
+    catch (internals::ValueMismatchException& ex)
+    {
+      report<ValueMismatchError>(current().location(), ex.message());
+      return nullptr;
+    }
+    catch (internals::ValueOverflowException& ex)
+    {
+      report<ValueOverflowError>(current().location(), ex.message());
+      return nullptr;
+    }
+  }
+
+  // Parse a string literal
+  ast::expr_ptr Parser::parse_string()
+  {
+    try
+    {
+      auto string_value = utils::string::parse_string(current().value());
+      auto value = internals::Value::of_obj(vm_->allocate_string(string_value), internals::Type::type_string);
+      return std::make_shared<ast::ExprLiteral>(value, current().location());
+    }
+    catch (...)
+    {
+      // TODO: Add proper catch
+      return nullptr;
+    }
+  }
+
+  // Parse a regex literal
+  ast::expr_ptr Parser::parse_regex()
+  {
+    try
+    {
+      // TODO: Properly parse the regex literal instead of making a literal string
+      auto string_value = utils::string::parse_string(current().value());
+      auto value = internals::Value::of_obj(vm_->allocate_string(string_value), internals::Type::type_string);
+      return std::make_shared<ast::ExprLiteral>(value, current().location());
+    }
+    catch (...)
+    {
+      // TODO: Add proper catch
+      return nullptr;
     }
   }
 
   // Parse a sequence expression
   // sequence → '[' (sequence_item (',' sequence_item)*)? ']'
   // sequence_item → expression
-  expr_ptr Parser::parse_sequence()
+  ast::expr_ptr Parser::parse_sequence()
   {
     // Create a container to store the items
-    ExprSequence::sequence_type items;
+    ast::ExprSequence::sequence_type items;
 
     // Set the opening token
     auto token = current();
@@ -686,16 +760,16 @@ namespace dauw
     consume(TokenKind::SQUARE_BRACKET_RIGHT, "in sequence atom");
 
     // Return a sequence expression containing the items
-    return std::make_shared<ExprSequence>(token, items);
+    return std::make_shared<ast::ExprSequence>(token, items);
   }
 
   // Parse a record expression
   // record → '{' (record_item (',' record_item)*)? '}'
   // record_item → IDENTIFIER ':' expression
-  expr_ptr Parser::parse_record()
+  ast::expr_ptr Parser::parse_record()
   {
     // Create a container to store the items
-    ExprRecord::record_type items;
+    ast::ExprRecord::record_type items;
 
     // Set the opening token
     auto token = current();
@@ -715,12 +789,12 @@ namespace dauw
     consume(TokenKind::CURLY_BRACKET_RIGHT, "in record atom");
 
     // Return a record expression containing the items
-    return std::make_shared<ExprRecord>(token, items);
+    return std::make_shared<ast::ExprRecord>(token, items);
   }
 
   // Parse a lambda expression
   // lambda → '\' '(' parameters? ')' (':' type)? '=' assignment
-  expr_ptr Parser::parse_lambda()
+  ast::expr_ptr Parser::parse_lambda()
   {
     // Set the token
     auto token = current();
@@ -730,7 +804,7 @@ namespace dauw
     auto parameters = parse_parameters();
 
     // Parse the return type
-    std::optional<type_expr_ptr> return_type = std::nullopt;
+    std::optional<ast::type_expr_ptr> return_type = std::nullopt;
     if (match(TokenKind::SYMBOL_COLON))
       return_type = std::make_optional(parse_type());
 
@@ -739,12 +813,12 @@ namespace dauw
     auto body = parse_assignment();
 
     // Return the function expression
-    return std::make_shared<ExprFunction>(token, parameters, return_type, body);
+    return std::make_shared<ast::ExprFunction>(token, parameters, return_type, body);
   }
 
   // Parse a grouped expression
   // grouped → '(' expression ')'
-  expr_ptr Parser::parse_grouped()
+  ast::expr_ptr Parser::parse_grouped()
   {
     // Parse the grouped expression
     auto expr = parse_expression();
@@ -753,7 +827,7 @@ namespace dauw
     consume(TokenKind::PARENTHESIS_RIGHT, "in grouped atom");
 
     // Return the grouped expression
-    return std::make_shared<ExprGrouped>(expr);
+    return std::make_shared<ast::ExprGrouped>(expr);
   }
 
   // --------------------------------------------------------------------------
@@ -762,7 +836,7 @@ namespace dauw
 
   // Parse a type expression
   // type → type_union
-  type_expr_ptr Parser::parse_type()
+  ast::type_expr_ptr Parser::parse_type()
   {
     // Parse an union type expression
     return parse_type_union();
@@ -770,7 +844,7 @@ namespace dauw
 
   // Parse an union type expression
   // type_union → type_intersection ('&' type_intersection)*
-  type_expr_ptr Parser::parse_type_union()
+  ast::type_expr_ptr Parser::parse_type_union()
   {
     // Parse the left operand
     auto left = parse_type_intersection();
@@ -785,7 +859,7 @@ namespace dauw
       auto right = parse_type_intersection();
 
       // Create the union type expression
-      left = std::make_shared<TypeExprUnion>(left, op, right);
+      left = std::make_shared<ast::TypeExprUnion>(left, op, right);
     }
 
     // Return the type expression
@@ -794,7 +868,7 @@ namespace dauw
 
   // Parse an intersection type expression
   // type_intersection → type_maybe ('|' type_maybe)*
-  type_expr_ptr Parser::parse_type_intersection()
+  ast::type_expr_ptr Parser::parse_type_intersection()
   {
     // Parse the left operand
     auto left = parse_type_maybe();
@@ -809,7 +883,7 @@ namespace dauw
       auto right = parse_type_maybe();
 
       // Create the union type expression
-      left = std::make_shared<TypeExprUnion>(left, op, right);
+      left = std::make_shared<ast::TypeExprUnion>(left, op, right);
     }
 
     // Return the type expression
@@ -818,7 +892,7 @@ namespace dauw
 
   // Parse a maybe type expression
   // type_maybe → type_generic ('?')?
-  type_expr_ptr Parser::parse_type_maybe()
+  ast::type_expr_ptr Parser::parse_type_maybe()
   {
     // Parse a generic type
     auto expr = parse_type_generic();
@@ -830,7 +904,7 @@ namespace dauw
       auto op = current();
 
       // Create the maybe expression
-      return std::make_shared<TypeExprMaybe>(expr, op);
+      return std::make_shared<ast::TypeExprMaybe>(expr, op);
     }
 
     // Return the expression
@@ -839,7 +913,7 @@ namespace dauw
 
   // Parse a generic type expression
   // type_generic → IDENTIFIER ('[' type_arguments ']')? | type_grouped
-  type_expr_ptr Parser::parse_type_generic()
+  ast::type_expr_ptr Parser::parse_type_generic()
   {
     // Check for a grouped type expression
     if (match(TokenKind::PARENTHESIS_LEFT))
@@ -847,7 +921,7 @@ namespace dauw
 
     // Parse the name
     auto name = consume(TokenKind::IDENTIFIER, "in type");
-    auto expr = std::make_shared<TypeExprName>(name);
+    auto expr = std::make_shared<ast::TypeExprName>(name);
 
     // Check for generic arguments
     if (match(TokenKind::SQUARE_BRACKET_LEFT))
@@ -859,7 +933,7 @@ namespace dauw
       auto arguments = parse_type_arguments();
 
       // Create the generic expression
-      return std::make_shared<TypeExprGeneric>(expr, token, arguments);
+      return std::make_shared<ast::TypeExprGeneric>(expr, token, arguments);
     }
 
     // Return the expression
@@ -868,7 +942,7 @@ namespace dauw
 
   // Parse a grouped type expression
   // type_grouped → '(' type ')'
-  type_expr_ptr Parser::parse_type_grouped()
+  ast::type_expr_ptr Parser::parse_type_grouped()
   {
     // Parse the grouped expression
     auto expr = parse_type();
@@ -877,7 +951,7 @@ namespace dauw
     consume(TokenKind::PARENTHESIS_RIGHT, "in grouped type");
 
     // Return the grouped expression
-    return std::make_shared<TypeExprGrouped>(expr);
+    return std::make_shared<ast::TypeExprGrouped>(expr);
   }
 
   // --------------------------------------------------------------------------
@@ -886,10 +960,10 @@ namespace dauw
 
   // Parse parameters
   // parameters → (IDENTIFIER ':' type) (',' IDENTIFIER ':' type)*)?
-  ExprFunction::parameters_type Parser::parse_parameters()
+  ast::ExprFunction::parameters_type Parser::parse_parameters()
   {
     // Create a vector to store the parameters
-    ExprFunction::parameters_type parameters;
+    ast::ExprFunction::parameters_type parameters;
 
     // Loop until we encounter a closing parenthesis
     if (!check(TokenKind::PARENTHESIS_RIGHT))
@@ -904,7 +978,7 @@ namespace dauw
         auto type = parse_type();
 
         // Create the expression and add it to the parameters
-        parameters.push_back(std::make_shared<ExprFunctionParameter>(name, type));
+        parameters.push_back(std::make_shared<ast::ExprFunctionParameter>(name, type));
       } while (match(TokenKind::SYMBOL_COMMA));
     }
 
@@ -917,10 +991,10 @@ namespace dauw
 
   // Parse arguments
   // arguments → assignment (',' assignment)*
-  ExprSequence::sequence_type Parser::parse_arguments()
+  ast::ExprSequence::sequence_type Parser::parse_arguments()
   {
     // Create a vector to store the arguments
-    ExprSequence::sequence_type arguments;
+    ast::ExprSequence::sequence_type arguments;
 
     // Loop until we encounter a closing parenthesis
     if (!check(TokenKind::PARENTHESIS_RIGHT))
@@ -941,14 +1015,14 @@ namespace dauw
 
   // Parse type arguments
   // type_arguments → type (',' type)*
-  TypeExprGeneric::generic_type Parser::parse_type_arguments()
+  std::vector<ast::type_expr_ptr> Parser::parse_type_arguments()
   {
     // Create a vector to store the arguments
-    TypeExprGeneric::generic_type arguments;
+    std::vector<ast::type_expr_ptr> arguments;
 
     // Loop until we encounter a closing square bracket
     if (check(TokenKind::SQUARE_BRACKET_RIGHT))
-      throw reporter_->report_syntax_error(next().location(), "Syntax error: Expected type, but found right square bracket");
+      report<SyntaxError>(next().location(), "Expected type, but found right square bracket");
 
     do
     {
@@ -961,88 +1035,5 @@ namespace dauw
 
     // Return the arguments
     return arguments;
-  }
-
-  // --------------------------------------------------------------------------
-  // PARSERS FOR VALUES
-  // --------------------------------------------------------------------------
-
-  // Parse an int literal
-  Value Parser::value_int(string_t value)
-  {
-    // Remove thousand separators from the int literal
-    value = regex_utils::replace(regex_t("_"), "", value);
-
-    // Parse the int literal
-    size_t end_index;
-    auto int_is_hex = (value.rfind("0x", 0) == 0 || value.rfind("0X", 0) == 0);
-    auto int_value = (int64_t)std::stoll(value, &end_index, int_is_hex ? 16 : 10);
-    if (end_index != value.length())
-      throw std::invalid_argument(fmt::format("Invalid character '{}' in int literal", value, value.substr(end_index, 1)));
-
-    // Return the int value
-    return Value::of_int(int_value);
-  }
-
-  // Parse a real literal
-  Value Parser::value_real(string_t value)
-  {
-    // Remove thousand separators from the real literal
-    value = regex_utils::replace(regex_t("_"), "", value);
-
-    // Parse the real literal
-    size_t end_index;
-    double real_value = std::stod(value, &end_index);
-    if (end_index != value.length())
-      throw std::invalid_argument(fmt::format("Invalid character '{}' in real literal", value, value.substr(end_index, 1)));
-
-    // Return the value
-    return Value::of_real(real_value);
-  }
-
-  // Parse a rune literal
-  Value Parser::value_rune(string_t value)
-  {
-    // Unescape the rune literal
-    value = string_utils::unescape(value, string_utils::EscapeType::RUNE);
-
-    // Parse the rune literal
-    auto runes = string_utils::to_runes(value);
-    if (runes.size() < 1)
-      throw std::invalid_argument("Invalid rune literal without code point");
-    if (runes.size() > 1)
-      throw std::invalid_argument("Invalid rune literal with more than one code point");
-    auto rune_value = runes.front();
-
-    // Return the value
-    return Value::of_rune(rune_value);
-  }
-
-  // Parse a string literal
-  Value Parser::value_string(string_t value)
-  {
-      // Unescape the string literal
-      value = string_utils::unescape(value, string_utils::EscapeType::STRING);
-
-      // Allocate the string value
-      auto string_value = vm_->allocate_string(value.c_str());
-
-      // Return the value
-      return Value::of_obj(string_value, std::make_shared<Type>(TypeKind::STRING));
-  }
-
-  // Parse a regex literal
-  Value Parser::value_regex(string_t value)
-  {
-    // TODO: Properly parse the regex literal instead of making a literal string
-
-    // Unescape the regex literal
-    value = string_utils::unescape(value, string_utils::EscapeType::REGEX);
-
-    // Allocate the string value
-    auto string_value = vm_->allocate_string(value.c_str());
-
-    // Return the value
-    return Value::of_obj(string_value, std::make_shared<Type>(TypeKind::STRING));
   }
 }

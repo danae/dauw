@@ -2,23 +2,24 @@
 
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
-#include <dauw/ast/ast.hpp>
+#include <dauw/ast/ast_expr.hpp>
+#include <dauw/ast/ast_type_expr.hpp>
 #include <dauw/backend/vm.hpp>
-#include <dauw/internals/object.hpp>
-#include <dauw/internals/value.hpp>
 #include <dauw/frontend/lexer.hpp>
 #include <dauw/frontend/location.hpp>
 #include <dauw/frontend/token.hpp>
+#include <dauw/internals/type.hpp>
+#include <dauw/internals/value.hpp>
 
 
-namespace dauw
+namespace dauw::frontend
 {
   // Class that defines a parser that converts a deque of tokens into an expression
-  class Parser
+  class Parser : public ReporterAware
   {
     private:
       // Type declaration for a parser function
-      using parser_function_type = std::function<expr_ptr(Parser*)>;
+      using parser_function_type = std::function<ast::expr_ptr(Parser*)>;
 
 
       // The tokens to parse
@@ -27,9 +28,8 @@ namespace dauw
       // The index of the token that is currently being parsed
       size_t index_;
 
-      // References to application components
-      VM* vm_;
-      ErrorReporter* reporter_;
+      // Reference to the virtual machine
+      backend::VM* vm_;
 
       // The last full line comment that has been parsed
       string_t line_comment_;
@@ -47,69 +47,66 @@ namespace dauw
       void synchronize();
 
       // Parser helper functions
-      expr_ptr parse_infix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
-      expr_ptr parse_infix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
-      expr_ptr parse_prefix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
-      expr_ptr parse_prefix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      ast::expr_ptr parse_infix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      ast::expr_ptr parse_infix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      ast::expr_ptr parse_prefix_op(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
+      ast::expr_ptr parse_prefix_op_single(std::initializer_list<TokenKind> op_kinds, parser_function_type parse_operand);
 
       // Parsers for expressions
-      expr_ptr parse_script();
-      expr_ptr parse_line();
-      expr_ptr parse_expression();
-      expr_ptr parse_def();
-      expr_ptr parse_assignment();
-      expr_ptr parse_control();
-      expr_ptr parse_echo();
-      expr_ptr parse_if();
-      expr_ptr parse_for();
-      expr_ptr parse_while();
-      expr_ptr parse_until();
-      expr_ptr parse_block();
-      expr_ptr parse_operation();
-      expr_ptr parse_logic_or();
-      expr_ptr parse_logic_and();
-      expr_ptr parse_logic_not();
-      expr_ptr parse_equality();
-      expr_ptr parse_comparison();
-      expr_ptr parse_threeway();
-      expr_ptr parse_range();
-      expr_ptr parse_term();
-      expr_ptr parse_factor();
-      expr_ptr parse_exponent();
-      expr_ptr parse_unary();
-      expr_ptr parse_primary();
-      expr_ptr parse_atom();
-      expr_ptr parse_sequence();
-      expr_ptr parse_record();
-      expr_ptr parse_lambda();
-      expr_ptr parse_grouped();
+      ast::expr_ptr parse_script();
+      ast::expr_ptr parse_line();
+      ast::expr_ptr parse_expression();
+      ast::expr_ptr parse_def();
+      ast::expr_ptr parse_assignment();
+      ast::expr_ptr parse_control();
+      ast::expr_ptr parse_echo();
+      ast::expr_ptr parse_if();
+      ast::expr_ptr parse_for();
+      ast::expr_ptr parse_while();
+      ast::expr_ptr parse_until();
+      ast::expr_ptr parse_block();
+      ast::expr_ptr parse_operation();
+      ast::expr_ptr parse_logic_or();
+      ast::expr_ptr parse_logic_and();
+      ast::expr_ptr parse_logic_not();
+      ast::expr_ptr parse_equality();
+      ast::expr_ptr parse_comparison();
+      ast::expr_ptr parse_threeway();
+      ast::expr_ptr parse_range();
+      ast::expr_ptr parse_term();
+      ast::expr_ptr parse_factor();
+      ast::expr_ptr parse_unary();
+      ast::expr_ptr parse_primary();
+      ast::expr_ptr parse_atom();
+      ast::expr_ptr parse_int();
+      ast::expr_ptr parse_real();
+      ast::expr_ptr parse_rune();
+      ast::expr_ptr parse_string();
+      ast::expr_ptr parse_regex();
+      ast::expr_ptr parse_sequence();
+      ast::expr_ptr parse_record();
+      ast::expr_ptr parse_lambda();
+      ast::expr_ptr parse_grouped();
 
       // Parser for type expressions
-      type_expr_ptr parse_type();
-      type_expr_ptr parse_type_union();
-      type_expr_ptr parse_type_intersection();
-      type_expr_ptr parse_type_maybe();
-      type_expr_ptr parse_type_generic();
-      type_expr_ptr parse_type_grouped();
+      ast::type_expr_ptr parse_type();
+      ast::type_expr_ptr parse_type_union();
+      ast::type_expr_ptr parse_type_intersection();
+      ast::type_expr_ptr parse_type_maybe();
+      ast::type_expr_ptr parse_type_generic();
+      ast::type_expr_ptr parse_type_grouped();
 
       // Parsers for specialized types
-      ExprFunction::parameters_type parse_parameters();
-      ExprSequence::sequence_type parse_arguments();
-      TypeExprGeneric::generic_type parse_type_arguments();
-
-      // Parsers for values
-      Value value_int(string_t value);
-      Value value_real(string_t value);
-      Value value_rune(string_t value);
-      Value value_string(string_t value);
-      Value value_regex(string_t value);
+      ast::ExprFunction::parameters_type parse_parameters();
+      ast::ExprSequence::sequence_type parse_arguments();
+      std::vector<ast::type_expr_ptr> parse_type_arguments();
 
 
     public:
       // Constructor
-      Parser(Lexer::token_list_type tokens, ErrorReporter* reporter, VM* vm);
+      Parser(Reporter* reporter, backend::VM* vm, Lexer::token_list_type tokens);
 
       // Parse a deque of tokens into an expression
-      expr_ptr parse();
+      ast::expr_ptr parse();
   };
 }

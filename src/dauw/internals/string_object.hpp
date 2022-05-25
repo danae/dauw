@@ -2,13 +2,14 @@
 
 #include <dauw/common.hpp>
 #include <dauw/internals/object.hpp>
+#include <dauw/internals/value.hpp>
 
 #include <cstdlib>
 #include <cstring>
 #include <utf8.h>
 
 
-namespace dauw
+namespace dauw::internals
 {
   // Class that represents a string object
   class String : public Obj

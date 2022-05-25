@@ -1,6 +1,6 @@
 #include "token.hpp"
 
-namespace dauw
+namespace dauw::frontend
 {
   // Constructor for a token
   Token::Token(TokenKind kind, string_t value, Location location)

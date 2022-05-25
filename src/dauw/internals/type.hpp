@@ -1,26 +1,13 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/internals/object.hpp>
-
-#include <unordered_map>
 
 
-namespace dauw
+namespace dauw::internals
 {
-  // Forward declarations
-  class Type;
-
-  // Type definitions for pointers
-  using type_ptr = std::shared_ptr<Type>;
-  using type_ptr_list = std::vector<type_ptr>;
-  using type_ptr_initializer_list = std::initializer_list<type_ptr>;
-
-
   // Enum that represents the kind of a type
   enum class TypeKind : uint8_t
   {
-    UNDEFINED,
     NOTHING,
     BOOL,
     INT,
@@ -31,45 +18,89 @@ namespace dauw
     RECORD,
     FUNCTION,
     TYPE,
-    MAYBE_TYPE,
-    INTERSECTION_TYPE,
-    UNION_TYPE,
   };
 
 
   // Class that represents a type
-  class Type : public Obj, public std::enable_shared_from_this<Type>
+  class Type
   {
     private:
-      // Return the name for the specified type kind
-      static string_t type_kind_name_(TypeKind kind);
-
-
       // The kind of the type
       TypeKind kind_;
 
-      // The anonical name of the type
+      // The canonical name of the type
       string_t name_;
 
       // The inner types of the type
-      type_ptr_list inner_types_;
+      std::vector<Type> inners_;
 
 
     public:
       // Constructor
-      Type(TypeKind kind, string_t name, type_ptr_initializer_list inner_types = {});
-      Type(TypeKind kind, type_ptr_initializer_list inner_types = {});
+      Type(TypeKind kind, string_t name, std::initializer_list<Type> inners = {});
 
       // Return the kind of the type
       TypeKind kind();
 
-      // Return the anonical name of the type
+      // Return the canonical name of the type
       string_t name();
 
       // Return the number of inner types of the type
-      size_t inner_type_count();
+      size_t inner_count();
 
       // Return the inner type of the type at the specified index
-      type_ptr inner_type(size_t index);
+      Type inner(size_t index);
+
+      // Return if the type equals another type
+      bool operator==(const Type& other);
+      bool operator!=(const Type& other);
+
+
+      // Definitions for global types
+      static Type type_nothing;
+      static Type type_bool;
+      static Type type_int;
+      static Type type_real;
+      static Type type_rune;
+      static Type type_string;
+      static Type type_sequence;
+      static Type type_record;
+      static Type type_function;
+      static Type type_type;
+  };
+}
+
+
+namespace fmt
+{
+  using namespace dauw;
+  using namespace dauw::internals;
+
+  // Class that defines a formatter for a type
+  template <>
+  struct formatter<Type> : formatter<string_view_t>
+  {
+    inline string_t stringify(Type type)
+    {
+      string_t format = type.name();
+      if (type.inner_count() > 0)
+      {
+        format += "[";
+        for (auto i = 0; i < type.inner_count(); i ++)
+        {
+          if (i > 0)
+            format += ", ";
+          format += fmt::format("{}", type.inner(i));
+        }
+        format += "]";
+      }
+      return format;
+    }
+
+    template <typename FormatContext>
+    auto format(Type type, FormatContext& ctx)
+    {
+      return formatter<string_view_t>::format(stringify(type), ctx);
+    }
   };
 }

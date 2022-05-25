@@ -1,6 +1,6 @@
 #include "location.hpp"
 
-namespace dauw
+namespace dauw::frontend
 {
   // Constructor for a location
   Location::Location(size_t line, size_t col)

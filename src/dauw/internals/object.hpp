@@ -1,12 +1,13 @@
 #pragma once
 
 #include <dauw/common.hpp>
+#include <dauw/internals/type.hpp>
 
 
-namespace dauw
+namespace dauw::internals
 {
-  // Enum that represents the type of an object
-  enum class ObjType : char
+  // Enum that represents the kind of an object
+  enum class ObjKind : char
   {
     STRING,
     LIST,
@@ -19,21 +20,47 @@ namespace dauw
   class Obj
   {
     private:
+      // The object kind of the object
+      ObjKind kind_;
+
       // The type of the object
-      ObjType type_;
+      Type type_;
 
 
     public:
       // Constructor
-      Obj(ObjType type);
+      Obj(ObjKind kind, Type type);
 
       // Destructor
       virtual ~Obj() = default;
 
-      // Return the type of the object
-      ObjType& type();
+      // Return the object kind of the object
+      ObjKind& kind();
 
-      // Return a representative string representation of the object
-      string_t to_string();
+      // Return the type of the object
+      Type& type();
+  };
+}
+
+
+namespace fmt
+{
+  using namespace dauw;
+  using namespace dauw::internals;
+
+  // Class that defines a formatter for an object
+  template <>
+  struct formatter<Obj> : formatter<string_view_t>
+  {
+    inline string_t stringify(Obj object)
+    {
+      return fmt::format("<object {} at {:#012x}>", object.type(), (uintptr_t)(&object));
+    }
+
+    template <typename FormatContext>
+    auto format(Obj object, FormatContext& ctx)
+    {
+      return formatter<string_view_t>::format(stringify(object), ctx);
+    }
   };
 }
