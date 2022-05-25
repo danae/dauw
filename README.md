@@ -6,41 +6,60 @@ This repository contains the **interpreter and compiler for [Dauw](https://dauw.
 
 ```
 -- Show the awesome stropped identifiers and Unicode support
-let foo = 42
-let pi_plus_two = 5.14_15_92
-let `false` = 360
-let `妖精` = "I'm a fairy!"
-let `✈️` = "Ready for take-off!"  -- This is a comment at the end of the line
+def foo = 42
+def pi = 3.141_592_653_59
+def piPlusTwo = pi + 2.0e+0
+def `false` = false
+def `妖精` = "I'm a fairy!"
+def `✈️` = "Ready for take-off!"  -- This is a comment at the end of the line
 
 
 -- Simple greeter program
-func greeter_program() =
-  write("Enter your name: ")
-  if let name = read_line() then
-    writeln("Hello, $name!")
+def greeterProgram() =
+  echo "Enter your name:"
+
+  def name = console.gets()
+  if name then
+    echo "Hello, " + name + "!"
   else
-    writeln("Hello, World!")
+    echo "Hello, World!"
 
 
 -- Fibonacci sequence program
-func fib_program() =
-  func fib(n) = if n < 2 then n else fib(n - 1) + fib(n - 2)
+-- Calculates the fibonacci sequence for an index that is written by the user
+def fibProgram() =
+  -- Calculate the fibonacci number for index n
+  def fib(n: Int): Int = if n < 2 then 1 else fib(n - 1) + fib(n - 2)
 
-  write("Enter a number: ")
-  let n = parse_int(read_line())
+  echo "Enter a number: "
+  def n = console.gets().toInt()
 
-  writeln("Fibonacci number: ${fib(n))}")
+  echo "Fibonacci number: " + $fib(n)
 
 
 -- Program that demonstrates lambdas and first-class functions
-func lambda_program(ints) =
-  ints.map(\(i) = i * i).each(writeLine)
+def lambdaProgram() =
+  def ints = [1, 2, 3, 4, 5]
+  for i in ints.map(\(i: Int) = i * i) do
+    echo i
+
+
+-- Program that demonstrates closures
+def closureProgram() =
+  def makeAdder(n: Int) = \(x: Int) = n + x
+
+  def add5 = makeAdder(5)
+  echo add5(10)
+
+  def add7 = makeAdder(7)
+  echo add7(10)
 
 
 -- Execute the programs
-greeter_program()
-fib_program()
-lambda_program([1, 2, 3, 4, 5])
+greeterProgram()
+fibProgram()
+lambdaProgram()
+closureProgram()
 ```
 
 ## License
