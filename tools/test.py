@@ -1,5 +1,5 @@
 import colorama
-import glob
+import os
 import os.path
 import re
 import subprocess
@@ -69,7 +69,7 @@ class Result:
 # Class that defines a test
 class Test:
   # Patterns for test expectations
-  _expect_output_pattern = re.compile("-- expect output:\s*(.+)$")
+  _expect_output_pattern = re.compile("-->\s*(.+)$")
   _expect_error_pattern = re.compile("-- expect error:\s*(.+)$")
 
 
@@ -165,7 +165,7 @@ class TestRunner:
     self.fails = 0
     self.warnings = 0
 
-  # Test a file in the test suite
+  # Test the file at the specified path
   def test_file(self, path):
     # Create the test from the file
     test = Test(os.path.abspath(path))
@@ -198,14 +198,22 @@ class TestRunner:
     # Return self for chainability
     return self
 
-  # Handle a directory in the test suite
+  # Test the directory at the specified path
   def test_directory(self, path):
-    # Iterate over the .dauw files in the directory and test them
-    for entry in glob.glob(os.path.join(os.path.abspath(path), "**.dauw")):
-      self.test_file(entry)
+    # Iterate over the the directory and test them
+    for entry in os.listdir(path):
+      self.test(os.path.join(path, entry))
 
     # Return self for chainability
     return self
+
+  # Test the file or directory at the specified path
+  def test(self, path):
+    path = os.path.abspath(path)
+    if os.path.isdir(path):
+      return self.test_directory(path)
+    elif os.path.isfile(path) and path.endswith(".dauw"):
+      return self.test_file(path)
 
 
 # Main function
@@ -221,20 +229,20 @@ def main(args):
   args = parser.parse_args(args)
 
   # Check the arguments
-  if not os.path.exists(args.suite) or not os.path.isdir(args.suite):
-    print(f"Cannot run the test suite: the test suite path '{args.suite}' does not exists or is not a directory")
+  if not os.path.exists(args.suite):
+    print(f"Cannot run the test suite: the test suite path '{args.suite}' does not exist")
     sys.exit(1)
   if not os.path.exists(args.path) or not os.path.isfile(args.path):
-    print(f"Cannot run the test suite: the interpreter path '{args.path}' does not exists or is not a file")
+    print(f"Cannot run the test suite: the interpreter path '{args.path}' does not exist or is not a file")
     sys.exit(1)
 
   # Create a test runner and run the tests in the suite
   divider()
 
   runner_path = os.path.abspath(args.suite)
-  runner = TestRunner(args.path).test_directory(runner_path)
+  runner = TestRunner(args.path).test(runner_path)
 
-  print(f"Test results for directory {runner_path}:")
+  print(f"Test results for {runner_path}:")
   print(Fore.GREEN + Style.BRIGHT + f"{runner.passes}" + Style.RESET_ALL + f" test{plural(runner.passes)} passed", end = ", ")
   print(Fore.RED + Style.BRIGHT + f"{runner.fails}" + Style.RESET_ALL + f" test{plural(runner.fails)} failed", end = ", ")
   print(Fore.YELLOW + Style.BRIGHT + f"{runner.warnings}" + Style.RESET_ALL + f" warning{plural(runner.warnings)}")
