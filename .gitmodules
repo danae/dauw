@@ -10,6 +10,6 @@
 [submodule "lib/utfcpp"]
 	path = lib/utfcpp
 	url = https://github.com/nemtrif/utfcpp
-[submodule "lib/pcrexx"]
-	path = lib/pcrexx
-	url = https://github.com/dauw-lang/pcrexx
+[submodule "lib/pcre2"]
+	path = lib/pcre2
+	url = https://github.com/PCRE2Project/pcre2
