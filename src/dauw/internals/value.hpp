@@ -3,6 +3,7 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/internals/object.hpp>
+#include <dauw/utils/string.hpp>
 
 
 // Type definition for the value type
@@ -149,7 +150,7 @@ namespace fmt
       else if (value.is_int())
         return fmt::format("{}", value.as_int());
       else if (value.is_rune())
-        return fmt::format("'{}'", dauw::utils::string::rune_pack_to_str(value.as_rune()));
+        return fmt::format("'{}'", dauw::utils::rune_pack_to_str(value.as_rune()));
       else if (value.is_real())
         return fmt::format("{:#}", value.as_real());
       else if (value.is_obj())

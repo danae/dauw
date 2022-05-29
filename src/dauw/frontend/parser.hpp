@@ -11,6 +11,8 @@
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 
+#include <functional>
+
 
 namespace dauw::frontend
 {

@@ -7,6 +7,7 @@
 #include <dauw/internals/object.hpp>
 #include <dauw/internals/string_object.hpp>
 #include <dauw/internals/value.hpp>
+#include <dauw/utils/math.hpp>
 
 #include <cmath>
 #include <cstdlib>

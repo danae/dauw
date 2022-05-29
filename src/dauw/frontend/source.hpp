@@ -2,6 +2,7 @@
 
 #include <dauw/common.hpp>
 #include <dauw/frontend/location.hpp>
+#include <dauw/utils/string.hpp>
 
 #include <filesystem>
 #include <fstream>
