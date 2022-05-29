@@ -214,14 +214,14 @@ namespace dauw::backend
   void VM::run_isign()
   {
     auto a = pop_stack().as_int();
-    push_stack(internals::Value::of_int(utils::math::sign(a)));
+    push_stack(internals::Value::of_int(utils::sign(a)));
   }
 
   // Execute a RSIGN instruction
   void VM::run_rsign()
   {
     auto a = pop_stack().as_real();
-    push_stack(internals::Value::of_real(utils::math::sign(a)));
+    push_stack(internals::Value::of_real(utils::sign(a)));
   }
 
   // Execute a IADD instruction
@@ -302,7 +302,7 @@ namespace dauw::backend
     auto b = pop_stack().as_int();
     auto a = pop_stack().as_int();
 
-    push_stack(internals::Value::of_int(utils::math::floordiv(a, b)));
+    push_stack(internals::Value::of_int(utils::floordiv(a, b)));
   }
 
   // Execute a RQUO instruction
@@ -311,7 +311,7 @@ namespace dauw::backend
     auto b = pop_stack().as_real();
     auto a = pop_stack().as_real();
 
-    push_stack(internals::Value::of_real(utils::math::floordiv(a, b)));
+    push_stack(internals::Value::of_real(utils::floordiv(a, b)));
   }
 
   // Execute a IREM instruction
@@ -320,7 +320,7 @@ namespace dauw::backend
     auto b = pop_stack().as_int();
     auto a = pop_stack().as_int();
 
-    push_stack(internals::Value::of_int(utils::math::floormod(a, b)));
+    push_stack(internals::Value::of_int(utils::floormod(a, b)));
   }
 
   // Execute a RREM instruction
@@ -329,7 +329,7 @@ namespace dauw::backend
     auto b = pop_stack().as_real();
     auto a = pop_stack().as_real();
 
-    push_stack(internals::Value::of_real(utils::math::floormod(a, b)));
+    push_stack(internals::Value::of_real(utils::floormod(a, b)));
   }
 
   // Execute a BEQ instruction

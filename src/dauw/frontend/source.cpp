@@ -34,7 +34,7 @@ namespace dauw::frontend
     string_t format;
     format.append(fmt::format("{}, {}\n", file_, location));
     format.append(fmt::format("{:>4d} │ {}\n", location.line() + 1, lines[location.line()]));
-    format.append(fmt::format("     │ {}^", utils::string::repeat(" ", location.col())));
+    format.append(fmt::format("     │ {}^", utils::repeat(" ", location.col())));
     return format;
   }
 

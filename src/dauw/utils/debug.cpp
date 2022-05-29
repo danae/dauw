@@ -5,7 +5,7 @@ namespace dauw::debug
   // Print an indentation string
   void print_indent(size_t indent)
   {
-    fmt::print("{}", utils::string::repeat("  ", indent));
+    fmt::print("{}", utils::repeat("  ", indent));
   }
 
   // Print a list of tokens
