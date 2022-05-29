@@ -3,11 +3,12 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/frontend/location.hpp>
+#include <dauw/frontend/source.hpp>
 #include <dauw/frontend/token.hpp>
 #include <dauw/utils/regex.hpp>
 
-#include <tuple>
-#include <variant>
+#include <algorithm>
+#include <deque>
 
 
 namespace dauw::frontend
@@ -67,13 +68,13 @@ namespace dauw::frontend
       static std::vector<LexerRule> rules_;
 
 
-      // The source string
-      string_t source_;
+      // The source of the lexer
+      source_ptr source_;
 
 
     public:
       // Constructor
-      Lexer(Reporter* reporter, string_t source);
+      Lexer(Reporter* reporter, source_ptr source);
 
       // Convert a string into a token iterator
       token_list_type tokenize();

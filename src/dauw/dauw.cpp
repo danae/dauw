@@ -9,7 +9,7 @@ namespace dauw
   }
 
   // Run code from a source file
-  int Dauw::run(frontend::Source* source)
+  int Dauw::run(frontend::source_ptr source)
   {
     // TODO: Create a global reporter and VM
 
@@ -20,7 +20,7 @@ namespace dauw
     auto vm = std::make_shared<backend::VM>(reporter.get());
 
     // Tokenize the source string
-    auto tokens = frontend::Lexer(reporter.get(), source->source()).tokenize();
+    auto tokens = frontend::Lexer(reporter.get(), source).tokenize();
     if (reporter->has_errors())
     {
       reporter->print_errors();
@@ -88,8 +88,8 @@ namespace dauw
       linenoise::AddHistory(line.c_str());
 
       // Run the line
-      auto source_ptr = std::make_shared<frontend::Source>("<prompt>", line);
-  		run(source_ptr.get());
+      auto source = frontend::Source::create("<prompt>", line);
+  		run(source);
   	}
 
     // Exit the loop normally
@@ -102,8 +102,8 @@ namespace dauw
     try
     {
       // Run the source from the specified file
-      auto source_ptr = std::shared_ptr<frontend::Source>(frontend::Source::read(file));
-  	  return run(source_ptr.get());
+      auto source = frontend::Source::create_read(file);
+  	  return run(source);
     }
     catch (frontend::SourceException& ex)
     {

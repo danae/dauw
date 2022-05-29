@@ -3,13 +3,13 @@
 namespace dauw
 {
   // Constructor for an error reporter
-  Reporter::Reporter(frontend::Source* source)
+  Reporter::Reporter(frontend::source_ptr source)
     : source_(source)
   {
   }
 
   // Return the source file which errors are reported for
-  frontend::Source* Reporter::source()
+  frontend::source_ptr Reporter::source()
   {
     return source_;
   }

@@ -187,7 +187,7 @@ namespace dauw
   {
     private:
       // The source file which errors are reported for
-      frontend::Source* source_;
+      frontend::source_ptr source_;
 
       // The list of reported errors
       std::vector<Error> errors_;
@@ -195,10 +195,10 @@ namespace dauw
 
     public:
       // Constructor
-      Reporter(frontend::Source* source);
+      Reporter(frontend::source_ptr source);
 
       // Return the source file which errors are reported for
-      frontend::Source* source();
+      frontend::source_ptr source();
 
       // Return the reported errors
       std::vector<Error> errors();

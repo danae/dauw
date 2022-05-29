@@ -32,7 +32,7 @@ namespace dauw
       Dauw();
 
       // Run code from a source file
-      int run(frontend::Source* source);
+      int run(frontend::source_ptr source);
 
       // Run code from a read-eval-print loop
       int run_repl();

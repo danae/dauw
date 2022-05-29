@@ -10,33 +10,54 @@
 
 namespace dauw::frontend
 {
+  // Forward declarations
+  class Source;
+
+
+  // Type definitions for pointers
+  using source_ptr = std::shared_ptr<Source>;
+
+
   // Class that defines a source file
   class Source
   {
     private:
-      // The file the source is contained in
+      // Initialize the regex patterns for the source
+      static utils::regex_pattern_ptr line_pattern_;
+
+
+      // The file of the source
       string_t file_;
 
-      // The actual source
+      // The source string of the source
       string_t source_;
+
+      // The source string split by line of the source
+      std::vector<string_t> source_lines_;
 
 
     public:
+      // Create a shared pointer to a source
+      static source_ptr create(string_t file, string_t source);
+
+      // Create a shared pointer to a source read from a file
+      static source_ptr create_read(string_t file);
+
+
       // Constructor
       Source(string_t file, string_t source);
 
-      // Return the file the source is contained in
+      // Return the file of the source
       string_t& file();
 
-      // Return the actual source
+      // Return the source string of the source
       string_t& source();
+
+      // Return The source string split by line of the source
+      std::vector<string_t> source_lines();
 
       // Format a location in the source
       string_t format(Location location);
-
-
-      // Read a source from a file in the file system
-      static Source* read(string_t file);
   };
 
 

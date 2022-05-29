@@ -120,7 +120,7 @@ namespace dauw::frontend
 
 
   // Constructor for the lexer
-  Lexer::Lexer(Reporter* reporter, string_t source)
+  Lexer::Lexer(Reporter* reporter, source_ptr source)
     : ReporterAware(reporter), source_(source)
   {
   }
@@ -138,7 +138,7 @@ namespace dauw::frontend
     Location location;
 
     // Iterate over the lines in the source
-    for (auto line : utils::string::split_lines(source_))
+    for (auto line : source_->source_lines())
     {
       // Check for a shebang at the start of the source
       if (line.rfind("#!", 0) == 0)
