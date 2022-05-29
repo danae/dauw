@@ -30,8 +30,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE linenoise)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/fmt ${CMAKE_CURRENT_BINARY_DIR}/lib/fmt)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt)
 
-set(PCRE2_BUILD_PCRE2GREP OFF)
-set(PCRE2_BUILD_TESTS OFF)
+set(PCRE2_BUILD_PCRE2GREP OFF CACHE BOOL "Disable building pcre2grep")
+set(PCRE2_BUILD_TESTS OFF CACHE BOOL "Disable building pcre2test")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/pcre2 ${CMAKE_CURRENT_BINARY_DIR}/lib/pcre2)
 target_link_libraries(${PROJECT_NAME} PRIVATE pcre2-8)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/pcre2)
@@ -41,9 +41,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE utf8cpp)
 
 # Add compile definitions to the project
 target_compile_definitions(${PROJECT_NAME}
-  PRIVATE "PCRE2_CODE_UNIT_WIDTH=32"
   PRIVATE "DAUW_GIT_BRANCH=\"${GIT_BRANCH}\""
-  PRIVATE "DAUW_GIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
+  PRIVATE "DAUW_GIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
+  PRIVATE "PCRE2_CODE_UNIT_WIDTH=8")
 
 # Add include directories to the project
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
