@@ -3,7 +3,7 @@
 namespace dauw::frontend
 {
   // Initialize the regex patterns for the source
-  utils::regex_pattern_ptr Source::line_pattern_ = utils::RegexPattern::create("\\r?\\n");
+  utils::Regex Source::line_pattern_("\\r?\\n");
 
   // Create a shared pointer to a source
   source_ptr Source::create(string_t file, string_t source)
@@ -24,7 +24,7 @@ namespace dauw::frontend
 
   // Constructor for a source file
   Source::Source(string_t file, string_t source)
-    : file_(file), source_(source), source_lines_(line_pattern_->split(source_))
+    : file_(file), source_(source), source_lines_(line_pattern_.split(source_))
   {
   }
 

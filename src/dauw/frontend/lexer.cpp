@@ -3,14 +3,14 @@
 namespace dauw::frontend
 {
   // Constructor for a lexer rule
-  LexerRule::LexerRule(TokenKind kind, utils::regex_pattern_ptr pattern, size_t group)
+  LexerRule::LexerRule(TokenKind kind, utils::Regex pattern, size_t group)
     : kind_(kind), pattern_(pattern), group_(std::make_optional(group))
   {
 
   }
 
   // Constructor for a lexer rule without capturing group
-  LexerRule::LexerRule(TokenKind kind, utils::regex_pattern_ptr pattern)
+  LexerRule::LexerRule(TokenKind kind, utils::Regex pattern)
     : kind_(kind), pattern_(pattern), group_(std::nullopt)
   {
   }
@@ -22,89 +22,89 @@ namespace dauw::frontend
   }
 
   // Return the regular expression pattern of the rule
-  utils::regex_pattern_ptr LexerRule::pattern()
+  utils::Regex LexerRule::pattern()
   {
     return pattern_;
   }
 
   // Return the replacement of the rule based on a match
-  string_t LexerRule::replace(utils::regex_match_ptr match)
+  string_t LexerRule::replace(utils::RegexMatch match)
   {
-    return group_.has_value() ? match->group(group_.value()).value() : "";
+    return group_.has_value() ? match.group(group_.value()).value() : "";
   }
 
   // --------------------------------------------------------------------------
 
   // Initialize the regex patterns for the lexer
-  utils::regex_pattern_ptr Lexer::comment_pattern_ = utils::RegexPattern::create("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
-  utils::regex_pattern_ptr Lexer::whitespace_pattern_ = utils::RegexPattern::create("[ \\t]+");
-  utils::regex_pattern_ptr Lexer::ascii_identifier_pattern_ = utils::RegexPattern::create("[A-Za-z_][A-Za-z0-9_]*");
-  utils::regex_pattern_ptr Lexer::stropped_identifier_pattern_ = utils::RegexPattern::create("`((?:[^\\\\`]|\\\\.)+)`");
-  utils::regex_pattern_ptr Lexer::int_pattern_ = utils::RegexPattern::create("0[Xx][0-9A-Fa-f][0-9A-Fa-f_]*|-?(?:0|[1-9][0-9_]*)");
-  utils::regex_pattern_ptr Lexer::real_pattern_ = utils::RegexPattern::create("-?(?:0|[1-9][0-9_]*)(?:\\.[0-9][0-9_]*(?:[Ee][+-]?(?:0|[1-9][0-9_]*))?|[Ee][+-]?(?:0|[1-9][0-9_]*))");
-  utils::regex_pattern_ptr Lexer::rune_pattern_ = utils::RegexPattern::create("'((?:[^\\\\']|\\\\.)*)'");
-  utils::regex_pattern_ptr Lexer::string_pattern_ = utils::RegexPattern::create("\"((?:[^\\\\\"]|\\\\.)*)\"");
-  utils::regex_pattern_ptr Lexer::regex_pattern_ = utils::RegexPattern::create("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*");
+  utils::Regex Lexer::comment_pattern_("(?:[ \\t]*--[ \\t]*(.*))|(?:\"((?:[^\\\\\"]|\\\\.)*)\")");
+  utils::Regex Lexer::whitespace_pattern_("[ \\t]+");
+  utils::Regex Lexer::ascii_identifier_pattern_("[A-Za-z_][A-Za-z0-9_]*");
+  utils::Regex Lexer::stropped_identifier_pattern_("`((?:[^\\\\`]|\\\\.)+)`");
+  utils::Regex Lexer::int_pattern_("0[Xx][0-9A-Fa-f][0-9A-Fa-f_]*|-?(?:0|[1-9][0-9_]*)");
+  utils::Regex Lexer::real_pattern_("-?(?:0|[1-9][0-9_]*)(?:\\.[0-9][0-9_]*(?:[Ee][+-]?(?:0|[1-9][0-9_]*))?|[Ee][+-]?(?:0|[1-9][0-9_]*))");
+  utils::Regex Lexer::rune_pattern_("'((?:[^\\\\']|\\\\.)*)'");
+  utils::Regex Lexer::string_pattern_("\"((?:[^\\\\\"]|\\\\.)*)\"");
+  utils::Regex Lexer::regex_pattern_("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*");
 
   // Initialize the rules for the lexer
   std::vector<LexerRule> Lexer::rules_({
     // Delimiters
-    LexerRule(TokenKind::PARENTHESIS_LEFT, utils::RegexPattern::create("\\(")),
-    LexerRule(TokenKind::PARENTHESIS_RIGHT, utils::RegexPattern::create("\\)")),
-    LexerRule(TokenKind::SQUARE_BRACKET_LEFT, utils::RegexPattern::create("\\[")),
-    LexerRule(TokenKind::SQUARE_BRACKET_RIGHT, utils::RegexPattern::create("\\]")),
-    LexerRule(TokenKind::CURLY_BRACKET_LEFT, utils::RegexPattern::create("\\{")),
-    LexerRule(TokenKind::CURLY_BRACKET_RIGHT, utils::RegexPattern::create("\\}")),
+    LexerRule(TokenKind::PARENTHESIS_LEFT, utils::Regex("\\(")),
+    LexerRule(TokenKind::PARENTHESIS_RIGHT, utils::Regex("\\)")),
+    LexerRule(TokenKind::SQUARE_BRACKET_LEFT, utils::Regex("\\[")),
+    LexerRule(TokenKind::SQUARE_BRACKET_RIGHT, utils::Regex("\\]")),
+    LexerRule(TokenKind::CURLY_BRACKET_LEFT, utils::Regex("\\{")),
+    LexerRule(TokenKind::CURLY_BRACKET_RIGHT, utils::Regex("\\}")),
 
     // Symbols
-    LexerRule(TokenKind::SYMBOL_COLON, utils::RegexPattern::create(":")),
-    LexerRule(TokenKind::SYMBOL_COMMA, utils::RegexPattern::create(",")),
-    LexerRule(TokenKind::SYMBOL_DOT, utils::RegexPattern::create("\\.")),
-    LexerRule(TokenKind::SYMBOL_BACKSLASH, utils::RegexPattern::create("\\\\")),
+    LexerRule(TokenKind::SYMBOL_COLON, utils::Regex(":")),
+    LexerRule(TokenKind::SYMBOL_COMMA, utils::Regex(",")),
+    LexerRule(TokenKind::SYMBOL_DOT, utils::Regex("\\.")),
+    LexerRule(TokenKind::SYMBOL_BACKSLASH, utils::Regex("\\\\")),
 
     // Operators
-    LexerRule(TokenKind::OPERATOR_MAYBE, utils::RegexPattern::create("\\?")),
-    LexerRule(TokenKind::OPERATOR_INTERSECTION, utils::RegexPattern::create("&")),
-    LexerRule(TokenKind::OPERATOR_UNION, utils::RegexPattern::create("\\|")),
-    LexerRule(TokenKind::OPERATOR_LENGTH, utils::RegexPattern::create("#")),
-    LexerRule(TokenKind::OPERATOR_STRING, utils::RegexPattern::create("\\$")),
-    LexerRule(TokenKind::OPERATOR_MULTIPLY, utils::RegexPattern::create("\\*")),
-    LexerRule(TokenKind::OPERATOR_DIVIDE, utils::RegexPattern::create("/")),
-    LexerRule(TokenKind::OPERATOR_QUOTIENT, utils::RegexPattern::create("//")),
-    LexerRule(TokenKind::OPERATOR_REMAINDER, utils::RegexPattern::create("%")),
-    LexerRule(TokenKind::OPERATOR_ADD, utils::RegexPattern::create("\\+")),
-    LexerRule(TokenKind::OPERATOR_SUBTRACT, utils::RegexPattern::create("-")),
-    LexerRule(TokenKind::OPERATOR_RANGE, utils::RegexPattern::create("\\.\\.")),
-    LexerRule(TokenKind::OPERATOR_COMPARE, utils::RegexPattern::create("<=>")),
-    LexerRule(TokenKind::OPERATOR_LESS, utils::RegexPattern::create("<")),
-    LexerRule(TokenKind::OPERATOR_LESS_EQUAL, utils::RegexPattern::create("<=")),
-    LexerRule(TokenKind::OPERATOR_GREATER, utils::RegexPattern::create(">")),
-    LexerRule(TokenKind::OPERATOR_GREATER_EQUAL, utils::RegexPattern::create(">=")),
-    LexerRule(TokenKind::OPERATOR_MATCH, utils::RegexPattern::create("=~")),
-    LexerRule(TokenKind::OPERATOR_NOT_MATCH, utils::RegexPattern::create("!~")),
-    LexerRule(TokenKind::OPERATOR_EQUAL, utils::RegexPattern::create("==")),
-    LexerRule(TokenKind::OPERATOR_NOT_EQUAL, utils::RegexPattern::create("!=")),
-    LexerRule(TokenKind::OPERATOR_IDENTICAL, utils::RegexPattern::create("===")),
-    LexerRule(TokenKind::OPERATOR_NOT_IDENTICAL, utils::RegexPattern::create("!==")),
-    LexerRule(TokenKind::OPERATOR_LOGIC_NOT, utils::RegexPattern::create("not")),
-    LexerRule(TokenKind::OPERATOR_LOGIC_AND, utils::RegexPattern::create("and")),
-    LexerRule(TokenKind::OPERATOR_LOGIC_OR, utils::RegexPattern::create("or")),
-    LexerRule(TokenKind::OPERATOR_ASSIGN, utils::RegexPattern::create("=")),
+    LexerRule(TokenKind::OPERATOR_MAYBE, utils::Regex("\\?")),
+    LexerRule(TokenKind::OPERATOR_INTERSECTION, utils::Regex("&")),
+    LexerRule(TokenKind::OPERATOR_UNION, utils::Regex("\\|")),
+    LexerRule(TokenKind::OPERATOR_LENGTH, utils::Regex("#")),
+    LexerRule(TokenKind::OPERATOR_STRING, utils::Regex("\\$")),
+    LexerRule(TokenKind::OPERATOR_MULTIPLY, utils::Regex("\\*")),
+    LexerRule(TokenKind::OPERATOR_DIVIDE, utils::Regex("/")),
+    LexerRule(TokenKind::OPERATOR_QUOTIENT, utils::Regex("//")),
+    LexerRule(TokenKind::OPERATOR_REMAINDER, utils::Regex("%")),
+    LexerRule(TokenKind::OPERATOR_ADD, utils::Regex("\\+")),
+    LexerRule(TokenKind::OPERATOR_SUBTRACT, utils::Regex("-")),
+    LexerRule(TokenKind::OPERATOR_RANGE, utils::Regex("\\.\\.")),
+    LexerRule(TokenKind::OPERATOR_COMPARE, utils::Regex("<=>")),
+    LexerRule(TokenKind::OPERATOR_LESS, utils::Regex("<")),
+    LexerRule(TokenKind::OPERATOR_LESS_EQUAL, utils::Regex("<=")),
+    LexerRule(TokenKind::OPERATOR_GREATER, utils::Regex(">")),
+    LexerRule(TokenKind::OPERATOR_GREATER_EQUAL, utils::Regex(">=")),
+    LexerRule(TokenKind::OPERATOR_MATCH, utils::Regex("=~")),
+    LexerRule(TokenKind::OPERATOR_NOT_MATCH, utils::Regex("!~")),
+    LexerRule(TokenKind::OPERATOR_EQUAL, utils::Regex("==")),
+    LexerRule(TokenKind::OPERATOR_NOT_EQUAL, utils::Regex("!=")),
+    LexerRule(TokenKind::OPERATOR_IDENTICAL, utils::Regex("===")),
+    LexerRule(TokenKind::OPERATOR_NOT_IDENTICAL, utils::Regex("!==")),
+    LexerRule(TokenKind::OPERATOR_LOGIC_NOT, utils::Regex("not")),
+    LexerRule(TokenKind::OPERATOR_LOGIC_AND, utils::Regex("and")),
+    LexerRule(TokenKind::OPERATOR_LOGIC_OR, utils::Regex("or")),
+    LexerRule(TokenKind::OPERATOR_ASSIGN, utils::Regex("=")),
 
     // Keywords
-    LexerRule(TokenKind::KEYWORD_DEF, utils::RegexPattern::create("def")),
-    LexerRule(TokenKind::KEYWORD_DO, utils::RegexPattern::create("do")),
-    LexerRule(TokenKind::KEYWORD_ECHO, utils::RegexPattern::create("echo")),
-    LexerRule(TokenKind::KEYWORD_ELSE, utils::RegexPattern::create("else")),
-    LexerRule(TokenKind::KEYWORD_FALSE, utils::RegexPattern::create("false")),
-    LexerRule(TokenKind::KEYWORD_FOR, utils::RegexPattern::create("for")),
-    LexerRule(TokenKind::KEYWORD_IF, utils::RegexPattern::create("if")),
-    LexerRule(TokenKind::KEYWORD_IN, utils::RegexPattern::create("in")),
-    LexerRule(TokenKind::KEYWORD_NOTHING, utils::RegexPattern::create("nothing")),
-    LexerRule(TokenKind::KEYWORD_THEN, utils::RegexPattern::create("then")),
-    LexerRule(TokenKind::KEYWORD_TRUE, utils::RegexPattern::create("true")),
-    LexerRule(TokenKind::KEYWORD_UNTIL, utils::RegexPattern::create("until")),
-    LexerRule(TokenKind::KEYWORD_WHILE, utils::RegexPattern::create("while")),
+    LexerRule(TokenKind::KEYWORD_DEF, utils::Regex("def")),
+    LexerRule(TokenKind::KEYWORD_DO, utils::Regex("do")),
+    LexerRule(TokenKind::KEYWORD_ECHO, utils::Regex("echo")),
+    LexerRule(TokenKind::KEYWORD_ELSE, utils::Regex("else")),
+    LexerRule(TokenKind::KEYWORD_FALSE, utils::Regex("false")),
+    LexerRule(TokenKind::KEYWORD_FOR, utils::Regex("for")),
+    LexerRule(TokenKind::KEYWORD_IF, utils::Regex("if")),
+    LexerRule(TokenKind::KEYWORD_IN, utils::Regex("in")),
+    LexerRule(TokenKind::KEYWORD_NOTHING, utils::Regex("nothing")),
+    LexerRule(TokenKind::KEYWORD_THEN, utils::Regex("then")),
+    LexerRule(TokenKind::KEYWORD_TRUE, utils::Regex("true")),
+    LexerRule(TokenKind::KEYWORD_UNTIL, utils::Regex("until")),
+    LexerRule(TokenKind::KEYWORD_WHILE, utils::Regex("while")),
 
     // Identifiers
     LexerRule(TokenKind::IDENTIFIER, ascii_identifier_pattern_, 0),
@@ -201,19 +201,19 @@ namespace dauw::frontend
       while (location.col() < line.length())
       {
         // Check for comments at the current position
-        auto comment_match = comment_pattern_->match(line, location.col());
-        if (comment_match->success() && comment_match->group(1).success())
+        auto comment_match = comment_pattern_.match(line, location.col(), utils::REGEX_MATCH_AT_BEGIN);
+        if (comment_match.success() && comment_match.group(1).success())
         {
-          tokens.push_back(Token(TokenKind::COMMENT, comment_match->group(1).value(), location));
-          location.increase_col_(comment_match->length());
+          tokens.push_back(Token(TokenKind::COMMENT, comment_match.group(1).value(), location));
+          location.increase_col_(comment_match.length());
           continue;
         }
 
         // Check for whitespaces at the current position
-        auto whitespace_match = whitespace_pattern_->match(line, location.col());
-        if (whitespace_match->success())
+        auto whitespace_match = whitespace_pattern_.match(line, location.col(), utils::REGEX_MATCH_AT_BEGIN);
+        if (whitespace_match.success())
         {
-          location.increase_col_(whitespace_match->length());
+          location.increase_col_(whitespace_match.length());
           continue;
         }
 
@@ -221,9 +221,9 @@ namespace dauw::frontend
         std::vector<std::tuple<Token, size_t>> matched_tokens;
         for (auto rule : rules_)
         {
-          auto rule_match = rule.pattern()->match(line, location.col());
-          if (rule_match->success())
-            matched_tokens.push_back(std::make_tuple(Token(rule.kind(), rule.replace(rule_match), location), rule_match->length()));
+          auto rule_match = rule.pattern().match(line, location.col(), utils::REGEX_MATCH_AT_BEGIN);
+          if (rule_match.success())
+            matched_tokens.push_back(std::make_tuple(Token(rule.kind(), rule.replace(rule_match), location), rule_match.length()));
         }
 
         // If there are no matched tokens, then we've encountered a syntax Error

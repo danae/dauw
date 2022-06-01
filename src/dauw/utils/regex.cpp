@@ -2,56 +2,70 @@
 
 namespace dauw::utils
 {
-  // Convert a PCRE2 error code to a string
-  string_t regex_convert_error(int error_code)
+  // Convert pattern flags to PCRE2 options
+  Regex::options_type Regex::pcre2_options_(RegexFlags pattern_flags)
   {
-    regex_pcre2_char_t buffer[1024];
+    options_type flags = PCRE2_UCP | PCRE2_UTF;
+
+    if ((pattern_flags & REGEX_ASCII) != REGEX_ASCII)
+      flags |= PCRE2_UCP;
+    if ((pattern_flags & REGEX_IGNORECASE) == REGEX_IGNORECASE)
+      flags |= PCRE2_CASELESS;
+    if ((pattern_flags & REGEX_MULTILINE) == REGEX_MULTILINE)
+      flags |= PCRE2_MULTILINE;
+    if ((pattern_flags & REGEX_DOTALL) == REGEX_DOTALL)
+      flags |= PCRE2_DOTALL;
+    if ((pattern_flags & REGEX_EXTENDED) == REGEX_EXTENDED)
+      flags |= PCRE2_EXTENDED;
+
+    return flags;
+  }
+
+  // Convert match flags to PCRE2 options
+  Regex::options_type Regex::pcre2_options_(RegexMatchFlags match_flags)
+  {
+    options_type flags = 0;
+
+    if ((match_flags & REGEX_MATCH_AT_BEGIN) == REGEX_MATCH_AT_BEGIN)
+      flags |= PCRE2_ANCHORED;
+    if ((match_flags & REGEX_MATCH_AT_END) == REGEX_MATCH_AT_END)
+      flags |= PCRE2_ENDANCHORED;
+
+    return flags;
+  }
+
+  // Convert a PCRE2 error code to a string
+  string_t Regex::pcre2_error_(int error_code)
+  {
+    char_type buffer[1024];
     pcre2_get_error_message(error_code, buffer, sizeof(buffer));
     return string_t((char*)buffer);
   }
 
-  // --------------------------------------------------------------------------
-
-  // Create a shared pointer to a regular expression
-  regex_pattern_ptr RegexPattern::create(string_t pattern, RegexPatternFlags flags)
+  // Constructor for a regular expression
+  Regex::Regex(string_t pattern, RegexFlags flags)
+    : pattern_(pattern)
   {
-    return std::make_shared<RegexPattern>(pattern, flags);
-  }
-
-  // Constructor for a regular expression pattern
-  RegexPattern::RegexPattern(string_t pattern, RegexPatternFlags flags)
-    : pattern_(pattern), flags_(flags)
-  {
-    // Create the flags of the pattern
-    pcre2_flags_ = PCRE2_UCP | PCRE2_UTF;
-    if ((flags_ & REGEX_ASCII) != REGEX_ASCII)
-      pcre2_flags_ |= PCRE2_UCP;
-    if ((flags_ & REGEX_IGNORECASE) == REGEX_IGNORECASE)
-      pcre2_flags_ |= PCRE2_CASELESS;
-    if ((flags_ & REGEX_MULTILINE) == REGEX_MULTILINE)
-      pcre2_flags_ |= PCRE2_MULTILINE;
-    if ((flags_ & REGEX_DOTALL) == REGEX_DOTALL)
-      pcre2_flags_ |= PCRE2_DOTALL;
-    if ((flags_ & REGEX_EXTENDED) == REGEX_EXTENDED)
-      pcre2_flags_ |= PCRE2_EXTENDED;
-
     // Create the pattern
+    auto p_str = (char_type*)pattern_.c_str();
+    auto p_length = pattern_.length();
+    auto options = pcre2_options_(flags);
+
     int result;
     size_t offset;
+    code_ = pcre2_compile(p_str, p_length, options, &result, &offset, nullptr);
+    if (code_ == nullptr)
+      throw RegexException(fmt::format("Cannot compile pattern '{}' at offset {}: {}", pattern_, offset, pcre2_error_(result)));
 
-    pcre2_pattern_ = pcre2_compile((regex_pcre2_char_t*)pattern_.c_str(), pattern_.length(), flags, &result, &offset, nullptr);
-    if (pcre2_pattern_ == nullptr)
-      throw RegexException(fmt::format("Cannot compile pattern '{}' at offset {}: {}", pattern_, offset, regex_convert_error(result)));
-
-    // Create the named group indexes
+    // Create the named groups index of the pattern
     uint32_t name_count, name_entry_size;
-    regex_pcre2_char_t* name_table;
+    char_type* name_table;
 
-    pcre2_pattern_info(pcre2_pattern_, PCRE2_INFO_NAMECOUNT, &name_count);
-    pcre2_pattern_info(pcre2_pattern_, PCRE2_INFO_NAMEENTRYSIZE, &name_entry_size);
-    pcre2_pattern_info(pcre2_pattern_, PCRE2_INFO_NAMETABLE, &name_table);
+    pcre2_pattern_info(code_, PCRE2_INFO_NAMECOUNT, &name_count);
+    pcre2_pattern_info(code_, PCRE2_INFO_NAMEENTRYSIZE, &name_entry_size);
+    pcre2_pattern_info(code_, PCRE2_INFO_NAMETABLE, &name_table);
 
-    regex_pcre2_char_t* name_table_ptr = name_table;
+    char_type* name_table_ptr = name_table;
     for (auto i = 0; i < name_count; i++)
     {
       size_t group = (name_table_ptr[0] << 8) | name_table_ptr[1];
@@ -61,27 +75,30 @@ namespace dauw::utils
     }
   }
 
-  // Destructor for a regular expression pattern
-  RegexPattern::~RegexPattern()
+  // Copy constructor for a regular expression
+  Regex::Regex(const Regex& other)
+    : pattern_(other.pattern_)
   {
-    // Free the pattern
-    pcre2_code_free(pcre2_pattern_);
+    // Copy the pattern
+    code_ = pcre2_code_copy(other.code_);
+    if (code_ == nullptr)
+      throw RegexException(fmt::format("Cannot copy pattern '{}'", pattern_));
+  }
+
+  // Destructor for a regular expression
+  Regex::~Regex()
+  {
+    pcre2_code_free(code_);
   }
 
   // Return the pattern of the regular expression
-  string_t RegexPattern::pattern()
+  string_t Regex::pattern()
   {
     return pattern_;
   }
 
-  // Return the flags of the regular expression
-  RegexPatternFlags RegexPattern::flags()
-  {
-    return flags_;
-  }
-
   // Return the index of the numbered group cossresponding to a named group
-  size_t RegexPattern::index(string_t name)
+  size_t Regex::index(string_t name)
   {
     std::unordered_map<string_t, size_t>::iterator it;
     if ((it = indexes_.find(name)) != indexes_.end())
@@ -91,45 +108,109 @@ namespace dauw::utils
   }
 
   // Search for the regular expression in a string
-  regex_match_ptr RegexPattern::search(string_t subject, size_t pos)
+  RegexMatch Regex::match(string_t subject, size_t pos, RegexMatchFlags flags)
   {
-    return RegexMatch::create(this, subject, pos, REGEX_MATCH_NONE);
+    // Perform the match
+    auto s_str = (char_type*)subject.c_str();
+    auto s_length = subject.length();
+    auto options = pcre2_options_(flags);
+
+    auto match = pcre2_match_data_create_from_pattern(code_, nullptr);
+    int error = pcre2_match(code_, s_str, s_length, pos, options, match, nullptr);
+    if (error < 0)
+    {
+      // Throw an error in any case except having found no match
+      if (error != PCRE2_ERROR_NOMATCH)
+        throw RegexException(fmt::format("Cannot match pattern: {}", pcre2_error_(error)));
+    }
+
+    // Fetch the groups of the match
+    std::vector<RegexGroup> groups;
+    if (error != PCRE2_ERROR_NOMATCH)
+    {
+      auto ovector = pcre2_get_ovector_pointer(match);
+      for (auto i = 0; i < error; i ++)
+      {
+        size_t start = ovector[2 * i];
+        size_t end = ovector[2 * i + 1];
+        bool success = start != PCRE2_UNSET && end != PCRE2_UNSET;
+        groups.push_back(RegexGroup(this, subject, start, end));
+      }
+    }
+
+    // Create and return the result
+    RegexMatch result(this, subject, groups);
+    pcre2_match_data_free(match);
+    return result;
   }
 
-  // Match the regular expression at the beginning of a string
-  regex_match_ptr RegexPattern::match(string_t subject, size_t pos)
+  // Search for all non-overlapping occurrences of the regular expression in a string
+  std::vector<RegexMatch> Regex::match_all(string_t subject, size_t pos)
   {
-    return RegexMatch::create(this, subject, pos, REGEX_MATCH_ANCHOR_BEGIN);
+    std::vector<RegexMatch> matches;
+
+    auto m = match(subject, pos);
+    while (m.success())
+    {
+      matches.push_back(m);
+      pos = m.end();
+      m = match(subject, pos);
+    }
+
+    return matches;
   }
 
-  // Match the regular expression in a whole string
-  regex_match_ptr RegexPattern::fullmatch(string_t subject, size_t pos)
+  // Substitute all non-overlapping occurrences of the regular expression in a string
+  string_t Regex::substitute(string_t subject, string_t replacement)
   {
-    return RegexMatch::create(this, subject, pos, (RegexMatchFlags)(REGEX_MATCH_ANCHOR_BEGIN | REGEX_MATCH_ANCHOR_END));
-  }
+    // Perform the substitution
+    auto s_str = (char_type*)subject.c_str();
+    auto s_length = subject.length();
+    auto r_str = (char_type*)replacement.c_str();
+    auto r_length = replacement.length();
+    auto options = PCRE2_SUBSTITUTE_GLOBAL | PCRE2_SUBSTITUTE_OVERFLOW_LENGTH;
 
-  // Replace non-overlapping occurrences of the regular expression in a string
-  string_t RegexPattern::replace(string_t replacement, string_t subject)
-  {
-    // TODO: Implement regex replace
-    return "";
+    size_t output_length = 255;
+    char_type* output_str = new char_type[output_length + 1];
+
+    int error = pcre2_substitute(code_, s_str, s_length, 0, options, nullptr, nullptr, r_str, r_length, output_str, &output_length);
+    if (error < 0)
+    {
+      // Throw an error in any case except being out of memoty
+      if (error != PCRE2_ERROR_NOMEMORY)
+        throw RegexException(fmt::format("Cannot perform substitution in pattern '{}': {}", pattern_, pcre2_error_(error)));
+
+      // If out of memory, perform the subtitution again with the newly assigned output size
+      delete[] output_str;
+      output_str = new char_type[output_length + 1];
+
+      error = pcre2_substitute(code_, s_str, s_length, 0, options, nullptr, nullptr, r_str, r_length, output_str, &output_length);
+      if (error < 0)
+        throw RegexException(fmt::format("Cannot perform substitution in pattern '{}': {}", pattern_, pcre2_error_(error)));
+    }
+
+    // Create and return the result
+    string_t result((char*)output_str, (char*)output_str + output_length);
+    delete[] output_str;
+    return result;
   }
 
   // Split a string by the occurrences of the regular expression
-  std::vector<string_t> RegexPattern::split(string_t subject)
+  std::vector<string_t> Regex::split(string_t subject)
   {
-    auto match = RegexMatch::create(this, subject, 0, REGEX_MATCH_NONE);
-    if (!match->success())
+    auto m = match(subject);
+    if (!m.success())
       return std::vector<string_t>({subject});
 
     std::vector<string_t> parts;
 
     size_t pos = 0;
-    do {
-      parts.push_back(string_t(subject, pos, match->start() - pos));
-      pos = match->end();
-      match = RegexMatch::create(this, subject, pos, REGEX_MATCH_NONE);
-    } while (match->success());
+    while (m.success())
+    {
+      parts.push_back(string_t(subject, pos, m.start() - pos));
+      pos = m.end();
+      m = match(subject, pos);
+    }
 
     return parts;
   }
@@ -137,99 +218,65 @@ namespace dauw::utils
   // --------------------------------------------------------------------------
 
   // Constructor
-  RegexGroup::RegexGroup(RegexMatch* match, bool success, size_t start, size_t end)
-    : match_(match), success_(success), start_(start), end_(end)
+  RegexGroup::RegexGroup(Regex* pattern, string_t subject, size_t start, size_t end)
+    : pattern_(pattern), subject_(subject), start_(start), end_(end)
   {
   }
 
-  // Return the regular expreesion match of the capture group
-  RegexMatch RegexGroup::match()
+  // Return the rregular expression of the capture group
+  Regex* RegexGroup::pattern()
   {
-    return *match_;
+    return pattern_;
+  }
+
+  // Return the subject of the capture group
+  string_t RegexGroup::subject()
+  {
+    return subject_;
   }
 
   // Return if the capture group has matched anything
   bool RegexGroup::success()
   {
-    return success_;
+    return start_ != PCRE2_UNSET && end_ != PCRE2_UNSET;
   }
 
   // Return the start offset of the substring matched by the capture group
   size_t RegexGroup::start()
   {
-    return success_ ? start_ : 0;
+    return start_;
   }
 
   // Return the end offset of the substring matched by the capture group
   size_t RegexGroup::end()
   {
-    return success_ ? end_ : 0;
+    return end_;
   }
 
   // Return the length of the substring matched by the capture group
   size_t RegexGroup::length()
   {
-    return success_ ? (end_ - start_) : 0;
+    return end_ - start_;
   }
 
   // Return the substring matched by a capture group
   string_t RegexGroup::value()
   {
-    return success_ ? string_t(match_->subject(), start_, end_ - start_) : "";
+    return success() ? string_t(subject_, start_, end_ - start_) : "";
   }
 
   // --------------------------------------------------------------------------
 
-  // Create a shared pointer to a regular expression match
-  regex_match_ptr RegexMatch::create(RegexPattern* pattern, string_t subject, size_t pos, RegexMatchFlags flags)
-  {
-    return std::make_shared<RegexMatch>(pattern, subject, pos, flags);
-  }
-
   // Constructor for a regular expression match
-  RegexMatch::RegexMatch(RegexPattern* pattern, string_t subject, size_t pos, RegexMatchFlags flags)
-    : pattern_(pattern), subject_(subject), pos_(pos), flags_(flags), success_(false)
+  RegexMatch::RegexMatch(Regex* pattern, string_t subject, std::vector<RegexGroup> groups)
+    : pattern_(pattern), subject_(subject), groups_(groups)
   {
-    // Create the flags
-    pcre2_flags_ = 0;
-    if ((flags_ & REGEX_MATCH_ANCHOR_BEGIN) == REGEX_MATCH_ANCHOR_BEGIN)
-      pcre2_flags_ |= PCRE2_ANCHORED;
-    if ((flags_ & REGEX_MATCH_ANCHOR_END) == REGEX_MATCH_ANCHOR_END)
-      pcre2_flags_ |= PCRE2_ENDANCHORED;
-
-    // Create the match
-    pcre2_match_ = pcre2_match_data_create_from_pattern(pattern_->pcre2_pattern_, nullptr);
-    int result = pcre2_match(pattern_->pcre2_pattern_, (regex_pcre2_char_t*)subject_.c_str(), subject_.length(), pos_, pcre2_flags_, pcre2_match_, nullptr);
-    if (result < 0 && result != PCRE2_ERROR_NOMATCH)
-      throw RegexException(fmt::format("Cannot match pattern: {}", regex_convert_error(result)));
-
-    // Create the groups of the match
-    if (result != PCRE2_ERROR_NOMATCH)
-    {
-      success_ = true;
-
-      auto ovector = pcre2_get_ovector_pointer(pcre2_match_);
-      for (auto i = 0; i < result; i ++)
-      {
-        size_t start = ovector[2 * i];
-        size_t end = ovector[2 * i + 1];
-        bool success = start != PCRE2_UNSET && end != PCRE2_UNSET;
-        groups_.push_back(RegexGroup(this, success, start, end));
-      }
-    }
-  }
-
-  // Destructor for a regular expression match
-  RegexMatch::~RegexMatch()
-  {
-    // Free the match data
-    pcre2_match_data_free(pcre2_match_);
   }
 
   // Return the rregular expression of the regular expression match
-  RegexPattern RegexMatch::pattern()
+  Regex* RegexMatch::pattern()
   {
-    return *pattern_;
+    return pattern_;
   }
 
   // Return the subject of the regular expression match
@@ -238,22 +285,10 @@ namespace dauw::utils
     return subject_;
   }
 
-  // Return the position where to start matching of the regular expression match
-  size_t RegexMatch::pos()
-  {
-    return pos_;
-  }
-
-  // Return the flags of the regular expression match
-  RegexMatchFlags RegexMatch::flags()
-  {
-    return flags_;
-  }
-
   // Return if the regular expression match has matched anything
   bool RegexMatch::success()
   {
-    return success_;
+    return groups_.size() > 0;
   }
 
   // Return a numbered capture group of the regular expression match
@@ -269,5 +304,23 @@ namespace dauw::utils
   RegexGroup RegexMatch::group(string_t name)
   {
     return group(pattern_->index(name));
+  }
+
+  // Return the prefix of the regular expression match
+  RegexGroup RegexMatch::prefix()
+  {
+    if (success())
+      return RegexGroup(pattern_, subject_, 0, group(0).start());
+    else
+      return RegexGroup(pattern_, subject_, PCRE2_UNSET, PCRE2_UNSET);
+  }
+
+  // Return the prefix of the regular expression match
+  RegexGroup RegexMatch::suffix()
+  {
+    if (success())
+      return RegexGroup(pattern_, subject_, group(0).end(), subject_.length());
+    else
+      return RegexGroup(pattern_, subject_, PCRE2_UNSET, PCRE2_UNSET);
   }
 }

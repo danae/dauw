@@ -21,7 +21,7 @@ namespace dauw::frontend
       TokenKind kind_;
 
       // The regular expression pattern of the rule
-      utils::regex_pattern_ptr pattern_;
+      utils::Regex pattern_;
 
       // The replacement group of the rule
       std::optional<size_t> group_;
@@ -29,17 +29,17 @@ namespace dauw::frontend
 
     public:
       // Constructor
-      LexerRule(TokenKind kind, utils::regex_pattern_ptr pattern, size_t group);
-      LexerRule(TokenKind kind, utils::regex_pattern_ptr pattern);
+      LexerRule(TokenKind kind, utils::Regex pattern, size_t group);
+      LexerRule(TokenKind kind, utils::Regex pattern);
 
       // Return the token kind of the rule
       TokenKind kind();
 
       // Return the regular expression pattern of the rule
-      utils::regex_pattern_ptr pattern();
+      utils::Regex pattern();
 
       // Return the replacement of the rule based on a match
-      string_t replace(utils::regex_match_ptr match);
+      string_t replace(utils::RegexMatch match);
   };
 
 
@@ -53,16 +53,16 @@ namespace dauw::frontend
 
     private:
       // Regex patterns for the lexer
-      static utils::regex_pattern_ptr newline_pattern_;
-      static utils::regex_pattern_ptr comment_pattern_;
-      static utils::regex_pattern_ptr whitespace_pattern_;
-      static utils::regex_pattern_ptr ascii_identifier_pattern_;
-      static utils::regex_pattern_ptr stropped_identifier_pattern_;
-      static utils::regex_pattern_ptr int_pattern_;
-      static utils::regex_pattern_ptr real_pattern_;
-      static utils::regex_pattern_ptr rune_pattern_;
-      static utils::regex_pattern_ptr string_pattern_;
-      static utils::regex_pattern_ptr regex_pattern_;
+      static utils::Regex newline_pattern_;
+      static utils::Regex comment_pattern_;
+      static utils::Regex whitespace_pattern_;
+      static utils::Regex ascii_identifier_pattern_;
+      static utils::Regex stropped_identifier_pattern_;
+      static utils::Regex int_pattern_;
+      static utils::Regex real_pattern_;
+      static utils::Regex rune_pattern_;
+      static utils::Regex string_pattern_;
+      static utils::Regex regex_pattern_;
 
       // Rules for the lexer
       static std::vector<LexerRule> rules_;

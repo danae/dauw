@@ -2,6 +2,7 @@
 
 #include <dauw/common.hpp>
 #include <dauw/frontend/location.hpp>
+#include <dauw/utils/regex.hpp>
 #include <dauw/utils/string.hpp>
 
 #include <filesystem>
@@ -23,7 +24,7 @@ namespace dauw::frontend
   {
     private:
       // Initialize the regex patterns for the source
-      static utils::regex_pattern_ptr line_pattern_;
+      static utils::Regex line_pattern_;
 
 
       // The file of the source
