@@ -18,7 +18,9 @@ def plural(num):
 
 # Function that prints a horizontal divider
 def divider():
-  print("─" * 80)
+  print("─" * 79)
+def divider_half():
+  print("─ " * 39 + "─")
 
 # Function that removes ANSI escape codes from a string
 def unescape(string):
@@ -160,8 +162,9 @@ class TestRun:
 # Class that runs a test suite
 class TestRunner:
   # Constructor
-  def __init__(self, interpreter_path):
+  def __init__(self, interpreter_path, less = False):
     self.interpreter_path = interpreter_path
+    self.less = less
 
     self.passes = 0
     self.fails = 0
@@ -172,7 +175,6 @@ class TestRunner:
     # Create the test from the file
     test = Test(os.path.abspath(path))
     print(Style.BRIGHT + f"Running {test}:")
-    print()
 
     # Run the test
     results = test(self.interpreter_path)
@@ -180,7 +182,8 @@ class TestRunner:
     # Print and accumulate the results
     test_passed = True
     for result in results:
-      print(result)
+      if result.type != "pass" or not self.less:
+        print(result)
 
       if result.type == "fail" or result.type == "warn":
         test_passed = False
@@ -189,9 +192,9 @@ class TestRunner:
       self.fails += 1 if result.type == "fail" else 0
       self.warnings += 1 if result.type == "warn" else 0
 
-    if not test_passed:
-      print()
-      print(f"Console output for {path}:")
+    if not test_passed and test.run.output:
+      divider_half()
+      print(Style.BRIGHT + f"Console output for {os.path.abspath(path)}:")
       for i, line in enumerate(test.run.output):
         print(f"{i + 1:>3d} │ " + Style.DIM + line)
 
@@ -227,6 +230,7 @@ def main(args):
   parser = ArgumentParser(prog = "test.py", description = "Run the test suite for the Dauw compiler and interpreter.")
   parser.add_argument("suite", action = "store", help = "path to the test suite")
   parser.add_argument("-p", "--path", action = "store", default = "./dauw", help = "path to the intepreter executable (defaults to './dauw')")
+  parser.add_argument("-l", "--less", action = "store_true", help = "do not display passed test results")
 
   args = parser.parse_args(args)
 
@@ -239,10 +243,8 @@ def main(args):
     sys.exit(1)
 
   # Create a test runner and run the tests in the suite
-  divider()
-
   runner_path = os.path.abspath(args.suite)
-  runner = TestRunner(args.path).test(runner_path)
+  runner = TestRunner(args.path, args.less).test(runner_path)
 
   print(f"Test results for {runner_path}:")
   print(Fore.GREEN + Style.BRIGHT + f"{runner.passes}" + Style.RESET_ALL + f" test{plural(runner.passes)} passed", end = ", ")
