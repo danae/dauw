@@ -11,6 +11,7 @@ using value_t = uint64_t;
 
 // Defines for the IEEE 754 bitmasks
 #define BITMASK_SIGN        ((value_t)0x8000'0000'0000'0000)
+#define BITMASK_SNAN        ((value_t)0x7ff0'0000'0000'0000)
 #define BITMASK_QNAN        ((value_t)0x7ff8'0000'0000'0000)
 #define BITMASK_TAG         ((value_t)0x0007'0000'0000'0000)
 #define BITMASK_SIGNATURE   ((value_t)0xffff'0000'0000'0000)
@@ -29,6 +30,7 @@ using value_t = uint64_t;
 #define VAL_NOTHING         ((value_t)(BITMASK_QNAN | TAG_NOTHING))
 #define VAL_FALSE           ((value_t)(BITMASK_QNAN | TAG_FALSE))
 #define VAL_TRUE            ((value_t)(BITMASK_QNAN | TAG_TRUE))
+#define VAL_NAN             ((value_t)(BITMASK_SNAN | BITMASK_VALUE))
 
 // Defines for allowed value ranges
 #define INT_NEGATIVE        ((int64_t)0x0000'8000'0000'0000)
@@ -43,13 +45,17 @@ namespace dauw::internals
   class Value
   {
     private:
-      // The actual value
+      // The underlying value of the value
       value_t value_;
 
 
     public:
       // Constructor
       Value(value_t value);
+      Value(const Value& other);
+
+      Value operator=(value_t value);
+      Value operator=(const Value& other);
 
       // Value that represents a constant type
       bool is_nothing() const;
@@ -75,28 +81,23 @@ namespace dauw::internals
       // Value that represents a real type
       static Value of_real(dauw_real_t real_value);
       bool is_real() const;
+      bool is_nan() const;
       dauw_real_t as_real() const;
 
       // Value that represents an object type
-      static Value of_obj(Obj* object_value, Type object_type);
+      static Value of_obj(Obj* object_value);
       bool is_obj() const;
       Obj* as_obj() const;
 
       // Return the type of the value
       Type& type();
 
-      // Assign another value to this value
-      Value operator=(const Value& other);
-
       // Return if the value equals another value
       bool operator==(const Value& other);
       bool operator!=(const Value& other);
 
-      // Return the truth value of the value
-      bool truth_value();
-
-      // Return a representative string representation of the value
-      string_t to_string();
+      // Return a string representation of the value
+      string_t str();
 
 
       // Definitions for global values
@@ -141,28 +142,10 @@ namespace fmt
   template <>
   struct formatter<Value> : formatter<string_view_t>
   {
-    inline string_t stringify(Value value)
-    {
-      if (value.is_nothing())
-        return "nothing";
-      else if (value.is_bool())
-        return fmt::format("{}", value.as_bool() ? "true" : "false");
-      else if (value.is_int())
-        return fmt::format("{}", value.as_int());
-      else if (value.is_rune())
-        return fmt::format("'{}'", dauw::utils::rune_pack_to_str(value.as_rune()));
-      else if (value.is_real())
-        return fmt::format("{:#}", value.as_real());
-      else if (value.is_obj())
-        return fmt::format("{}", *value.as_obj());
-      else
-        return fmt::format("<invalid value>");
-    }
-
     template <typename FormatContext>
     auto format(Value value, FormatContext& ctx)
     {
-      return formatter<string_view_t>::format(stringify(value), ctx);
+      return formatter<string_view_t>::format(value.str(), ctx);
     }
   };
 }

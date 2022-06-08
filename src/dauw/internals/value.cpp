@@ -14,6 +14,26 @@ namespace dauw::internals
   {
   }
 
+  // Constructor for a value from another value
+  Value::Value(const Value& other)
+    : value_(other.value_)
+  {
+  }
+
+  // Assignment from a value from an underlying value
+  Value Value::operator=(value_t value)
+  {
+    value_ = value;
+    return *this;
+  }
+
+  // Assignment from a value from another value
+  Value Value::operator=(const Value& other)
+  {
+    value_ = other.value_;
+    return *this;
+  }
+
   // Return if the value represents nothing
   bool Value::is_nothing() const
   {
@@ -130,7 +150,7 @@ namespace dauw::internals
   {
     value_t value = *(value_t*)(&real_value);
     if ((value & BITMASK_QNAN) == BITMASK_QNAN)
-      throw ValueOverflowException(fmt::format("The real specified by value {:#016x} exceeds the valid real range because it contains a quiet NaN", value));
+      value = VAL_NAN;
 
     return Value(value);
   }
@@ -141,20 +161,23 @@ namespace dauw::internals
     return (value_ & BITMASK_QNAN) != BITMASK_QNAN;
   }
 
+  // Return if the value represents a not-a-number real value
+  bool Value::is_nan() const
+  {
+    return value_ == VAL_NAN;
+  }
+
   // Convert a value to a real type
   dauw_real_t Value::as_real() const
   {
     if (!is_real())
       throw ValueMismatchException(fmt::format("The value {:#16x} does not represent a valid real value", value_));
 
-    if ((value_ & BITMASK_QNAN) == BITMASK_QNAN)
-      throw ValueOverflowException(fmt::format("The real specified by value {:#016x} exceeds the valid real range because it contains a quiet NaN", value_));
-
     return *(dauw_real_t*)(&value_);
   }
 
   // Convert an object type to a value
-  Value Value::of_obj(Obj* object_value, Type object_type)
+  Value Value::of_obj(Obj* object_value)
   {
     return Value((value_t)(BITMASK_QNAN | BITMASK_SIGN | (value_t)(uintptr_t)object_value & BITMASK_VALUE));
   }
@@ -191,14 +214,6 @@ namespace dauw::internals
       return as_obj()->type();
   }
 
-  // Assign another value to this value
-  Value Value::operator=(const Value& other)
-  {
-    if (this != &other)
-      value_ = other.value_;
-    return *this;
-  }
-
   // Return if the value equals another value
   bool Value::operator==(const Value& other)
   {
@@ -212,22 +227,22 @@ namespace dauw::internals
     return !(*this == other);
   }
 
-  // Return the truth value of the value
-  bool Value::truth_value()
+  // Return a string representation of the value
+  string_t Value::str()
   {
     if (is_nothing())
-      return false;
+      return "nothing";
     else if (is_bool())
-      return is_true();
+      return fmt::format("{}", as_bool() ? "true" : "false");
     else if (is_int())
-      return as_int() != 0;
+      return fmt::format("{}", as_int());
     else if (is_rune())
-      return as_rune() != 0;
+      return fmt::format("'{}'", dauw::utils::rune_pack_to_str(as_rune()));
     else if (is_real())
-      return as_real() != 0;
+      return is_nan() ? "NaN" : fmt::format("{:#}", as_real());
     else if (is_obj())
-      return true;
+      return fmt::format("{}", *as_obj());
     else
-      return false;
+      return fmt::format("<invalid value>");
   }
 }

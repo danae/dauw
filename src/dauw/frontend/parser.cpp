@@ -711,7 +711,7 @@ namespace dauw::frontend
     try
     {
       auto string_value = utils::parse_string(current().value());
-      auto value = internals::Value::of_obj(vm_->allocate_string(string_value), internals::Type::type_string);
+      auto value = internals::Value::of_obj(vm_->allocate_string(string_value));
       return std::make_shared<ast::ExprLiteral>(value, current().location());
     }
     catch (...)
@@ -728,7 +728,7 @@ namespace dauw::frontend
     {
       // TODO: Properly parse the regex literal instead of making a literal string
       auto string_value = utils::parse_string(current().value());
-      auto value = internals::Value::of_obj(vm_->allocate_string(string_value), internals::Type::type_string);
+      auto value = internals::Value::of_obj(vm_->allocate_string(string_value));
       return std::make_shared<ast::ExprLiteral>(value, current().location());
     }
     catch (...)
