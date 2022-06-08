@@ -1,5 +1,7 @@
 #include "string.hpp"
 
+#include <dauw/utils/regex.hpp>
+
 namespace dauw::utils
 {
   // Pack a list of runes into a string
@@ -35,16 +37,14 @@ namespace dauw::utils
   dauw_int_t parse_int(string_t string)
   {
     // Remove thousand separators from the string
-    // TODO: Implement regular expression substitution
-    //string = regex::replace(regex_t("_"), "", string);
+    string = Regex("_").substitute(string, "");
 
     // Check if the string contains a hexadecimal integer
-    auto is_hex_pattern = RegexPattern::create("0[Xx]");
-    auto is_hex_match = is_hex_pattern->match(string);
+    auto is_hex_match = Regex("0[Xx]").match(string, 0, REGEX_MATCH_AT_BEGIN);
 
     // Parse the string as an integer
     size_t end_index;
-    auto int_value = (dauw_int_t)std::stoll(string, &end_index, is_hex_match->success() ? 16 : 10);
+    auto int_value = (dauw_int_t)std::stoll(string, &end_index, is_hex_match.success() ? 16 : 10);
     if (end_index != string.length())
       throw std::invalid_argument(fmt::format("Unexpected character '{}' in integer", string.substr(end_index, 1)));
 
@@ -56,8 +56,7 @@ namespace dauw::utils
   dauw_real_t parse_real(string_t string)
   {
     // Remove thousand separators from the string
-    // TODO: Implement regular expression substitution
-    //string = regex::replace(regex_t("_"), "", string);
+    string = Regex("_").substitute(string, "");
 
     // Parse the string as a real
     size_t end_index;
@@ -73,7 +72,7 @@ namespace dauw::utils
   dauw_rune_t parse_rune(string_t string)
   {
     // Unescape the string
-    string = unescape(string, EscapeType::SINGLE_QUOTED);
+    string = unescape(string, StringEscapeType::SINGLE_QUOTED);
 
     // Parse the rune literal
     auto runes = rune_unpack_from_str(string);
@@ -91,19 +90,19 @@ namespace dauw::utils
   const char* parse_string(string_t string)
   {
     // Unescape the string
-    string = unescape(string, EscapeType::DOUBLE_QUOTED);
+    string = unescape(string, StringEscapeType::DOUBLE_QUOTED);
 
     // Return the parsed C-string
     return string.c_str();
   }
 
   // Parse a string as a regex pattern
-  regex_pattern_ptr parse_regex(string_t string)
+  Regex parse_regex(string_t string)
   {
     // TODO: Properly parse the regex pattern
 
     // Return the parsed regex pattern
-    return RegexPattern::create(string);
+    return Regex(string);
   }
 
   // Repeat a string for the specified amount of times
@@ -116,7 +115,7 @@ namespace dauw::utils
   }
 
   // Convert unprintable characters in a string to escape sequences
-  string_t escape(string_t string, EscapeType type, bool ascii_only)
+  string_t escape(string_t string, StringEscapeType type, bool ascii_only)
   {
     string_t result;
 
@@ -126,9 +125,9 @@ namespace dauw::utils
       auto rune = runes[i];
       if (rune == 0x5C)
         result.append("\\\\");
-      else if (type == EscapeType::DOUBLE_QUOTED && rune == 0x22)
+      else if (type == StringEscapeType::DOUBLE_QUOTED && rune == 0x22)
         result.append("\\\"");
-      else if (type == EscapeType::SINGLE_QUOTED && rune == 0x27)
+      else if (type == StringEscapeType::SINGLE_QUOTED && rune == 0x27)
         result.append("\\'");
       else if (rune == 0x08)
         result.append("\\b");
@@ -150,32 +149,29 @@ namespace dauw::utils
   }
 
   // Convert escape sequences in a string to unprintable characters
-  string_t unescape(string_t string, EscapeType type)
+  string_t unescape(string_t string, StringEscapeType type)
   {
-    // TODO: Implement unescaping of string with the PCRE2 regex library
-    /*
-    regex_t escape_pattern("\\\\(?:(u\\{([0-9A-Fa-f]{1,6})\\})|(\")|(\')|([\\btnfr])|.)");
+    auto escape_pattern = Regex("\\\\(?:(u\\{([0-9A-Fa-f]{1,6})\\})|(\")|(\')|([\\btnfr])|.)");
+    auto escape_matches = escape_pattern.match_all(string);
     string_t result(string);
 
-    std::regex_iterator<string_t::iterator> escape_begin(string.begin(), string.end(), escape_pattern);
-    std::regex_iterator<string_t::iterator> escape_end;
-    for (auto match = escape_begin; match != escape_end; match ++)
+    for (auto match : escape_matches)
     {
       string_t result;
-      if (match->length(1) > 0)
-        result = rune_pack_to_str(parse_rune(match->str(2)));
-      else if (match->length(3) > 0 && type == EscapeType::DOUBLE_QUOTED)
-        result = match->str(3);
-      else if (match->length(4) > 0 && type == EscapeType::SINGLE_QUOTED)
-        result = match->str(4);
-      else if (match->length(5) > 0)
-        result = match->str(5);
+      if (match.group(1).success())
+        result = rune_pack_to_str(parse_rune(match.group(2).value()));
+      else if (match.group(3).success() && type == StringEscapeType::DOUBLE_QUOTED)
+        result = match.group(3).value();
+      else if (match.group(4).success() && type == StringEscapeType::SINGLE_QUOTED)
+        result = match.group(4).value();
+      else if (match.group(5).success())
+        result = match.group(5).value();
       else
-        throw std::invalid_argument(fmt::format("Invalid escape sequence '{}'", match->str()));
+        throw std::invalid_argument(fmt::format("Invalid escape sequence '{}'", match.value()));
 
-      string = match->prefix().str() + result + match->suffix().str();
+      string = match.prefix().value() + result + match.suffix().value();
     }
-    */
+
 
     return string;
   }

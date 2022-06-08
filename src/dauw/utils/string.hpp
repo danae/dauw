@@ -1,16 +1,17 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/utils/regex.hpp>
 
 
 namespace dauw::utils
 {
+
   // Enum that defines the type of the string to (un)escape
-  enum class EscapeType {
+  enum class StringEscapeType {
     DOUBLE_QUOTED,  // Escapes double quotes
     SINGLE_QUOTED,  // Escapes single quotes
   };
+
 
   // Pack a list of runes into a string
   string_t rune_pack_to_str(std::vector<dauw_rune_t> rune_values);
@@ -25,14 +26,14 @@ namespace dauw::utils
   dauw_real_t parse_real(string_t string);
   dauw_rune_t parse_rune(string_t string);
   const char* parse_string(string_t string);
-  regex_pattern_ptr parse_regex(string_t string);
+  //Regex parse_regex(string_t string);
 
   // Repeat a string for the specified amount of times
   string_t repeat(string_t string, size_t times);
 
   // Convert unprintable characters in a string to escape sequences
-  string_t escape(string_t string, EscapeType type, bool ascii_only = false);
+  string_t escape(string_t string, StringEscapeType type, bool ascii_only = false);
 
   // Convert escape sequences in a string to unprintable characters
-  string_t unescape(string_t string, EscapeType type);
+  string_t unescape(string_t string, StringEscapeType type);
 }

@@ -2,85 +2,167 @@
 
 namespace dauw::internals
 {
-  // Constructor for a string
-  String::String(size_t length, char* bytes)
-    : Obj(ObjKind::STRING, Type::type_string)
+  // Default constructor for a string
+  String::String()
+    : Obj(ObjKind::STRING, Type::type_string), length_(0)
   {
-    if (!utf8::is_valid(bytes, bytes + length))
-      throw std::out_of_range(fmt::format("\"{}\" is not a valid UTF-8 encoded string", bytes));
-
-    length_ = length;
-    bytes_ = bytes;
+    bytes_ = new char[length_ + 1];
+    bytes_[0] = '\0';
   }
 
-  // Constructor for a string that copies the specified bytes
+  // Constructor for a string from a C-string
   String::String(const char* bytes)
-    : Obj(ObjKind::STRING, Type::type_string)
+    : Obj(ObjKind::STRING, Type::type_string), length_(std::strlen(bytes))
   {
-    length_ = strlen(bytes);
-    bytes_ = (char*)malloc(sizeof(char) * (length_ + 1));
-    memcpy(bytes_, bytes, length_);
+    auto bytes_length = std::strlen(bytes);
+    if (!utf8::is_valid(bytes, bytes + bytes_length))
+      throw StringException("The provided array of bytes is not a valid UTF-8 encoded string");
+
+    length_ = bytes_length;
+    bytes_ = new char[length_ + 1];
+    std::memcpy(bytes_, bytes, length_);
     bytes_[length_] = '\0';
   }
 
-  // Constructor for a string that copies another string
+  // Constructor for a string from another string
   String::String(const String& other)
-     : String(other.bytes_)
+    : Obj(ObjKind::STRING, Type::type_string), length_(other.length_)
   {
+    bytes_ = new char[length_ + 1];
+    std::memcpy(bytes_, other.bytes_, length_);
+    bytes_[length_] = '\0';
+  }
+
+  // Assignment for a string from a C-string
+  String& String::operator=(const char* bytes)
+  {
+    auto bytes_length = std::strlen(bytes);
+    if (!utf8::is_valid(bytes, bytes + bytes_length))
+      throw StringException("The provided array of bytes is not a valid UTF-8 encoded string");
+
+    delete[] bytes_;
+
+    length_ = bytes_length;
+    bytes_ = new char[length_ + 1];
+    std::memcpy(bytes_, bytes, length_);
+    bytes_[length_] = '\0';
+
+    return *this;
+  }
+
+  // Assignment for a string from another string
+  String& String::operator=(const String& other)
+  {
+    length_ = other.length_;
+
+    delete[] bytes_;
+
+    bytes_ = new char[length_ + 1];
+    std::memcpy(bytes_, other.bytes_, length_);
+    bytes_[length_] = '\0';
+
+    return *this;
   }
 
   // Destructor for a string
   String::~String()
   {
-    free(bytes_);
+    delete[] bytes_;
   }
 
-  // Convert the string to a C-style string
-  const char* String::c_str() const
+  // Append to the string from a C-string
+  String& String::append(const char* bytes)
   {
-    return bytes_;
+    if (!*bytes)
+      return *this;
+
+    auto bytes_length = std::strlen(bytes);
+    if (!utf8::is_valid(bytes, bytes + bytes_length))
+      throw StringException("The provided array of bytes is not a valid UTF-8 encoded string");
+
+    size_t pos = length_;
+    bytes_ = (char*)std::realloc(bytes_, length_ + 1);
+    std::memcpy(bytes_ + pos, bytes, length_ - pos);
+    bytes_[length_] = '\0';
+
+    return *this;
   }
 
-  // Return an iterator over the runes in the string
-  String::iterator_type String::rune_iterator()
+  // Append to the string from another string
+  String& String::append(const String& other)
   {
-    return utf8::iterator(bytes_, begin_(), end_());
+    if (other.length_ == 0)
+      return *this;
+
+    size_t pos = length_;
+    bytes_ = (char*)std::realloc(bytes_, length_ + 1);
+    std::memcpy(bytes_ + pos, other.bytes_, length_ - pos);
+    bytes_[length_] = '\0';
+
+    return *this;
   }
 
-  // Return the number of runes in the string
-  size_t String::rune_length()
+  // Return the actual characters of the string
+  const char* String::c_str()
   {
-    return utf8::distance(begin_(), end_());
+    return (const char*)bytes_;
   }
 
-  // Return the rune at the specified position in the string
-  uint32_t String::rune_at(size_t pos)
+  // Return the length in code points of the string
+  size_t String::length()
   {
-    auto it = rune_iterator();
-    for (auto i = 0; i < pos; it++);
-    return *it;
+    return utf8::distance(bytes_, bytes_ + length_);
   }
 
-
-  // Return if the string equals another string
-  bool String::operator==(const String& other)
+  // Return the code point at the specified position of the string
+  String::value_type String::at(size_t pos)
   {
-    return length_ == other.length_ && memcmp(bytes_, other.bytes_, length_) == 0;
+    try
+    {
+      char* it = bytes_;
+      utf8::advance(it, pos, bytes_ + length_);
+      return (value_type)*it;
+    }
+    catch (utf8::not_enough_room& ex)
+    {
+      throw std::out_of_range(fmt::format("{}", pos));
+    }
   }
-  bool String::operator!=(const String& other)
+
+  // Return an iterator over the code points of the string
+  String::iterator_type String::begin()
   {
-    return !(*this == other);
+    return utf8::iterator(bytes_, bytes_, bytes_ + length_);
+  }
+  String::iterator_type String::end()
+  {
+    return utf8::iterator(bytes_ + length_, bytes_, bytes_ + length_);
   }
 
-  // Concatenate another string at the end of the string
-  String String::operator+(const String& other)
+  // Compare the string to another string
+  int String::compare(String& other)
   {
-    auto length = length_ + other.length_;
-    auto bytes = (char*)malloc(sizeof(char) * (length + 1));
-    memcpy(bytes, bytes_, length_);
-    memcpy(bytes + length_, other.bytes_, other.length_);
-    bytes[length] = '\0';
+    iterator_type this_it = begin(), this_end = end();
+    iterator_type other_it = other.begin(), other_end = other.end();
 
-    return String(length, bytes);
+    while (true)
+    {
+      if (this_it == this_end && other_it == other_end)
+        return 0;
+      if (this_it != this_end && other_it == other_end)
+        return -1;
+      if (this_it == this_end && other_it != other_end)
+        return 1;
+
+      if (*this_it < *other_it)
+        return -1;
+      if (*this_it > *other_it)
+        return 1;
+
+      this_it ++;
+      other_it ++;
+    }
+
+    return 0;
   }
 }
