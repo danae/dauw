@@ -40,8 +40,6 @@ namespace dauw::utils
       return numerator;
     else if (std::isnan(denominator))
       return denominator;
-    else if (denominator == 0.0)
-      throw DivisionByZeroException("Division by zero");
     else
       return std::floor(numerator / denominator);
   }

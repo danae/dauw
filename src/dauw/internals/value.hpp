@@ -30,6 +30,8 @@ using value_t = uint64_t;
 #define VAL_NOTHING         ((value_t)(BITMASK_QNAN | TAG_NOTHING))
 #define VAL_FALSE           ((value_t)(BITMASK_QNAN | TAG_FALSE))
 #define VAL_TRUE            ((value_t)(BITMASK_QNAN | TAG_TRUE))
+#define VAL_INF_POSITIVE    ((value_t)(BITMASK_SNAN))
+#define VAL_INF_NEGATIVE    ((value_t)(BITMASK_SNAN | BITMASK_SIGN))
 #define VAL_NAN             ((value_t)(BITMASK_SNAN | BITMASK_VALUE))
 
 // Defines for allowed value ranges

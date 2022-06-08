@@ -239,7 +239,15 @@ namespace dauw::internals
     else if (is_rune())
       return fmt::format("'{}'", dauw::utils::rune_pack_to_str(as_rune()));
     else if (is_real())
-      return is_nan() ? "NaN" : fmt::format("{:#}", as_real());
+    {
+      switch (value_)
+      {
+        case VAL_INF_POSITIVE: return "infinity";
+        case VAL_INF_NEGATIVE: return "-infinity";
+        case VAL_NAN: return "nan";
+        default: return fmt::format("{:#}", as_real());
+      }
+    }
     else if (is_obj())
       return fmt::format("{}", *as_obj());
     else
