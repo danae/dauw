@@ -2,36 +2,36 @@
 
 namespace dauw::ast
 {
-  // Return the resolved type of the node
-  internals::Type& Node::resolved_type()
+  // Return the type of the node
+  internals::Type& Node::type()
   {
-    return resolved_type_.value();
+    return type_.value();
   }
 
-  // Return if the node has a resolved type
-  bool Node::has_resolved_type()
+  // Return if the node has a type
+  bool Node::has_type()
   {
-    return resolved_type_.has_value();
+    return type_.has_value();
   }
 
-  // Set the resolved type of the node
-  void Node::set_resolved_type(internals::Type& type)
+  // Set the type of the node
+  void Node::set_type(internals::Type& type)
   {
-    resolved_type_ = std::make_optional(type);
+    type_ = std::make_optional(type);
   }
 
-  // Set the resolved type of the node to that of another node
-  void Node::set_resolved_type_from(node_ptr node)
+  // Set the type of the node to that of another node
+  void Node::set_type_from(node_ptr node)
   {
-    if (node->has_resolved_type())
-      set_resolved_type(node->resolved_type());
+    if (node->has_type())
+      set_type(node->type());
   }
 
-  // Return if the resolved type matches the specified type
-  bool Node::check_type(internals::Type& type)
+  // Return if the type matches the specified type
+  bool Node::check_type(internals::Type& type_to_check)
   {
-    if (has_resolved_type())
-      return resolved_type() == type;
+    if (has_type())
+      return type() == type_to_check;
     else
       return false;
   }

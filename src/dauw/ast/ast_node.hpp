@@ -17,26 +17,26 @@ namespace dauw::ast
   class Node
   {
     private:
-      // The resolved type of the node
-      std::optional<internals::Type> resolved_type_ = std::nullopt;
+      // The type of the node
+      std::optional<internals::Type> type_ = std::nullopt;
 
 
     public:
       // Destructor
       virtual ~Node() = default;
 
-      // Return the resolved type of the node
-      internals::Type& resolved_type();
+      // Return the type of the node
+      internals::Type& type();
 
-      // Return if the node has a resolved type
-      bool has_resolved_type();
+      // Return if the node has a type
+      bool has_type();
 
-      // Set the resolved type of the node
-      void set_resolved_type(internals::Type& type);
-      void set_resolved_type_from(node_ptr node);
+      // Set the type of the node
+      void set_type(internals::Type& type);
+      void set_type_from(node_ptr node);
 
-      // Return if the resolved type matches the specified type
-      bool check_type(internals::Type& type);
+      // Return if the type matches the specified type
+      bool check_type(internals::Type& type_to_check);
 
       // Return the location of the node
       virtual frontend::Location& location() = 0;

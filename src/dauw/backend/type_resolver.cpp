@@ -15,7 +15,7 @@ namespace dauw::backend
     expr->accept(shared_from_this());
 
     // Check if the type of the expression has been resolved
-    if (throw_if_failed && !expr->has_resolved_type())
+    if (throw_if_failed && !expr->has_type())
       report<TypeUnresolvedError>(expr->location(), "Could not infer the type of the expression");
   }
 
@@ -23,8 +23,8 @@ namespace dauw::backend
   void TypeResolver::resolve_subtype_of(const ast::expr_ptr& expr, internals::Type& type)
   {
     // TODO: Implement proper subtype check
-    if (expr->resolved_type() != type)
-      report<TypeMismatchError>(expr->location(), fmt::format("Expected a subtype of {}, but found {}", expr->resolved_type().name(), type.name()));
+    if (expr->type() != type)
+      report<TypeMismatchError>(expr->location(), fmt::format("Expected a subtype of {}, but found {}", expr->type().name(), type.name()));
   }
 
   // --------------------------------------------------------------------------
@@ -35,7 +35,7 @@ namespace dauw::backend
   void TypeResolver::visit_literal(const ast::expr_literal_ptr& expr)
   {
     // The type of the literal expression is the type of its value
-    expr->set_resolved_type(expr->value().type());
+    expr->set_type(expr->value().type());
   }
 
   // Visit a sequence expression
@@ -46,7 +46,7 @@ namespace dauw::backend
       resolve(item_expr);
 
     // TODO: Implement generic resolving of sequence expression
-    expr->set_resolved_type(internals::Type::type_sequence);
+    expr->set_type(internals::Type::type_sequence);
   }
 
   // Visit a record expression
@@ -57,7 +57,7 @@ namespace dauw::backend
       resolve(std::get<1>(item_expr));
 
     // TODO: Implement generic resolving of record expressions
-    expr->set_resolved_type(internals::Type::type_record);
+    expr->set_type(internals::Type::type_record);
   }
 
   // Visit a name expression
@@ -76,7 +76,7 @@ namespace dauw::backend
     // TODO: Check if the resolved type is a subtype of the defined return type
 
     // The type of the function declaration expression is that of its value
-    expr->set_resolved_type(internals::Type::type_function);
+    expr->set_type(internals::Type::type_function);
   }
 
   // Visit a function parameter expression
@@ -93,7 +93,7 @@ namespace dauw::backend
     resolve(expr->expr());
 
     // The type of the grouped expression is that of its nested expression
-    expr->set_resolved_type_from(expr->expr());
+    expr->set_type_from(expr->expr());
   }
 
   // Visit a call expression
@@ -141,11 +141,11 @@ namespace dauw::backend
         break;
 
       case frontend::TokenKind::OPERATOR_LENGTH:
-        expr->set_resolved_type(internals::Type::type_int);
+        expr->set_type(internals::Type::type_int);
         break;
 
       case frontend::TokenKind::OPERATOR_STRING:
-        expr->set_resolved_type(internals::Type::type_string);
+        expr->set_type(internals::Type::type_string);
         break;
 
       // TODO: Unknown unary operator
@@ -208,7 +208,7 @@ namespace dauw::backend
         break;
 
       case frontend::TokenKind::OPERATOR_COMPARE:
-        expr->set_resolved_type(internals::Type::type_int);
+        expr->set_type(internals::Type::type_int);
         break;
 
       case frontend::TokenKind::OPERATOR_LESS:
@@ -221,7 +221,7 @@ namespace dauw::backend
       case frontend::TokenKind::OPERATOR_NOT_EQUAL:
       case frontend::TokenKind::OPERATOR_IDENTICAL:
       case frontend::TokenKind::OPERATOR_NOT_IDENTICAL:
-        expr->set_resolved_type(internals::Type::type_bool);
+        expr->set_type(internals::Type::type_bool);
         break;
 
       // TODO: Unknown binary operator
@@ -238,7 +238,7 @@ namespace dauw::backend
     resolve(expr->expr());
 
     // TODO: Implement resolving echo expression
-    expr->set_resolved_type(internals::Type::type_nothing);
+    expr->set_type(internals::Type::type_nothing);
   }
 
   // Visit an if expression
@@ -306,7 +306,7 @@ namespace dauw::backend
 
     // The type of the block expression is that of the last expression in the block
     if (expr->exprs().size() > 0)
-      expr->set_resolved_type_from(expr->exprs().back());
+      expr->set_type_from(expr->exprs().back());
   }
 
   // Visit a def expression
@@ -318,7 +318,7 @@ namespace dauw::backend
     // TODO: Check if the resolved type is a subtype of the defined type
 
     // The type of the def expression is that of its value
-    expr->set_resolved_type_from(expr->value());
+    expr->set_type_from(expr->value());
   }
 
   // --------------------------------------------------------------------------
@@ -375,65 +375,65 @@ namespace dauw::backend
   void TypeResolver::visit_unary_negate(const ast::expr_unary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_int);
+      expr->set_type(internals::Type::type_int);
     else if (expr->check_operand_type(internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
   }
 
   // Resolve the multiply operator
   void TypeResolver::visit_binary_multiply(const ast::expr_binary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_int);
+      expr->set_type(internals::Type::type_int);
     else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
   }
 
   // Resolve the divide operator
   void TypeResolver::visit_binary_divide(const ast::expr_binary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
     else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
   }
 
   // Resolve the quotient operator
   void TypeResolver::visit_binary_quotient(const ast::expr_binary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_int);
+      expr->set_type(internals::Type::type_int);
     else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
   }
 
   // Resolve the remainder operator
   void TypeResolver::visit_binary_remainder(const ast::expr_binary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_int);
+      expr->set_type(internals::Type::type_int);
     else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
   }
 
   // Resolve the add operator
   void TypeResolver::visit_binary_add(const ast::expr_binary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_int);
+      expr->set_type(internals::Type::type_int);
     else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
     else if (expr->check_operand_type(internals::Type::type_string, internals::Type::type_string))
-      expr->set_resolved_type(internals::Type::type_string);
+      expr->set_type(internals::Type::type_string);
   }
 
   // Resolve the subtract operator
   void TypeResolver::visit_binary_subtract(const ast::expr_binary_ptr& expr)
   {
     if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_resolved_type(internals::Type::type_int);
+      expr->set_type(internals::Type::type_int);
     else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_resolved_type(internals::Type::type_real);
+      expr->set_type(internals::Type::type_real);
   }
 
   // Resolve the range operator
