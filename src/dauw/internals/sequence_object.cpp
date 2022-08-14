@@ -4,7 +4,7 @@ namespace dauw
 {
   // Constructor for a sequence
   ObjSequence::ObjSequence(std::initializer_list<Value> items)
-    : Obj(ObjKind::LIST, Type::type_sequence)
+    : Obj(Type::type_sequence)
   {
     if (items.size() > 0)
       container_ = container_type(items.begin(), items.end());

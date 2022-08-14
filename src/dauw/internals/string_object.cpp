@@ -4,7 +4,7 @@ namespace dauw
 {
   // Default constructor for a string
   ObjString::ObjString()
-    : Obj(ObjKind::STRING, Type::type_string), length_(0)
+    : Obj(Type::type_string), length_(0)
   {
     bytes_ = new char[length_ + 1];
     bytes_[0] = '\0';
@@ -12,7 +12,7 @@ namespace dauw
 
   // Constructor for a string from a C-string
   ObjString::ObjString(const char* bytes)
-    : Obj(ObjKind::STRING, Type::type_string), length_(std::strlen(bytes))
+    : Obj(Type::type_string), length_(std::strlen(bytes))
   {
     auto bytes_length = std::strlen(bytes);
     if (!utf8::is_valid(bytes, bytes + bytes_length))
@@ -26,7 +26,7 @@ namespace dauw
 
   // Constructor for a string from another string
   ObjString::ObjString(const ObjString& other)
-    : Obj(ObjKind::STRING, Type::type_string), length_(other.length_)
+    : Obj(Type::type_string), length_(other.length_)
   {
     bytes_ = new char[length_ + 1];
     std::memcpy(bytes_, other.bytes_, length_);

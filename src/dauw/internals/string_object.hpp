@@ -15,7 +15,7 @@ namespace dauw
 
 
   // Class that represents a string
-  class String : public Obj
+  class ObjString : public Obj
   {
     public:
       // Type definitions
@@ -33,28 +33,28 @@ namespace dauw
 
     public:
       // Default constructor
-      String();
+      ObjString();
 
       // Constructor from another source
-      String(const char* bytes);
-      String(const String& other);
-      template <typename C> inline String(C c) : String(to_bytes(c)) {}
+      ObjString(const char* bytes);
+      ObjString(const ObjString& other);
+      template <typename C> inline ObjString(C c) : ObjString(to_bytes(c)) {}
 
-      String& operator=(const char* bytes);
-      String& operator=(const String& other);
-      template <typename C> inline String& operator=(C c) { return this->operator=(to_bytes(c)); }
+      ObjString& operator=(const char* bytes);
+      ObjString& operator=(const ObjString& other);
+      template <typename C> inline ObjString& operator=(C c) { return this->operator=(to_bytes(c)); }
 
       // Destructor
-      ~String();
+      ~ObjString();
 
       // Append to the string from another source
-      String& append(const char* bytes);
-      String& append(const String& other);
-      template <typename C> inline String& append(C c) { return append(to_bytes(c)); }
+      ObjString& append(const char* bytes);
+      ObjString& append(const ObjString& other);
+      template <typename C> inline ObjString& append(C c) { return append(to_bytes(c)); }
 
-      inline String& operator+=(const char* bytes) { return append(bytes); }
-      inline String& operator+=(const String& other) { return append(other); }
-      template <typename C> inline String& operator+=(C c) { return append(c); }
+      inline ObjString& operator+=(const char* bytes) { return append(bytes); }
+      inline ObjString& operator+=(const ObjString& other) { return append(other); }
+      template <typename C> inline ObjString& operator+=(C c) { return append(c); }
 
 
       // Return the actual characters of the string
@@ -71,14 +71,14 @@ namespace dauw
       iterator_type end();
 
       // Compare the string to another string
-      int compare(String& other);
+      int compare(ObjString& other);
 
-      inline bool operator==(String& other) { return compare(other) == 0; }
-      inline bool operator!=(String& other) { return compare(other) != 0; }
-      inline bool operator<(String& other) { return compare(other) < 0; }
-      inline bool operator<=(String& other) { return compare(other) <= 0; }
-      inline bool operator>(String& other) { return compare(other) > 0; }
-      inline bool operator>=(String& other) { return compare(other) >= 0; }
+      inline bool operator==(ObjString& other) { return compare(other) == 0; }
+      inline bool operator!=(ObjString& other) { return compare(other) != 0; }
+      inline bool operator<(ObjString& other) { return compare(other) < 0; }
+      inline bool operator<=(ObjString& other) { return compare(other) <= 0; }
+      inline bool operator>(ObjString& other) { return compare(other) > 0; }
+      inline bool operator>=(ObjString& other) { return compare(other) >= 0; }
 
       // Return a string representation of the string
       virtual string_t str() override;

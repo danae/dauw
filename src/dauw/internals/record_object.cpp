@@ -4,7 +4,7 @@ namespace dauw
 {
   // Constructor for a record
   ObjRecord::ObjRecord(std::initializer_list<ObjRecord::container_value_type> items)
-    : Obj(ObjKind::RECORD, Type::type_record)
+    : Obj(Type::type_record)
   {
     if (items.size() > 0)
       container_ = container_type(items.begin(), items.end());

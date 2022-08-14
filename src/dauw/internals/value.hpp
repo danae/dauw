@@ -3,6 +3,7 @@
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
 #include <dauw/internals/object.hpp>
+#include <dauw/internals/type.hpp>
 #include <dauw/utils/string.hpp>
 
 
@@ -11,30 +12,30 @@ using value_t = uint64_t;
 
 // Defines for the IEEE 754 bitmasks
 #define BITMASK_SIGN        ((value_t)0x8000'0000'0000'0000)
-#define BITMASK_SNAN        ((value_t)0x7ff0'0000'0000'0000)
 #define BITMASK_QNAN        ((value_t)0x7ff8'0000'0000'0000)
 #define BITMASK_TAG         ((value_t)0x0007'0000'0000'0000)
-#define BITMASK_QUIET       ((value_t)0x0008'0000'0000'0000)
-#define BITMASK_SIGNATURE   ((value_t)0xffff'0000'0000'0000)
 #define BITMASK_VALUE       ((value_t)0x0000'ffff'ffff'ffff)
 
 // Defines for tags of primitives
-#define TAG_NOTHING         ((value_t)0x0000'0000'0000'0001)
-#define TAG_FALSE           ((value_t)0x0000'0000'0000'0002)
-#define TAG_TRUE            ((value_t)0x0000'0000'0000'0003)
+#define TAG_CONST           ((value_t)0x0000'0000'0000'0000)
 #define TAG_INT             ((value_t)0x0001'0000'0000'0000)
 #define TAG_RUNE            ((value_t)0x0002'0000'0000'0000)
 
-// Defines for values of constant types
-#define VAL_NOTHING         ((value_t)(BITMASK_QNAN | TAG_NOTHING))
-#define VAL_FALSE           ((value_t)(BITMASK_QNAN | TAG_FALSE))
-#define VAL_TRUE            ((value_t)(BITMASK_QNAN | TAG_TRUE))
-#define VAL_INF_POSITIVE    ((value_t)(BITMASK_SNAN))
-#define VAL_INF_NEGATIVE    ((value_t)(BITMASK_SNAN | BITMASK_SIGN))
-#define VAL_NAN             ((value_t)(BITMASK_SNAN | BITMASK_VALUE))
+// Defines for constants of primitives
+#define CONST_NOTHING       ((value_t)0x0000'0000'0000'0001)
+#define CONST_FALSE         ((value_t)0x0000'0000'0000'0002)
+#define CONST_TRUE          ((value_t)0x0000'0000'0000'0003)
+
+// Defines for values of primitives
+#define VAL_NOTHING         ((value_t)(BITMASK_QNAN | TAG_CONST | CONST_NOTHING))
+#define VAL_FALSE           ((value_t)(BITMASK_QNAN | TAG_CONST | CONST_FALSE))
+#define VAL_TRUE            ((value_t)(BITMASK_QNAN | TAG_CONST | CONST_TRUE))
+
+#define VAL_INF_POSITIVE    ((value_t)0x7ff0'0000'0000'0000)
+#define VAL_INF_NEGATIVE    ((value_t)0xfff0'0000'0000'0000)
+#define VAL_NAN             ((value_t)0x7ff0'ffff'ffff'ffff)
 
 // Defines for allowed value ranges
-#define INT_NEGATIVE        ((int64_t)0x0000'8000'0000'0000)
 #define RUNE_MAX            ((uint32_t)0x10ffff)
 #define RUNE_SURROGATE_MIN  ((uint32_t)0x00d800)
 #define RUNE_SURROGATE_MAX  ((uint32_t)0x00dfff)
@@ -54,11 +55,13 @@ namespace dauw
       // Constructor
       Value(value_t value);
       Value(const Value& other);
+      Value(Value&& other);
 
-      Value operator=(value_t value);
       Value operator=(const Value& other);
+      Value operator=(Value&& other);
 
       // Value that represents a constant type
+      static Value of_nothing();
       bool is_nothing() const;
       void as_nothing() const;
 
