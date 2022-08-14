@@ -300,12 +300,12 @@ namespace dauw
 
       // Identical operator
       case TokenKind::OPERATOR_IDENTICAL:
-        expr->set_computed_value(left == right);
+        expr->set_computed_value(Value::of_bool(left == right));
         break;
 
       // Not identical operator
       case TokenKind::OPERATOR_NOT_IDENTICAL:
-        expr->set_computed_value(left != right);
+        expr->set_computed_value(Value::of_bool(left != right));
         break;
 
       // TODO: Unknown binary operator
