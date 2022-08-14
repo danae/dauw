@@ -1,11 +1,11 @@
 #pragma once
 
-#include <dauw/ast/ast_node.hpp>
+#include <dauw/ast/node.hpp>
 #include <dauw/frontend/location.hpp>
 #include <dauw/frontend/token.hpp>
 
 
-namespace dauw::ast
+namespace dauw
 {
   // Forward declarations
   class TypeExprVisitor;

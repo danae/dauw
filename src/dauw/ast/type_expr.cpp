@@ -1,6 +1,6 @@
-#include "ast_type_expr.hpp"
+#include "type_expr.hpp"
 
-namespace dauw::ast
+namespace dauw
 {
   // Constructor for a name type expression
   TypeExprName::TypeExprName(frontend::Token name)

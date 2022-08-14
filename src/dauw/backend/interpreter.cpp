@@ -9,7 +9,7 @@ namespace dauw::backend
   }
 
   // Evaluate an expression
-  internals::Value Interpreter::evaluate(const ast::expr_ptr& expr)
+  internals::Value Interpreter::evaluate(const expr_ptr& expr)
   {
     expr->accept(shared_from_this());
 
@@ -20,7 +20,7 @@ namespace dauw::backend
   }
 
   // Evaluate a type expression
-  internals::Type Interpreter::evaluate(const ast::type_expr_ptr& expr)
+  internals::Type Interpreter::evaluate(const type_expr_ptr& expr)
   {
     expr->accept(shared_from_this());
     return expr->type();
@@ -31,14 +31,14 @@ namespace dauw::backend
   // --------------------------------------------------------------------------
 
   // Visit a literal expression
-  void Interpreter::visit_literal(const ast::expr_literal_ptr& expr)
+  void Interpreter::visit_literal(const expr_literal_ptr& expr)
   {
     // Return the value of the literal expression
     expr->set_computed_value(expr->value());
   }
 
   // Visit a sequence expression
-  void Interpreter::visit_sequence(const ast::expr_sequence_ptr& expr)
+  void Interpreter::visit_sequence(const expr_sequence_ptr& expr)
   {
     // TODO: Implement evaluating sequence expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating sequence expression");
@@ -51,7 +51,7 @@ namespace dauw::backend
   }
 
   // Visit a record expression
-  void Interpreter::visit_record(const ast::expr_record_ptr& expr)
+  void Interpreter::visit_record(const expr_record_ptr& expr)
   {
     // TODO: Implement evaluating record expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating record expression");
@@ -64,35 +64,35 @@ namespace dauw::backend
   }
 
   // Visit a name expression
-  void Interpreter::visit_name(const ast::expr_name_ptr& expr)
+  void Interpreter::visit_name(const expr_name_ptr& expr)
   {
     // TODO: Implement evaluating name expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating name expression");
   }
 
   // Visit a function expression
-  void Interpreter::visit_function(const ast::expr_function_ptr& expr)
+  void Interpreter::visit_function(const expr_function_ptr& expr)
   {
     // TODO: Implement evaluating function expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating function expression");
   }
 
   // Visit a function parameter expression
-  void Interpreter::visit_function_parameter(const ast::expr_function_parameter_ptr& expr)
+  void Interpreter::visit_function_parameter(const expr_function_parameter_ptr& expr)
   {
     // TODO: Implement evaluating function parameter expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating function parameter expression");
   }
 
   // Visit a grouped expression
-  void Interpreter::visit_grouped(const ast::expr_grouped_ptr& expr)
+  void Interpreter::visit_grouped(const expr_grouped_ptr& expr)
   {
     // Return the evaluated value of the nested expression
     expr->set_computed_value(evaluate(expr->expr()));
   }
 
   // Visit a call expression
-  void Interpreter::visit_call(const ast::expr_call_ptr& expr)
+  void Interpreter::visit_call(const expr_call_ptr& expr)
   {
     // TODO: Implement evaluating call expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating call expression");
@@ -107,7 +107,7 @@ namespace dauw::backend
   }
 
   // Visit a get expression
-  void Interpreter::visit_get(const ast::expr_get_ptr& expr)
+  void Interpreter::visit_get(const expr_get_ptr& expr)
   {
     // TODO: Implement evaluating get expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating get expression");
@@ -119,7 +119,7 @@ namespace dauw::backend
   }
 
   // Visit an unary expression
-  void Interpreter::visit_unary(const ast::expr_unary_ptr& expr)
+  void Interpreter::visit_unary(const expr_unary_ptr& expr)
   {
     // Check if the expression is a logic not operation
     if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_NOT)
@@ -163,7 +163,7 @@ namespace dauw::backend
   }
 
   // Visit a binary expression
-  void Interpreter::visit_binary(const ast::expr_binary_ptr& expr)
+  void Interpreter::visit_binary(const expr_binary_ptr& expr)
   {
     // Check if the expression is a logic and operation
     if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_AND)
@@ -316,7 +316,7 @@ namespace dauw::backend
   }
 
   // Visit an echo expression
-  void Interpreter::visit_echo(const ast::expr_echo_ptr& expr)
+  void Interpreter::visit_echo(const expr_echo_ptr& expr)
   {
     // Evaluate the nested expression
     auto value = evaluate(expr->expr());
@@ -326,43 +326,43 @@ namespace dauw::backend
   }
 
   // Visit an if expression
-  void Interpreter::visit_if(const ast::expr_if_ptr& expr)
+  void Interpreter::visit_if(const expr_if_ptr& expr)
   {
     // TODO: Implement evaluating if expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating if expression");
   }
 
   // Visit a for expression
-  void Interpreter::visit_for(const ast::expr_for_ptr& expr)
+  void Interpreter::visit_for(const expr_for_ptr& expr)
   {
     // TODO: Implement evaluating for expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating for expression");
   }
 
   // Visit a while expression
-  void Interpreter::visit_while(const ast::expr_while_ptr& expr)
+  void Interpreter::visit_while(const expr_while_ptr& expr)
   {
     // TODO: Implement evaluating while expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating while expression");
   }
 
   // Visit an until expression
-  void Interpreter::visit_until(const ast::expr_until_ptr& expr)
+  void Interpreter::visit_until(const expr_until_ptr& expr)
   {
     // TODO: Implement evaluating until expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating until expression");
   }
 
   // Visit a block expression
-  void Interpreter::visit_block(const ast::expr_block_ptr& expr)
+  void Interpreter::visit_block(const expr_block_ptr& expr)
   {
     // Iterate over the sub-expressions and evaluate them in order
-    for (ast::expr_ptr sub_expr : *expr)
+    for (expr_ptr sub_expr : *expr)
       expr->set_computed_value(evaluate(sub_expr));
   }
 
   // Visit a def expression
-  void Interpreter::visit_def(const ast::expr_def_ptr& expr)
+  void Interpreter::visit_def(const expr_def_ptr& expr)
   {
     // TODO: Implement evaluating def expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating def expression");
@@ -378,42 +378,42 @@ namespace dauw::backend
   // --------------------------------------------------------------------------
 
   // Visit a name type expression
-  void Interpreter::visit_type_name(const ast::type_expr_name_ptr& expr)
+  void Interpreter::visit_type_name(const type_expr_name_ptr& expr)
   {
     // TODO: Implement evaluating name type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating name type expression");
   }
 
   // Visit a grouped type expression
-  void Interpreter::visit_type_grouped(const ast::type_expr_grouped_ptr& expr)
+  void Interpreter::visit_type_grouped(const type_expr_grouped_ptr& expr)
   {
     // TODO: Implement evaluating grouped type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating grouped type expression");
   }
 
   // Visit a generic type expression
-  void Interpreter::visit_type_generic(const ast::type_expr_generic_ptr& expr)
+  void Interpreter::visit_type_generic(const type_expr_generic_ptr& expr)
   {
     // TODO: Implement evaluating generic type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating generic type expression");
   }
 
   // Visit a maybe type expression
-  void Interpreter::visit_type_maybe(const ast::type_expr_maybe_ptr& expr)
+  void Interpreter::visit_type_maybe(const type_expr_maybe_ptr& expr)
   {
     // TODO: Implement evaluating maybe type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating maybe type expression");
   }
 
   // Visit an intersection type expression
-  void Interpreter::visit_type_intersection(const ast::type_expr_intersection_ptr& expr)
+  void Interpreter::visit_type_intersection(const type_expr_intersection_ptr& expr)
   {
     // TODO: Implement evaluating intersection type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating intersection type expression");
   }
 
   // Visit an union type expression
-  void Interpreter::visit_type_union(const ast::type_expr_union_ptr& expr)
+  void Interpreter::visit_type_union(const type_expr_union_ptr& expr)
   {
     // TODO: Implement evaluating union type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement evaluating union type expression");

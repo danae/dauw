@@ -1,6 +1,6 @@
-#include "ast_expr.hpp"
+#include "expr.hpp"
 
-namespace dauw::ast
+namespace dauw
 {
   // Return the computed value of the expression
   internals::Value Expr::computed_value()

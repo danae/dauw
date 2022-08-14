@@ -4,7 +4,7 @@
 #include <dauw/frontend/location.hpp>
 #include <dauw/internals/type.hpp>
 
-namespace dauw::ast
+namespace dauw
 {
   // Forward declarations
   class Node;

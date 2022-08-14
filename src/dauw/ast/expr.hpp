@@ -1,15 +1,15 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/ast/ast_node.hpp>
-#include <dauw/ast/ast_type_expr.hpp>
+#include <dauw/ast/node.hpp>
+#include <dauw/ast/type_expr.hpp>
 #include <dauw/frontend/location.hpp>
 #include <dauw/frontend/token.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 
 
-namespace dauw::ast
+namespace dauw
 {
   // Forward declarations
   class ExprVisitor;

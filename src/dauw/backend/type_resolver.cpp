@@ -9,7 +9,7 @@ namespace dauw::backend
   }
 
   // Resolve the type of an expression
-  void TypeResolver::resolve(const ast::expr_ptr& expr, bool throw_if_failed)
+  void TypeResolver::resolve(const expr_ptr& expr, bool throw_if_failed)
   {
     // Accept this visitor on the expression
     expr->accept(shared_from_this());
@@ -20,7 +20,7 @@ namespace dauw::backend
   }
 
   // Resolve if a type is a subtype of another type
-  void TypeResolver::resolve_subtype_of(const ast::expr_ptr& expr, internals::Type& type)
+  void TypeResolver::resolve_subtype_of(const expr_ptr& expr, internals::Type& type)
   {
     // TODO: Implement proper subtype check
     if (expr->type() != type)
@@ -32,14 +32,14 @@ namespace dauw::backend
   // --------------------------------------------------------------------------
 
   // Visit a literal expression
-  void TypeResolver::visit_literal(const ast::expr_literal_ptr& expr)
+  void TypeResolver::visit_literal(const expr_literal_ptr& expr)
   {
     // The type of the literal expression is the type of its value
     expr->set_type(expr->value().type());
   }
 
   // Visit a sequence expression
-  void TypeResolver::visit_sequence(const ast::expr_sequence_ptr& expr)
+  void TypeResolver::visit_sequence(const expr_sequence_ptr& expr)
   {
     // Resolve the items of the sequence expression
     for (auto item_expr : *expr)
@@ -50,7 +50,7 @@ namespace dauw::backend
   }
 
   // Visit a record expression
-  void TypeResolver::visit_record(const ast::expr_record_ptr& expr)
+  void TypeResolver::visit_record(const expr_record_ptr& expr)
   {
     // Resolve the items of the record expression
     for (auto item_expr : *expr)
@@ -61,14 +61,14 @@ namespace dauw::backend
   }
 
   // Visit a name expression
-  void TypeResolver::visit_name(const ast::expr_name_ptr& expr)
+  void TypeResolver::visit_name(const expr_name_ptr& expr)
   {
     // TODO: Implement resolving name expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving name expression");
   }
 
   // Visit a function expression
-  void TypeResolver::visit_function(const ast::expr_function_ptr& expr)
+  void TypeResolver::visit_function(const expr_function_ptr& expr)
   {
     // Resolve the body of the function expression
     resolve(expr->body());
@@ -80,14 +80,14 @@ namespace dauw::backend
   }
 
   // Visit a function parameter expression
-  void TypeResolver::visit_function_parameter(const ast::expr_function_parameter_ptr& expr)
+  void TypeResolver::visit_function_parameter(const expr_function_parameter_ptr& expr)
   {
     // TODO: Implement resolving function parameter expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving function parameter expression");
   }
 
   // Visit a grouped expression
-  void TypeResolver::visit_grouped(const ast::expr_grouped_ptr& expr)
+  void TypeResolver::visit_grouped(const expr_grouped_ptr& expr)
   {
     // Resolve the nested expression of the grouped expression
     resolve(expr->expr());
@@ -97,7 +97,7 @@ namespace dauw::backend
   }
 
   // Visit a call expression
-  void TypeResolver::visit_call(const ast::expr_call_ptr& expr)
+  void TypeResolver::visit_call(const expr_call_ptr& expr)
   {
     // Resolve the callee of the call expression
     resolve(expr->callee());
@@ -110,7 +110,7 @@ namespace dauw::backend
   }
 
   // Visit a get expression
-  void TypeResolver::visit_get(const ast::expr_get_ptr& expr)
+  void TypeResolver::visit_get(const expr_get_ptr& expr)
   {
     // Resolve the object of the get expression
     resolve(expr->object());
@@ -120,7 +120,7 @@ namespace dauw::backend
   }
 
   // Visit an unary expression
-  void TypeResolver::visit_unary(const ast::expr_unary_ptr& expr)
+  void TypeResolver::visit_unary(const expr_unary_ptr& expr)
   {
     // Check if the expression is a logic not operation
     if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_NOT)
@@ -159,7 +159,7 @@ namespace dauw::backend
   }
 
   // Visit a binary expression
-  void TypeResolver::visit_binary(const ast::expr_binary_ptr& expr)
+  void TypeResolver::visit_binary(const expr_binary_ptr& expr)
   {
     // Check if the expression is a logic and operation
     if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_AND)
@@ -255,7 +255,7 @@ namespace dauw::backend
   }
 
   // Visit an echo expression
-  void TypeResolver::visit_echo(const ast::expr_echo_ptr& expr)
+  void TypeResolver::visit_echo(const expr_echo_ptr& expr)
   {
     // Resolve the nested expression of the echo expression
     resolve(expr->expr());
@@ -265,7 +265,7 @@ namespace dauw::backend
   }
 
   // Visit an if expression
-  void TypeResolver::visit_if(const ast::expr_if_ptr& expr)
+  void TypeResolver::visit_if(const expr_if_ptr& expr)
   {
     // Resolve the condition of the if expression
     resolve(expr->condition());
@@ -282,7 +282,7 @@ namespace dauw::backend
   }
 
   // Visit a for expression
-  void TypeResolver::visit_for(const ast::expr_for_ptr& expr)
+  void TypeResolver::visit_for(const expr_for_ptr& expr)
   {
     // Resolve the iterable of the for expression
     resolve(expr->iterable());
@@ -295,7 +295,7 @@ namespace dauw::backend
   }
 
   // Visit a while expression
-  void TypeResolver::visit_while(const ast::expr_while_ptr& expr)
+  void TypeResolver::visit_while(const expr_while_ptr& expr)
   {
     // Resolve the condition of the while expression
     resolve(expr->condition());
@@ -308,7 +308,7 @@ namespace dauw::backend
   }
 
   // Visit an until expression
-  void TypeResolver::visit_until(const ast::expr_until_ptr& expr)
+  void TypeResolver::visit_until(const expr_until_ptr& expr)
   {
     // Resolve the condition of the while expression
     resolve(expr->condition());
@@ -321,7 +321,7 @@ namespace dauw::backend
   }
 
   // Visit a block expression
-  void TypeResolver::visit_block(const ast::expr_block_ptr& expr)
+  void TypeResolver::visit_block(const expr_block_ptr& expr)
   {
     // Resolve the expressions of the block expression
     for (auto sub_expr : *expr)
@@ -333,7 +333,7 @@ namespace dauw::backend
   }
 
   // Visit a def expression
-  void TypeResolver::visit_def(const ast::expr_def_ptr& expr)
+  void TypeResolver::visit_def(const expr_def_ptr& expr)
   {
     // Resolve the value of the def expression
     resolve(expr->value());
@@ -349,42 +349,42 @@ namespace dauw::backend
   // --------------------------------------------------------------------------
 
   // Visit a name type expression
-  void TypeResolver::visit_type_name(const ast::type_expr_name_ptr& expr)
+  void TypeResolver::visit_type_name(const type_expr_name_ptr& expr)
   {
     // TODO: Implement resolving name type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving name type expression");
   }
 
   // Visit a grouped type expression
-  void TypeResolver::visit_type_grouped(const ast::type_expr_grouped_ptr& expr)
+  void TypeResolver::visit_type_grouped(const type_expr_grouped_ptr& expr)
   {
     // TODO: Implement resolving grouped type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving grouped type expression");
   }
 
   // Visit a generic type expression
-  void TypeResolver::visit_type_generic(const ast::type_expr_generic_ptr& expr)
+  void TypeResolver::visit_type_generic(const type_expr_generic_ptr& expr)
   {
     // TODO: Implement resolving generic type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving generic type expression");
   }
 
   // Visit a maybe type expression
-  void TypeResolver::visit_type_maybe(const ast::type_expr_maybe_ptr& expr)
+  void TypeResolver::visit_type_maybe(const type_expr_maybe_ptr& expr)
   {
     // TODO: Implement resolving maybe type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving maybe type expression");
   }
 
   // Visit an intersection type expression
-  void TypeResolver::visit_type_intersection(const ast::type_expr_intersection_ptr& expr)
+  void TypeResolver::visit_type_intersection(const type_expr_intersection_ptr& expr)
   {
     // TODO: Implement resolving intersection type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving intersection type expression");
   }
 
   // Visit an union type expression
-  void TypeResolver::visit_type_union(const ast::type_expr_union_ptr& expr)
+  void TypeResolver::visit_type_union(const type_expr_union_ptr& expr)
   {
     // TODO: Implement resolving union type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving union type expression");

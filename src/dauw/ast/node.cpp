@@ -1,6 +1,6 @@
-#include "ast_node.hpp"
+#include "node.hpp"
 
-namespace dauw::ast
+namespace dauw
 {
   // Return the type of the node
   internals::Type& Node::type()
