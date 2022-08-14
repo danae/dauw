@@ -9,7 +9,7 @@ namespace dauw::utils
   dauw_int_t sign(dauw_int_t n);
   dauw_real_t sign(dauw_real_t n);
 
-  // Returns the floor division quotient and remainder of two numbers
+  // Return the floor division quotient and remainder of two numbers
   dauw_int_t floordiv(dauw_int_t numerator, dauw_int_t denominator);
   dauw_int_t floormod(dauw_int_t numerator, dauw_int_t denominator);
   dauw_real_t floordiv(dauw_real_t numerator, dauw_real_t denominator);
