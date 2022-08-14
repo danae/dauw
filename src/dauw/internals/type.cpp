@@ -1,6 +1,6 @@
 #include "type.hpp"
 
-namespace dauw::internals
+namespace dauw
 {
   // Initialize the definitions for global types
   Type Type::type_nothing = Type(TypeKind::NOTHING, "Nothing");

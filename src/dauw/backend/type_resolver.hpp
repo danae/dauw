@@ -22,7 +22,7 @@ namespace dauw
       void resolve(const expr_ptr& expr, bool throw_if_failed = true);
 
       // Resolve if a type is a subtype of another type
-      void resolve_subtype_of(const expr_ptr& expr, internals::Type& type);
+      void resolve_subtype_of(const expr_ptr& expr, Type& type);
 
       // Visitor implementation
       virtual void visit_literal(const expr_literal_ptr& expr) override;

@@ -20,7 +20,7 @@ namespace dauw
   }
 
   // Resolve if a type is a subtype of another type
-  void TypeResolver::resolve_subtype_of(const expr_ptr& expr, internals::Type& type)
+  void TypeResolver::resolve_subtype_of(const expr_ptr& expr, Type& type)
   {
     // TODO: Implement proper subtype check
     if (expr->type() != type)
@@ -46,7 +46,7 @@ namespace dauw
       resolve(item_expr);
 
     // TODO: Implement generic resolving of sequence expression
-    expr->set_type(internals::Type::type_sequence);
+    expr->set_type(Type::type_sequence);
   }
 
   // Visit a record expression
@@ -57,7 +57,7 @@ namespace dauw
       resolve(std::get<1>(item_expr));
 
     // TODO: Implement generic resolving of record expressions
-    expr->set_type(internals::Type::type_record);
+    expr->set_type(Type::type_record);
   }
 
   // Visit a name expression
@@ -76,7 +76,7 @@ namespace dauw
     // TODO: Check if the resolved type is a subtype of the defined return type
 
     // The type of the function declaration expression is that of its value
-    expr->set_type(internals::Type::type_function);
+    expr->set_type(Type::type_function);
   }
 
   // Visit a function parameter expression
@@ -137,18 +137,18 @@ namespace dauw
     {
       // Known unary operators
       case TokenKind::OPERATOR_SUBTRACT:
-        if (expr->check_operand_type(internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
+        if (expr->check_operand_type(Type::type_int))
+          expr->set_type(Type::type_int);
+        else if (expr->check_operand_type(Type::type_real))
+          expr->set_type(Type::type_real);
         break;
 
       case TokenKind::OPERATOR_LENGTH:
-        expr->set_type(internals::Type::type_int);
+        expr->set_type(Type::type_int);
         break;
 
       case TokenKind::OPERATOR_STRING:
-        expr->set_type(internals::Type::type_string);
+        expr->set_type(Type::type_string);
         break;
 
       // TODO: Unknown unary operator
@@ -183,47 +183,47 @@ namespace dauw
     switch (expr->op())
     {
       case TokenKind::OPERATOR_MULTIPLY:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_type(Type::type_int);
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_type(Type::type_real);
         break;
 
       case TokenKind::OPERATOR_DIVIDE:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_real);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_type(Type::type_real);
         break;
 
       case TokenKind::OPERATOR_QUOTIENT:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_type(Type::type_int);
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_type(Type::type_real);
         break;
 
       case TokenKind::OPERATOR_REMAINDER:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_type(Type::type_int);
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_type(Type::type_real);
         break;
 
       case TokenKind::OPERATOR_ADD:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
-        else if (expr->check_operand_type(internals::Type::type_string, internals::Type::type_string))
-          expr->set_type(internals::Type::type_string);
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_type(Type::type_int);
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_string, Type::type_string))
+          expr->set_type(Type::type_string);
         break;
 
       case TokenKind::OPERATOR_SUBTRACT:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_type(Type::type_int);
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_type(Type::type_real);
         break;
 
       case TokenKind::OPERATOR_RANGE:
@@ -231,7 +231,7 @@ namespace dauw
         break;
 
       case TokenKind::OPERATOR_COMPARE:
-        expr->set_type(internals::Type::type_int);
+        expr->set_type(Type::type_int);
         break;
 
       case TokenKind::OPERATOR_LESS:
@@ -244,7 +244,7 @@ namespace dauw
       case TokenKind::OPERATOR_NOT_EQUAL:
       case TokenKind::OPERATOR_IDENTICAL:
       case TokenKind::OPERATOR_NOT_IDENTICAL:
-        expr->set_type(internals::Type::type_bool);
+        expr->set_type(Type::type_bool);
         break;
 
       // TODO: Unknown binary operator
@@ -261,7 +261,7 @@ namespace dauw
     resolve(expr->expr());
 
     // TODO: Implement resolving echo expression
-    expr->set_type(internals::Type::type_nothing);
+    expr->set_type(Type::type_nothing);
   }
 
   // Visit an if expression

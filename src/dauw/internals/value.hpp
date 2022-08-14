@@ -40,7 +40,7 @@ using value_t = uint64_t;
 #define RUNE_SURROGATE_MAX  ((uint32_t)0x00dfff)
 
 
-namespace dauw::internals
+namespace dauw
 {
   // Class that represents a value in stack memory
   class Value

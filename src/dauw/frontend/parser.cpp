@@ -604,11 +604,11 @@ namespace dauw
   {
     // Check for a literal expression
     if (match(TokenKind::KEYWORD_NOTHING))
-      return std::make_shared<ExprLiteral>(internals::Value::value_nothing, current().location());
+      return std::make_shared<ExprLiteral>(Value::value_nothing, current().location());
     if (match(TokenKind::KEYWORD_FALSE))
-      return std::make_shared<ExprLiteral>(internals::Value::value_false, current().location());
+      return std::make_shared<ExprLiteral>(Value::value_false, current().location());
     if (match(TokenKind::KEYWORD_TRUE))
-      return std::make_shared<ExprLiteral>(internals::Value::value_true, current().location());
+      return std::make_shared<ExprLiteral>(Value::value_true, current().location());
     if (match(TokenKind::LITERAL_INT))
       return parse_int();
     if (match(TokenKind::LITERAL_REAL))
@@ -650,15 +650,15 @@ namespace dauw
     try
     {
       auto int_value = utils::parse_int(current().value());
-      auto value = internals::Value::of_int(int_value);
+      auto value = Value::of_int(int_value);
       return std::make_shared<ExprLiteral>(value, current().location());
     }
-    catch (internals::ValueMismatchException& ex)
+    catch (ValueMismatchException& ex)
     {
       report<ValueMismatchError>(current().location(), ex.message());
       return nullptr;
     }
-    catch (internals::ValueOverflowException& ex)
+    catch (ValueOverflowException& ex)
     {
       report<ValueOverflowError>(current().location(), ex.message());
       return nullptr;
@@ -671,14 +671,14 @@ namespace dauw
     try
     {
       auto real_value = utils::parse_real(current().value());
-      auto value = internals::Value::of_real(real_value);
+      auto value = Value::of_real(real_value);
       return std::make_shared<ExprLiteral>(value, current().location());
     }
-    catch (internals::ValueMismatchException& ex)
+    catch (ValueMismatchException& ex)
     {
       throw report<ValueMismatchError>(current().location(), ex.message());
     }
-    catch (internals::ValueOverflowException& ex)
+    catch (ValueOverflowException& ex)
     {
       throw report<ValueOverflowError>(current().location(), ex.message());
     }
@@ -690,15 +690,15 @@ namespace dauw
     try
     {
       auto rune_value = utils::parse_rune(current().value());
-      auto value = internals::Value::of_rune(rune_value);
+      auto value = Value::of_rune(rune_value);
       return std::make_shared<ExprLiteral>(value, current().location());
     }
-    catch (internals::ValueMismatchException& ex)
+    catch (ValueMismatchException& ex)
     {
       report<ValueMismatchError>(current().location(), ex.message());
       return nullptr;
     }
-    catch (internals::ValueOverflowException& ex)
+    catch (ValueOverflowException& ex)
     {
       report<ValueOverflowError>(current().location(), ex.message());
       return nullptr;
@@ -711,7 +711,7 @@ namespace dauw
     try
     {
       auto string_value = utils::parse_string(current().value());
-      auto value = internals::Value::of_obj(std::make_shared<internals::String>(string_value).get());
+      auto value = Value::of_obj(std::make_shared<ObjString>(string_value).get());
       return std::make_shared<ExprLiteral>(value, current().location());
     }
     catch (...)
@@ -728,7 +728,7 @@ namespace dauw
     {
       // TODO: Properly parse the regex literal instead of making a literal string
       auto string_value = utils::parse_string(current().value());
-      auto value = internals::Value::of_obj(std::make_shared<internals::String>(string_value).get());
+      auto value = Value::of_obj(std::make_shared<ObjString>(string_value).get());
       return std::make_shared<ExprLiteral>(value, current().location());
     }
     catch (...)

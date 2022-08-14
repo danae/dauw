@@ -1,9 +1,9 @@
 #include "record_object.hpp"
 
-namespace dauw::internals
+namespace dauw
 {
   // Constructor for a record
-  Record::Record(std::initializer_list<Record::container_value_type> items)
+  ObjRecord::ObjRecord(std::initializer_list<ObjRecord::container_value_type> items)
     : Obj(ObjKind::RECORD, Type::type_record)
   {
     if (items.size() > 0)
@@ -13,23 +13,23 @@ namespace dauw::internals
   }
 
   // Iterate over the items in the container
-  Record::container_type::const_iterator Record::begin()
+  ObjRecord::container_type::const_iterator ObjRecord::begin()
   {
     return container_.cbegin();
   }
-  Record::container_type::const_iterator Record::end()
+  ObjRecord::container_type::const_iterator ObjRecord::end()
   {
     return container_.cend();
   }
 
   // Return if the record contains a value with the specified name
-  bool Record::contains(string_t name)
+  bool ObjRecord::contains(string_t name)
   {
     return container_.count(name) > 0;
   }
 
   // Return the value with the specified name in the record
-  Value Record::get(string_t name)
+  Value ObjRecord::get(string_t name)
   {
     auto it = container_.find(name);
     if (it == container_.end())
@@ -39,13 +39,13 @@ namespace dauw::internals
   }
 
   // Put the specified value at the specified name in the record
-  void Record::put(string_t name, Value value)
+  void ObjRecord::put(string_t name, Value value)
   {
     container_.insert(std::make_pair(name, value));
   }
 
   // Remove a value with the specified name from the record
-  void Record::remove(string_t name)
+  void ObjRecord::remove(string_t name)
   {
     auto it = container_.find(name);
     if (it != container_.end())

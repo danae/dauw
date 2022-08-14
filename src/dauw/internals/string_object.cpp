@@ -1,9 +1,9 @@
 #include "string_object.hpp"
 
-namespace dauw::internals
+namespace dauw
 {
   // Default constructor for a string
-  String::String()
+  ObjString::ObjString()
     : Obj(ObjKind::STRING, Type::type_string), length_(0)
   {
     bytes_ = new char[length_ + 1];
@@ -11,7 +11,7 @@ namespace dauw::internals
   }
 
   // Constructor for a string from a C-string
-  String::String(const char* bytes)
+  ObjString::ObjString(const char* bytes)
     : Obj(ObjKind::STRING, Type::type_string), length_(std::strlen(bytes))
   {
     auto bytes_length = std::strlen(bytes);
@@ -25,7 +25,7 @@ namespace dauw::internals
   }
 
   // Constructor for a string from another string
-  String::String(const String& other)
+  ObjString::ObjString(const ObjString& other)
     : Obj(ObjKind::STRING, Type::type_string), length_(other.length_)
   {
     bytes_ = new char[length_ + 1];
@@ -34,7 +34,7 @@ namespace dauw::internals
   }
 
   // Assignment for a string from a C-string
-  String& String::operator=(const char* bytes)
+  ObjString& ObjString::operator=(const char* bytes)
   {
     auto bytes_length = std::strlen(bytes);
     if (!utf8::is_valid(bytes, bytes + bytes_length))
@@ -51,7 +51,7 @@ namespace dauw::internals
   }
 
   // Assignment for a string from another string
-  String& String::operator=(const String& other)
+  ObjString& ObjString::operator=(const ObjString& other)
   {
     length_ = other.length_;
 
@@ -65,13 +65,13 @@ namespace dauw::internals
   }
 
   // Destructor for a string
-  String::~String()
+  ObjString::~ObjString()
   {
     delete[] bytes_;
   }
 
   // Append to the string from a C-string
-  String& String::append(const char* bytes)
+  ObjString& ObjString::append(const char* bytes)
   {
     if (!*bytes)
       return *this;
@@ -89,7 +89,7 @@ namespace dauw::internals
   }
 
   // Append to the string from another string
-  String& String::append(const String& other)
+  ObjString& ObjString::append(const ObjString& other)
   {
     if (other.length_ == 0)
       return *this;
@@ -103,19 +103,19 @@ namespace dauw::internals
   }
 
   // Return the actual characters of the string
-  const char* String::c_str()
+  const char* ObjString::c_str()
   {
     return (const char*)bytes_;
   }
 
   // Return the length in code points of the string
-  size_t String::length()
+  size_t ObjString::length()
   {
     return utf8::distance(bytes_, bytes_ + length_);
   }
 
   // Return the code point at the specified position of the string
-  String::value_type String::at(size_t pos)
+  ObjString::value_type ObjString::at(size_t pos)
   {
     try
     {
@@ -130,17 +130,17 @@ namespace dauw::internals
   }
 
   // Return an iterator over the code points of the string
-  String::iterator_type String::begin()
+  ObjString::iterator_type ObjString::begin()
   {
     return utf8::iterator(bytes_, bytes_, bytes_ + length_);
   }
-  String::iterator_type String::end()
+  ObjString::iterator_type ObjString::end()
   {
     return utf8::iterator(bytes_ + length_, bytes_, bytes_ + length_);
   }
 
   // Compare the string to another string
-  int String::compare(String& other)
+  int ObjString::compare(ObjString& other)
   {
     iterator_type this_it = begin(), this_end = end();
     iterator_type other_it = other.begin(), other_end = other.end();
@@ -167,7 +167,7 @@ namespace dauw::internals
   }
 
   // Return a string representation of the string
-  string_t String::str()
+  string_t ObjString::str()
   {
     return string_t((const char*)bytes_);
   }

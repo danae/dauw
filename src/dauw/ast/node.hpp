@@ -18,7 +18,7 @@ namespace dauw
   {
     private:
       // The type of the node
-      std::optional<internals::Type> type_ = std::nullopt;
+      std::optional<Type> type_ = std::nullopt;
 
 
     public:
@@ -26,17 +26,17 @@ namespace dauw
       virtual ~Node() = default;
 
       // Return the type of the node
-      internals::Type& type();
+      Type& type();
 
       // Return if the node has a type
       bool has_type();
 
       // Set the type of the node
-      void set_type(internals::Type& type);
+      void set_type(Type& type);
       void set_type_from(node_ptr node);
 
       // Return if the type matches the specified type
-      bool check_type(internals::Type& type_to_check);
+      bool check_type(Type& type_to_check);
 
       // Return the location of the node
       virtual Location& location() = 0;

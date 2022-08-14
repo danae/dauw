@@ -9,7 +9,7 @@
 #include <utf8.h>
 
 
-namespace dauw::internals
+namespace dauw
 {
   class StringException;
 

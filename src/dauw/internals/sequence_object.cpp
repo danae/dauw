@@ -1,9 +1,9 @@
 #include "sequence_object.hpp"
 
-namespace dauw::internals
+namespace dauw
 {
   // Constructor for a sequence
-  Sequence::Sequence(std::initializer_list<Value> items)
+  ObjSequence::ObjSequence(std::initializer_list<Value> items)
     : Obj(ObjKind::LIST, Type::type_sequence)
   {
     if (items.size() > 0)
@@ -13,17 +13,17 @@ namespace dauw::internals
   }
 
   // Iterate over the items in the container
-  Sequence::container_type::const_iterator Sequence::begin()
+  ObjSequence::container_type::const_iterator ObjSequence::begin()
   {
     return container_.cbegin();
   }
-  Sequence::container_type::const_iterator Sequence::end()
+  ObjSequence::container_type::const_iterator ObjSequence::end()
   {
     return container_.cend();
   }
 
   // Return an iterator at a specified index
-  Sequence::container_type::const_iterator Sequence::pos(int index)
+  ObjSequence::container_type::const_iterator ObjSequence::pos(int index)
   {
     if (index >= 0 && index < container_.size())
     {
@@ -44,7 +44,7 @@ namespace dauw::internals
   }
 
   // Return if the collection contains the specified item
-  bool Sequence::contains(Value item)
+  bool ObjSequence::contains(Value item)
   {
     for (auto it = container_.cbegin(); it != container_.cend(); it ++)
     {
@@ -55,39 +55,39 @@ namespace dauw::internals
   }
 
   // Return the number of items in the container
-  int Sequence::length()
+  int ObjSequence::length()
   {
     return container_.size();
   }
 
   // Return if the collection contains no items
-  bool Sequence::empty()
+  bool ObjSequence::empty()
   {
     return container_.empty();
   }
 
   // Return the item at the specified index in the sequence
-  Value Sequence::at(int index)
+  Value ObjSequence::at(int index)
   {
     auto it = pos(index);
     return *it;
   }
 
   // Add the specified item to the collection
-  void Sequence::add(Value item)
+  void ObjSequence::add(Value item)
   {
     container_.push_back(item);
   }
 
   // Add all of the items in the specified collection to the collection
-  void Sequence::add_all(Sequence items)
+  void ObjSequence::add_all(ObjSequence items)
   {
     for (auto it = items.container_.cbegin(); it != items.container_.cend(); it ++)
       add(*it);
   }
 
   // Remove a single instance of the specified item from the collection
-  void Sequence::remove(Value item)
+  void ObjSequence::remove(Value item)
   {
     for (auto it = container_.cbegin(); it != container_.cend(); it ++)
     {
@@ -97,7 +97,7 @@ namespace dauw::internals
   }
 
   // Remove all of the items in the specified collection from the collection
-  void Sequence::remove_all(Sequence items)
+  void ObjSequence::remove_all(ObjSequence items)
   {
     for (auto items_it = items.container_.cbegin(); items_it != items.container_.cend(); items_it ++)
     {
@@ -107,7 +107,7 @@ namespace dauw::internals
   }
 
   // Remove all of the items in the collection apart from the items in the specified collection
-  void Sequence::retain_all(Sequence items)
+  void ObjSequence::retain_all(ObjSequence items)
   {
     for (auto items_it = items.container_.cbegin(); items_it != items.container_.cend(); items_it ++)
     {
@@ -117,20 +117,20 @@ namespace dauw::internals
   }
 
   // Removes all of the items in the collection
-  void Sequence::clear()
+  void ObjSequence::clear()
   {
     container_.clear();
   }
 
   // Insert the specified item at the specified index to the sequence
-  void Sequence::insert(int index, Value item)
+  void ObjSequence::insert(int index, Value item)
   {
     auto it = pos(index);
     container_.insert(it, item);
   }
 
   // Replace the specified item at the specified index in the sequence
-  void Sequence::replace(int index, Value item)
+  void ObjSequence::replace(int index, Value item)
   {
     auto it = pos(index);
     auto insert_it = container_.erase(it);
@@ -138,7 +138,7 @@ namespace dauw::internals
   }
 
   // Erase the specified item at the specified index in the sequence
-  void Sequence::erase(int index)
+  void ObjSequence::erase(int index)
   {
     auto it = pos(index);
     container_.erase(it);

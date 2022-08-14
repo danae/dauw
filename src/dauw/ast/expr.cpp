@@ -3,7 +3,7 @@
 namespace dauw
 {
   // Return the computed value of the expression
-  internals::Value Expr::computed_value()
+  Value Expr::computed_value()
   {
     return computed_value_.value();
   }
@@ -15,7 +15,7 @@ namespace dauw
   }
 
   // Set the computed value of the expression
-  void Expr::set_computed_value(internals::Value value)
+  void Expr::set_computed_value(Value value)
   {
     computed_value_ = std::make_optional(value);
   }
@@ -30,13 +30,13 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a literal expression
-  ExprLiteral::ExprLiteral(internals::Value value, Location location)
+  ExprLiteral::ExprLiteral(Value value, Location location)
     : value_(value), location_(location)
   {
   }
 
   // Return the value of the literal expression
-  internals::Value& ExprLiteral::value()
+  Value& ExprLiteral::value()
   {
     return value_;
   }
@@ -340,7 +340,7 @@ namespace dauw
   }
 
   // Return if the resolved types of the operand matches the specified type
-  bool ExprUnary::check_operand_type(internals::Type right_type)
+  bool ExprUnary::check_operand_type(Type right_type)
   {
     return right_->check_type(right_type);
   }
@@ -382,7 +382,7 @@ namespace dauw
   }
 
   // Return if the resolved types of the operands match the specified types
-  bool ExprBinary::check_operand_type(internals::Type left_type, internals::Type right_type)
+  bool ExprBinary::check_operand_type(Type left_type, Type right_type)
   {
     return left_->check_type(left_type) && right_->check_type(right_type);
   }

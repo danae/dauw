@@ -3,7 +3,7 @@
 #include <dauw/common.hpp>
 
 
-namespace dauw::internals
+namespace dauw
 {
   // Enum that represents the kind of a type
   enum class TypeKind : uint8_t

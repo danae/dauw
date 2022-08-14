@@ -1,6 +1,6 @@
 #include "object.hpp"
 
-namespace dauw::internals
+namespace dauw
 {
   // Constructor for an object
   Obj::Obj(ObjKind kind, Type type)

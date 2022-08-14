@@ -9,18 +9,18 @@ namespace dauw
   }
 
   // Evaluate an expression
-  internals::Value Interpreter::evaluate(const expr_ptr& expr)
+  Value Interpreter::evaluate(const expr_ptr& expr)
   {
     expr->accept(shared_from_this());
 
     if (expr->has_computed_value())
       return expr->computed_value();
     else
-      return internals::Value::value_nothing;
+      return Value::value_nothing;
   }
 
   // Evaluate a type expression
-  internals::Type Interpreter::evaluate(const type_expr_ptr& expr)
+  Type Interpreter::evaluate(const type_expr_ptr& expr)
   {
     expr->accept(shared_from_this());
     return expr->type();
@@ -137,10 +137,10 @@ namespace dauw
     {
       // Negate operator
       case TokenKind::OPERATOR_SUBTRACT:
-        if (expr->check_operand_type(internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_int(-right.as_int()));
-        else if (expr->check_operand_type(internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(-right.as_real()));
+        if (expr->check_operand_type(Type::type_int))
+          expr->set_computed_value(Value::of_int(-right.as_int()));
+        else if (expr->check_operand_type(Type::type_real))
+          expr->set_computed_value(Value::of_real(-right.as_real()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for unary operator -");
         break;
@@ -189,40 +189,40 @@ namespace dauw
     {
       // Multiply operator
       case TokenKind::OPERATOR_MULTIPLY:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_int(left.as_int() * right.as_int()));
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(left.as_real() * right.as_real()));
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_computed_value(Value::of_int(left.as_int() * right.as_int()));
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_computed_value(Value::of_real(left.as_real() * right.as_real()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator *");
         break;
 
       // Divide operator
       case TokenKind::OPERATOR_DIVIDE:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_real(static_cast<dauw_real_t>(left.as_int()) / static_cast<dauw_real_t>(left.as_real())));
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(left.as_real() / right.as_real()));
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_computed_value(Value::of_real(static_cast<dauw_real_t>(left.as_int()) / static_cast<dauw_real_t>(left.as_real())));
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_computed_value(Value::of_real(left.as_real() / right.as_real()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator /");
         break;
 
       // Quotient operator
       case TokenKind::OPERATOR_QUOTIENT:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_int(utils::floordiv(left.as_int(), right.as_int())));
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(utils::floordiv(left.as_real(), right.as_real())));
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_computed_value(Value::of_int(utils::floordiv(left.as_int(), right.as_int())));
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_computed_value(Value::of_real(utils::floordiv(left.as_real(), right.as_real())));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator //");
         break;
 
       // Remainder operator
       case TokenKind::OPERATOR_REMAINDER:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_int(utils::floormod(left.as_int(), right.as_int())));
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(utils::floormod(left.as_real(), right.as_real())));
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_computed_value(Value::of_int(utils::floormod(left.as_int(), right.as_int())));
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_computed_value(Value::of_real(utils::floormod(left.as_real(), right.as_real())));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator %");
         break;
@@ -230,20 +230,20 @@ namespace dauw
 
       // Add operator
       case TokenKind::OPERATOR_ADD:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_int(left.as_int() + right.as_int()));
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(left.as_real() + right.as_real()));
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_computed_value(Value::of_int(left.as_int() + right.as_int()));
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_computed_value(Value::of_real(left.as_real() + right.as_real()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator +");
         break;
 
       // Subtract operator
       case TokenKind::OPERATOR_SUBTRACT:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_computed_value(internals::Value::of_int(left.as_int() - right.as_int()));
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_computed_value(internals::Value::of_real(left.as_real() - right.as_real()));
+        if (expr->check_operand_type(Type::type_int, Type::type_int))
+          expr->set_computed_value(Value::of_int(left.as_int() - right.as_int()));
+        else if (expr->check_operand_type(Type::type_real, Type::type_real))
+          expr->set_computed_value(Value::of_real(left.as_real() - right.as_real()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator -");
         break;
@@ -255,47 +255,47 @@ namespace dauw
 
       // Compare operator
       case TokenKind::OPERATOR_COMPARE:
-        expr->set_computed_value(internals::Value::of_int(op_compare(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_int(op_compare(expr->location(), left, right)));
         break;
 
       // Less than operator
       case TokenKind::OPERATOR_LESS:
-        expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) < 0));
+        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) < 0));
         break;
 
       // Less than or equal operator
       case TokenKind::OPERATOR_LESS_EQUAL:
-        expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) <= 0));
+        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) <= 0));
         break;
 
       // Greater than operator
       case TokenKind::OPERATOR_GREATER:
-        expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) > 0));
+        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) > 0));
         break;
 
       // Greater than or equal operator
       case TokenKind::OPERATOR_GREATER_EQUAL:
-        expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) >= 0));
+        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) >= 0));
         break;
 
       // Match operator
       case TokenKind::OPERATOR_MATCH:
-        expr->set_computed_value(internals::Value::of_bool(op_match(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(op_match(expr->location(), left, right)));
         break;
 
       // Not match operator
       case TokenKind::OPERATOR_NOT_MATCH:
-        expr->set_computed_value(internals::Value::of_bool(!op_match(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(!op_match(expr->location(), left, right)));
         break;
 
       // Equal operator
       case TokenKind::OPERATOR_EQUAL:
-        expr->set_computed_value(internals::Value::of_bool(op_equals(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(op_equals(expr->location(), left, right)));
         break;
 
       // Not equal operator
       case TokenKind::OPERATOR_NOT_EQUAL:
-        expr->set_computed_value(internals::Value::of_bool(!op_equals(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(!op_equals(expr->location(), left, right)));
         break;
 
       // Identical operator
@@ -424,7 +424,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Return the result of comparing two values
-  dauw_int_t Interpreter::op_compare(Location& location, internals::Value left, internals::Value right)
+  dauw_int_t Interpreter::op_compare(Location& location, Value left, Value right)
   {
     // TODO: Implement comparison of strings
     // TODO: Better type checking
@@ -433,14 +433,14 @@ namespace dauw
   }
 
   // Return the result of checking if two values match
-  dauw_bool_t Interpreter::op_match(Location& location, internals::Value left, internals::Value right)
+  dauw_bool_t Interpreter::op_match(Location& location, Value left, Value right)
   {
     report<UnimplementedError>(location, "TODO: Implement match operation function");
     return false;
   }
 
   // Return the result of checking if two values are equal
-  dauw_bool_t Interpreter::op_equals(Location& location, internals::Value left, internals::Value right)
+  dauw_bool_t Interpreter::op_equals(Location& location, Value left, Value right)
   {
     // First check for reference equality
     if (left == right)

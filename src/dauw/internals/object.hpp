@@ -4,7 +4,7 @@
 #include <dauw/internals/type.hpp>
 
 
-namespace dauw::internals
+namespace dauw
 {
   // Enum that represents the kind of an object
   enum class ObjKind : char

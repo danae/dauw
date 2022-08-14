@@ -7,10 +7,10 @@
 #include <unordered_map>
 
 
-namespace dauw::internals
+namespace dauw
 {
   // Class that defines a implementation for Record using std::unordered_map<T>
-  class Record : public Obj
+  class ObjRecord : public Obj
   {
     public:
       // Type definition for the backing C++ container
@@ -29,7 +29,7 @@ namespace dauw::internals
 
     public:
       // Constructor
-      Record(std::initializer_list<container_value_type> items = {});
+      ObjRecord(std::initializer_list<container_value_type> items = {});
 
       // Return if the record contains a value with the specified name
       bool contains(string_t name);

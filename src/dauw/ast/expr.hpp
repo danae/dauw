@@ -90,20 +90,20 @@ namespace dauw
   {
     private:
       // The computed value of the expression
-      std::optional<internals::Value> computed_value_ = std::nullopt;
+      std::optional<Value> computed_value_ = std::nullopt;
 
     public:
       // Destructor
       virtual ~Expr() = default;
 
       // Return the computed value of the expression
-      internals::Value computed_value();
+      Value computed_value();
 
       // Return if the expression has a computed value
       bool has_computed_value();
 
       // Set the computed value of the expression
-      void set_computed_value(internals::Value value);
+      void set_computed_value(Value value);
       void set_computed_value_from(expr_ptr expr);
 
       // Accept a visitor on the expression
@@ -116,7 +116,7 @@ namespace dauw
   {
     private:
       // The value of the literal expression
-      internals::Value value_;
+      Value value_;
 
       // The location of the literal expression
       Location location_;
@@ -124,10 +124,10 @@ namespace dauw
 
     public:
       // Constructor
-      ExprLiteral(internals::Value value, Location location);
+      ExprLiteral(Value value, Location location);
 
       // Return the value of the literal expression
-      internals::Value& value();
+      Value& value();
 
       // Expression implementation
       virtual Location& location() override;
@@ -398,7 +398,7 @@ namespace dauw
       expr_ptr right();
 
       // Return if the resolved types of the operand matches the specified type
-      bool check_operand_type(internals::Type right_type);
+      bool check_operand_type(Type right_type);
 
       // Expression implementation
       virtual Location& location() override;
@@ -430,7 +430,7 @@ namespace dauw
       expr_ptr right();
 
       // Return if the resolved types of the operands match the specified types
-      bool check_operand_type(internals::Type left_type, internals::Type right_type);
+      bool check_operand_type(Type left_type, Type right_type);
 
       // Expression implementation
       virtual Location& location() override;

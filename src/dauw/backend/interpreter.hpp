@@ -21,13 +21,13 @@ namespace dauw
   {
     private:
       // Return the result of comparing two values
-      dauw_int_t op_compare(Location& location, internals::Value left, internals::Value right);
+      dauw_int_t op_compare(Location& location, Value left, Value right);
 
       // Return the result of checking if two values match
-      dauw_bool_t op_match(Location& location, internals::Value left, internals::Value right);
+      dauw_bool_t op_match(Location& location, Value left, Value right);
 
       // Return the result of checking if two values are equal
-      dauw_bool_t op_equals(Location& location, internals::Value left, internals::Value right);
+      dauw_bool_t op_equals(Location& location, Value left, Value right);
 
 
     public:
@@ -35,10 +35,10 @@ namespace dauw
       Interpreter(Reporter* reporter);
 
       // Evaluate an expression
-      internals::Value evaluate(const expr_ptr& expr);
+      Value evaluate(const expr_ptr& expr);
 
       // Evaluate a type expression
-      internals::Type evaluate(const type_expr_ptr& expr);
+      Type evaluate(const type_expr_ptr& expr);
 
       // Expression visitor implementation
       virtual void visit_literal(const expr_literal_ptr& expr) override;

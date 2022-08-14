@@ -3,7 +3,7 @@
 namespace dauw
 {
   // Return the type of the node
-  internals::Type& Node::type()
+  Type& Node::type()
   {
     return type_.value();
   }
@@ -15,7 +15,7 @@ namespace dauw
   }
 
   // Set the type of the node
-  void Node::set_type(internals::Type& type)
+  void Node::set_type(Type& type)
   {
     type_ = std::make_optional(type);
   }
@@ -28,7 +28,7 @@ namespace dauw
   }
 
   // Return if the type matches the specified type
-  bool Node::check_type(internals::Type& type_to_check)
+  bool Node::check_type(Type& type_to_check)
   {
     if (has_type())
       return type() == type_to_check;

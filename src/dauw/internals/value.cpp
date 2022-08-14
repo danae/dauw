@@ -1,6 +1,6 @@
 #include "value.hpp"
 
-namespace dauw::internals
+namespace dauw
 {
   // Initialize the definitions for global values
   Value Value::value_nothing = Value(VAL_NOTHING);
