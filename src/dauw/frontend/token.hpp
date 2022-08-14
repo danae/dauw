@@ -124,7 +124,6 @@ namespace dauw
 namespace fmt
 {
   using namespace dauw;
-  using namespace dauw::frontend;
 
   // Class that defines a formatter for a token kind
   template <>

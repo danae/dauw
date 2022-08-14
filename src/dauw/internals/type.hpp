@@ -74,7 +74,6 @@ namespace dauw
 namespace fmt
 {
   using namespace dauw;
-  using namespace dauw::internals;
 
   // Class that defines a formatter for a type
   template <>

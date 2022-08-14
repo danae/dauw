@@ -51,7 +51,6 @@ namespace dauw
 namespace fmt
 {
   using namespace dauw;
-  using namespace dauw::frontend;
 
   // Class that defines a formatter for a location
   template <>
