@@ -37,7 +37,7 @@ class Expectation:
 
   # Return a string repesentation for the expectation
   def __str__(self):
-    return f"'{self.message}' for {self.type} at line {self.line + 1}"
+    return f"\"{self.message}\" for {self.type} at line {self.line + 1}"
 
   # Match the expectation against a line
   def __call__(self, line):
@@ -129,7 +129,7 @@ class Test:
       if expectation(line):
         yield Result("pass", f"Got expected output {expectation}")
       else:
-        yield Result("fail", f"Expected {expectation} but got '{line}'")
+        yield Result("fail", f"Expected {expectation} but got \"{line}\"")
 
       # Increase the line pointer
       if expectation.type == "error":
@@ -236,10 +236,10 @@ def main(args):
 
   # Check the arguments
   if not os.path.exists(args.suite):
-    print(f"Cannot run the test suite: the test suite path '{args.suite}' does not exist")
+    print(f"Cannot run the test suite: the test suite path \"{args.suite}\" does not exist")
     sys.exit(1)
   if not os.path.exists(args.path) or not os.path.isfile(args.path):
-    print(f"Cannot run the test suite: the interpreter path '{args.path}' does not exist or is not a file")
+    print(f"Cannot run the test suite: the interpreter path \"{args.path}\" does not exist or is not a file")
     sys.exit(1)
 
   # Create a test runner and run the tests in the suite
