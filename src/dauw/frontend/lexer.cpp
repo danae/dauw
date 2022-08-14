@@ -1,6 +1,6 @@
 #include "lexer.hpp"
 
-namespace dauw::frontend
+namespace dauw
 {
   // Constructor for a lexer rule
   LexerRule::LexerRule(TokenKind kind, utils::Regex pattern, size_t group)

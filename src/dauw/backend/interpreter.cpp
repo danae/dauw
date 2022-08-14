@@ -122,7 +122,7 @@ namespace dauw
   void Interpreter::visit_unary(const expr_unary_ptr& expr)
   {
     // Check if the expression is a logic not operation
-    if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_NOT)
+    if (expr->op() == TokenKind::OPERATOR_LOGIC_NOT)
     {
       // TODO: Implement evaluating logic not operation
       report<UnimplementedError>(expr->location(), "TODO: Implement evaluating logic not operation");
@@ -136,7 +136,7 @@ namespace dauw
     switch (expr->op())
     {
       // Negate operator
-      case frontend::TokenKind::OPERATOR_SUBTRACT:
+      case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_int(-right.as_int()));
         else if (expr->check_operand_type(internals::Type::type_real))
@@ -146,12 +146,12 @@ namespace dauw
         break;
 
       // Length operator
-      case frontend::TokenKind::OPERATOR_LENGTH:
+      case TokenKind::OPERATOR_LENGTH:
         report<UnimplementedError>(expr->location(), "TODO: Implement evaluating length operation");
         break;
 
       // String operator
-      case frontend::TokenKind::OPERATOR_STRING:
+      case TokenKind::OPERATOR_STRING:
         report<UnimplementedError>(expr->location(), "TODO: Implement evaluating string operation");
         break;
 
@@ -166,14 +166,14 @@ namespace dauw
   void Interpreter::visit_binary(const expr_binary_ptr& expr)
   {
     // Check if the expression is a logic and operation
-    if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_AND)
+    if (expr->op() == TokenKind::OPERATOR_LOGIC_AND)
     {
       // TODO: Implement evaluating logic and operation
       report<UnimplementedError>(expr->location(), "TODO: Implement evaluating logic and operation");
     }
 
     // TODO: Check if the expression is a logic or expression
-    if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_OR)
+    if (expr->op() == TokenKind::OPERATOR_LOGIC_OR)
     {
       // TODO: Implement evaluating logic and operation
       report<UnimplementedError>(expr->location(), "TODO: Implement evaluating logic or operation");
@@ -188,7 +188,7 @@ namespace dauw
     switch (expr->op())
     {
       // Multiply operator
-      case frontend::TokenKind::OPERATOR_MULTIPLY:
+      case TokenKind::OPERATOR_MULTIPLY:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_int(left.as_int() * right.as_int()));
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -198,7 +198,7 @@ namespace dauw
         break;
 
       // Divide operator
-      case frontend::TokenKind::OPERATOR_DIVIDE:
+      case TokenKind::OPERATOR_DIVIDE:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_real(static_cast<dauw_real_t>(left.as_int()) / static_cast<dauw_real_t>(left.as_real())));
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -208,7 +208,7 @@ namespace dauw
         break;
 
       // Quotient operator
-      case frontend::TokenKind::OPERATOR_QUOTIENT:
+      case TokenKind::OPERATOR_QUOTIENT:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_int(utils::floordiv(left.as_int(), right.as_int())));
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -218,7 +218,7 @@ namespace dauw
         break;
 
       // Remainder operator
-      case frontend::TokenKind::OPERATOR_REMAINDER:
+      case TokenKind::OPERATOR_REMAINDER:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_int(utils::floormod(left.as_int(), right.as_int())));
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -229,7 +229,7 @@ namespace dauw
         break;
 
       // Add operator
-      case frontend::TokenKind::OPERATOR_ADD:
+      case TokenKind::OPERATOR_ADD:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_int(left.as_int() + right.as_int()));
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -239,7 +239,7 @@ namespace dauw
         break;
 
       // Subtract operator
-      case frontend::TokenKind::OPERATOR_SUBTRACT:
+      case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_computed_value(internals::Value::of_int(left.as_int() - right.as_int()));
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -249,62 +249,62 @@ namespace dauw
         break;
 
       // Range operator
-      case frontend::TokenKind::OPERATOR_RANGE:
+      case TokenKind::OPERATOR_RANGE:
         report<UnimplementedError>(expr->location(), "TODO: Implement evaluating range operation");
         break;
 
       // Compare operator
-      case frontend::TokenKind::OPERATOR_COMPARE:
+      case TokenKind::OPERATOR_COMPARE:
         expr->set_computed_value(internals::Value::of_int(op_compare(expr->location(), left, right)));
         break;
 
       // Less than operator
-      case frontend::TokenKind::OPERATOR_LESS:
+      case TokenKind::OPERATOR_LESS:
         expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) < 0));
         break;
 
       // Less than or equal operator
-      case frontend::TokenKind::OPERATOR_LESS_EQUAL:
+      case TokenKind::OPERATOR_LESS_EQUAL:
         expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) <= 0));
         break;
 
       // Greater than operator
-      case frontend::TokenKind::OPERATOR_GREATER:
+      case TokenKind::OPERATOR_GREATER:
         expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) > 0));
         break;
 
       // Greater than or equal operator
-      case frontend::TokenKind::OPERATOR_GREATER_EQUAL:
+      case TokenKind::OPERATOR_GREATER_EQUAL:
         expr->set_computed_value(internals::Value::of_bool(op_compare(expr->location(), left, right) >= 0));
         break;
 
       // Match operator
-      case frontend::TokenKind::OPERATOR_MATCH:
+      case TokenKind::OPERATOR_MATCH:
         expr->set_computed_value(internals::Value::of_bool(op_match(expr->location(), left, right)));
         break;
 
       // Not match operator
-      case frontend::TokenKind::OPERATOR_NOT_MATCH:
+      case TokenKind::OPERATOR_NOT_MATCH:
         expr->set_computed_value(internals::Value::of_bool(!op_match(expr->location(), left, right)));
         break;
 
       // Equal operator
-      case frontend::TokenKind::OPERATOR_EQUAL:
+      case TokenKind::OPERATOR_EQUAL:
         expr->set_computed_value(internals::Value::of_bool(op_equals(expr->location(), left, right)));
         break;
 
       // Not equal operator
-      case frontend::TokenKind::OPERATOR_NOT_EQUAL:
+      case TokenKind::OPERATOR_NOT_EQUAL:
         expr->set_computed_value(internals::Value::of_bool(!op_equals(expr->location(), left, right)));
         break;
 
       // Identical operator
-      case frontend::TokenKind::OPERATOR_IDENTICAL:
+      case TokenKind::OPERATOR_IDENTICAL:
         expr->set_computed_value(left == right);
         break;
 
       // Not identical operator
-      case frontend::TokenKind::OPERATOR_NOT_IDENTICAL:
+      case TokenKind::OPERATOR_NOT_IDENTICAL:
         expr->set_computed_value(left != right);
         break;
 
@@ -424,7 +424,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Return the result of comparing two values
-  dauw_int_t Interpreter::op_compare(frontend::Location& location, internals::Value left, internals::Value right)
+  dauw_int_t Interpreter::op_compare(Location& location, internals::Value left, internals::Value right)
   {
     // TODO: Implement comparison of strings
     // TODO: Better type checking
@@ -433,14 +433,14 @@ namespace dauw
   }
 
   // Return the result of checking if two values match
-  dauw_bool_t Interpreter::op_match(frontend::Location& location, internals::Value left, internals::Value right)
+  dauw_bool_t Interpreter::op_match(Location& location, internals::Value left, internals::Value right)
   {
     report<UnimplementedError>(location, "TODO: Implement match operation function");
     return false;
   }
 
   // Return the result of checking if two values are equal
-  dauw_bool_t Interpreter::op_equals(frontend::Location& location, internals::Value left, internals::Value right)
+  dauw_bool_t Interpreter::op_equals(Location& location, internals::Value left, internals::Value right)
   {
     // First check for reference equality
     if (left == right)

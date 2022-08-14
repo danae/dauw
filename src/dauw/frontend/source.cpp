@@ -1,6 +1,6 @@
 #include "source.hpp"
 
-namespace dauw::frontend
+namespace dauw
 {
   // Initialize the regex patterns for the source
   utils::Regex Source::line_pattern_("\\r?\\n");

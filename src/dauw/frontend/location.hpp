@@ -3,7 +3,7 @@
 #include <dauw/common.hpp>
 
 
-namespace dauw::frontend
+namespace dauw
 {
   // Forward declarations
   class Lexer;

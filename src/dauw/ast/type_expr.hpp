@@ -62,18 +62,18 @@ namespace dauw
   {
     private:
       // The name token of the name type expression
-      frontend::Token name_;
+      Token name_;
 
 
     public:
       // Constructor
-      TypeExprName(frontend::Token name);
+      TypeExprName(Token name);
 
       // Return the name of the name type expression
       string_t name();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 
@@ -94,7 +94,7 @@ namespace dauw
       type_expr_ptr expr();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 
@@ -107,7 +107,7 @@ namespace dauw
       type_expr_ptr base_;
 
       // The token of the generic type expression
-      frontend::Token token_;
+      Token token_;
 
       // The generic arguments of the generic type expression
       std::vector<type_expr_ptr> arguments_;
@@ -115,7 +115,7 @@ namespace dauw
 
     public:
       // Constructor
-      TypeExprGeneric(type_expr_ptr base, frontend::Token token, std::vector<type_expr_ptr> arguments);
+      TypeExprGeneric(type_expr_ptr base, Token token, std::vector<type_expr_ptr> arguments);
 
       // Return the base of the generic type expression
       type_expr_ptr base();
@@ -124,7 +124,7 @@ namespace dauw
       std::vector<type_expr_ptr> arguments();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 
@@ -137,18 +137,18 @@ namespace dauw
       type_expr_ptr base_;
 
       // The operator of the maybe type expression
-      frontend::Token op_;
+      Token op_;
 
 
     public:
       // Constructor
-      TypeExprMaybe(type_expr_ptr base, frontend::Token op);
+      TypeExprMaybe(type_expr_ptr base, Token op);
 
       // Return the base of the maybe type expression
       type_expr_ptr base();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 
@@ -158,7 +158,7 @@ namespace dauw
   {
     private:
       // The operator of the intersection type expression
-      frontend::Token op_;
+      Token op_;
 
       // The operands of the intersection type expression
       type_expr_ptr left_;
@@ -167,14 +167,14 @@ namespace dauw
 
     public:
       // Constructor
-      TypeExprIntersection(type_expr_ptr left, frontend::Token op, type_expr_ptr right);
+      TypeExprIntersection(type_expr_ptr left, Token op, type_expr_ptr right);
 
       // Return the operands of the intersection type expression
       type_expr_ptr left();
       type_expr_ptr right();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 
@@ -184,7 +184,7 @@ namespace dauw
   {
     private:
       // The operator of the intersection type expression
-      frontend::Token op_;
+      Token op_;
 
       // The operands of the union type expression
       type_expr_ptr left_;
@@ -193,14 +193,14 @@ namespace dauw
 
     public:
       // Constructor
-      TypeExprUnion(type_expr_ptr left, frontend::Token op, type_expr_ptr right);
+      TypeExprUnion(type_expr_ptr left, Token op, type_expr_ptr right);
 
       // Return the operands of the union type expression
       type_expr_ptr left();
       type_expr_ptr right();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const type_expr_visitor_ptr& visitor) override;
   };
 }

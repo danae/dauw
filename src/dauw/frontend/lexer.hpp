@@ -11,7 +11,7 @@
 #include <deque>
 
 
-namespace dauw::frontend
+namespace dauw
 {
   // Class that defines a rule for the lexer
   class LexerRule

@@ -4,7 +4,7 @@
 #include <dauw/frontend/location.hpp>
 
 
-namespace dauw::frontend
+namespace dauw
 {
   // Enum that defines the kind of a token in a source string
   enum class TokenKind : uint8_t

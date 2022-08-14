@@ -3,7 +3,7 @@
 namespace dauw
 {
   // Constructor for a name type expression
-  TypeExprName::TypeExprName(frontend::Token name)
+  TypeExprName::TypeExprName(Token name)
     : name_(name)
   {
   }
@@ -15,7 +15,7 @@ namespace dauw
   }
 
   // Return the location of the name type expression
-  frontend::Location& TypeExprName::location()
+  Location& TypeExprName::location()
   {
     return name_.location();
   }
@@ -41,7 +41,7 @@ namespace dauw
   }
 
   // Return the location of the grouped type expression
-  frontend::Location& TypeExprGrouped::location()
+  Location& TypeExprGrouped::location()
   {
     return expr_->location();
   }
@@ -55,7 +55,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a generic type expression
-  TypeExprGeneric::TypeExprGeneric(type_expr_ptr base, frontend::Token token, std::vector<type_expr_ptr> arguments)
+  TypeExprGeneric::TypeExprGeneric(type_expr_ptr base, Token token, std::vector<type_expr_ptr> arguments)
     : base_(base), token_(token), arguments_(arguments)
   {
   }
@@ -73,7 +73,7 @@ namespace dauw
   }
 
   // Return the location of the generic type expression
-  frontend::Location& TypeExprGeneric::location()
+  Location& TypeExprGeneric::location()
   {
     return token_.location();
   }
@@ -87,7 +87,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a maybe type expression
-  TypeExprMaybe::TypeExprMaybe(type_expr_ptr base, frontend::Token op)
+  TypeExprMaybe::TypeExprMaybe(type_expr_ptr base, Token op)
     : base_(base), op_(op)
   {
   }
@@ -99,7 +99,7 @@ namespace dauw
   }
 
   // Return the location of the maybe type expression
-  frontend::Location& TypeExprMaybe::location()
+  Location& TypeExprMaybe::location()
   {
     return op_.location();
   }
@@ -113,7 +113,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an intersection type expression
-  TypeExprIntersection::TypeExprIntersection(type_expr_ptr left, frontend::Token op, type_expr_ptr right)
+  TypeExprIntersection::TypeExprIntersection(type_expr_ptr left, Token op, type_expr_ptr right)
     : left_(left), op_(op), right_(right)
   {
   }
@@ -129,7 +129,7 @@ namespace dauw
   }
 
   // Return the location of the intersection type expression
-  frontend::Location& TypeExprIntersection::location()
+  Location& TypeExprIntersection::location()
   {
     return op_.location();
   }
@@ -143,7 +143,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an union type expression
-  TypeExprUnion::TypeExprUnion(type_expr_ptr left, frontend::Token op, type_expr_ptr right)
+  TypeExprUnion::TypeExprUnion(type_expr_ptr left, Token op, type_expr_ptr right)
     : left_(left), op_(op), right_(right)
   {
   }
@@ -159,7 +159,7 @@ namespace dauw
   }
 
   // Return the location of the union type expression
-  frontend::Location& TypeExprUnion::location()
+  Location& TypeExprUnion::location()
   {
     return op_.location();
   }

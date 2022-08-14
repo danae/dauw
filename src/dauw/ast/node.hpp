@@ -39,6 +39,6 @@ namespace dauw
       bool check_type(internals::Type& type_to_check);
 
       // Return the location of the node
-      virtual frontend::Location& location() = 0;
+      virtual Location& location() = 0;
   };
 }

@@ -1,6 +1,6 @@
 #include "parser.hpp"
 
-namespace dauw::frontend
+namespace dauw
 {
   // Constructor for the parser
   Parser::Parser(Reporter* reporter, Lexer::token_list_type tokens)

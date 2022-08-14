@@ -9,7 +9,7 @@ namespace dauw::debug
   }
 
   // Print a list of tokens
-  void print_tokens(frontend::Lexer::token_list_type tokens)
+  void print_tokens(Lexer::token_list_type tokens)
   {
     int indent = 0;
     for (auto token : tokens)
@@ -18,33 +18,33 @@ namespace dauw::debug
       switch (token.kind())
       {
         // Print a NEWLINE token
-        case frontend::TokenKind::NEWLINE:
+        case TokenKind::NEWLINE:
           print_indent(indent);
           fmt::print(fmt::fg(fmt::color::light_green), "{}\n", token);
           break;
 
         // Print an INDENT token
-        case frontend::TokenKind::INDENT:
+        case TokenKind::INDENT:
           print_indent(indent);
           fmt::print(fmt::fg(fmt::color::light_green), "{}{}\n", token);
           indent ++;
           break;
 
         // Print a DEDENT token
-        case frontend::TokenKind::DEDENT:
+        case TokenKind::DEDENT:
           indent --;
           print_indent(indent);
           fmt::print(fmt::fg(fmt::color::light_green), "{}\n", token);
           break;
 
         // Print an END token
-        case frontend::TokenKind::END:
+        case TokenKind::END:
           print_indent(indent);
           fmt::print(fmt::fg(fmt::color::crimson), "{}\n", token);
           break;
 
         // Print a COMMENT token
-        case frontend::TokenKind::COMMENT:
+        case TokenKind::COMMENT:
           print_indent(indent);
           fmt::print(fmt::fg(fmt::color::gray), "{}\n", token);
           break;

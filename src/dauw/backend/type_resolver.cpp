@@ -123,7 +123,7 @@ namespace dauw
   void TypeResolver::visit_unary(const expr_unary_ptr& expr)
   {
     // Check if the expression is a logic not operation
-    if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_NOT)
+    if (expr->op() == TokenKind::OPERATOR_LOGIC_NOT)
     {
       // TODO: Implement resolving logic not operation
       report<UnimplementedError>(expr->location(), "TODO: Implement resolving logic not operation");
@@ -136,18 +136,18 @@ namespace dauw
     switch (expr->op())
     {
       // Known unary operators
-      case frontend::TokenKind::OPERATOR_SUBTRACT:
+      case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(internals::Type::type_int))
           expr->set_type(internals::Type::type_int);
         else if (expr->check_operand_type(internals::Type::type_real))
           expr->set_type(internals::Type::type_real);
         break;
 
-      case frontend::TokenKind::OPERATOR_LENGTH:
+      case TokenKind::OPERATOR_LENGTH:
         expr->set_type(internals::Type::type_int);
         break;
 
-      case frontend::TokenKind::OPERATOR_STRING:
+      case TokenKind::OPERATOR_STRING:
         expr->set_type(internals::Type::type_string);
         break;
 
@@ -162,14 +162,14 @@ namespace dauw
   void TypeResolver::visit_binary(const expr_binary_ptr& expr)
   {
     // Check if the expression is a logic and operation
-    if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_AND)
+    if (expr->op() == TokenKind::OPERATOR_LOGIC_AND)
     {
       // TODO: Implement compiling logic and operation
       report<UnimplementedError>(expr->location(), "TODO: Implement compiling logic and operation");
     }
 
     // TODO: Check if the expression is a logic or expression
-    if (expr->op() == frontend::TokenKind::OPERATOR_LOGIC_OR)
+    if (expr->op() == TokenKind::OPERATOR_LOGIC_OR)
     {
       // TODO: Implement compiling logic and operation
       report<UnimplementedError>(expr->location(), "TODO: Implement compiling logic or operation");
@@ -182,35 +182,35 @@ namespace dauw
     // Check and resolve the operator
     switch (expr->op())
     {
-      case frontend::TokenKind::OPERATOR_MULTIPLY:
+      case TokenKind::OPERATOR_MULTIPLY:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_type(internals::Type::type_int);
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
           expr->set_type(internals::Type::type_real);
         break;
 
-      case frontend::TokenKind::OPERATOR_DIVIDE:
+      case TokenKind::OPERATOR_DIVIDE:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_type(internals::Type::type_real);
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
           expr->set_type(internals::Type::type_real);
         break;
 
-      case frontend::TokenKind::OPERATOR_QUOTIENT:
-        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-          expr->set_type(internals::Type::type_int);
-        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-          expr->set_type(internals::Type::type_real);
-        break;
-
-      case frontend::TokenKind::OPERATOR_REMAINDER:
+      case TokenKind::OPERATOR_QUOTIENT:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_type(internals::Type::type_int);
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
           expr->set_type(internals::Type::type_real);
         break;
 
-      case frontend::TokenKind::OPERATOR_ADD:
+      case TokenKind::OPERATOR_REMAINDER:
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
+        break;
+
+      case TokenKind::OPERATOR_ADD:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_type(internals::Type::type_int);
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
@@ -219,31 +219,31 @@ namespace dauw
           expr->set_type(internals::Type::type_string);
         break;
 
-      case frontend::TokenKind::OPERATOR_SUBTRACT:
+      case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
           expr->set_type(internals::Type::type_int);
         else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
           expr->set_type(internals::Type::type_real);
         break;
 
-      case frontend::TokenKind::OPERATOR_RANGE:
+      case TokenKind::OPERATOR_RANGE:
         report<UnimplementedError>(expr->location(), "TODO: Implement resolving range operator");
         break;
 
-      case frontend::TokenKind::OPERATOR_COMPARE:
+      case TokenKind::OPERATOR_COMPARE:
         expr->set_type(internals::Type::type_int);
         break;
 
-      case frontend::TokenKind::OPERATOR_LESS:
-      case frontend::TokenKind::OPERATOR_LESS_EQUAL:
-      case frontend::TokenKind::OPERATOR_GREATER:
-      case frontend::TokenKind::OPERATOR_GREATER_EQUAL:
-      case frontend::TokenKind::OPERATOR_MATCH:
-      case frontend::TokenKind::OPERATOR_NOT_MATCH:
-      case frontend::TokenKind::OPERATOR_EQUAL:
-      case frontend::TokenKind::OPERATOR_NOT_EQUAL:
-      case frontend::TokenKind::OPERATOR_IDENTICAL:
-      case frontend::TokenKind::OPERATOR_NOT_IDENTICAL:
+      case TokenKind::OPERATOR_LESS:
+      case TokenKind::OPERATOR_LESS_EQUAL:
+      case TokenKind::OPERATOR_GREATER:
+      case TokenKind::OPERATOR_GREATER_EQUAL:
+      case TokenKind::OPERATOR_MATCH:
+      case TokenKind::OPERATOR_NOT_MATCH:
+      case TokenKind::OPERATOR_EQUAL:
+      case TokenKind::OPERATOR_NOT_EQUAL:
+      case TokenKind::OPERATOR_IDENTICAL:
+      case TokenKind::OPERATOR_NOT_IDENTICAL:
         expr->set_type(internals::Type::type_bool);
         break;
 

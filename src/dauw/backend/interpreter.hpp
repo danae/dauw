@@ -21,13 +21,13 @@ namespace dauw
   {
     private:
       // Return the result of comparing two values
-      dauw_int_t op_compare(frontend::Location& location, internals::Value left, internals::Value right);
+      dauw_int_t op_compare(Location& location, internals::Value left, internals::Value right);
 
       // Return the result of checking if two values match
-      dauw_bool_t op_match(frontend::Location& location, internals::Value left, internals::Value right);
+      dauw_bool_t op_match(Location& location, internals::Value left, internals::Value right);
 
       // Return the result of checking if two values are equal
-      dauw_bool_t op_equals(frontend::Location& location, internals::Value left, internals::Value right);
+      dauw_bool_t op_equals(Location& location, internals::Value left, internals::Value right);
 
 
     public:

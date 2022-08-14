@@ -30,7 +30,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a literal expression
-  ExprLiteral::ExprLiteral(internals::Value value, frontend::Location location)
+  ExprLiteral::ExprLiteral(internals::Value value, Location location)
     : value_(value), location_(location)
   {
   }
@@ -42,7 +42,7 @@ namespace dauw
   }
 
   // Return the location of the literal expression
-  frontend::Location& ExprLiteral::location()
+  Location& ExprLiteral::location()
   {
     return location_;
   }
@@ -56,7 +56,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a sequence expression
-  ExprSequence::ExprSequence(frontend::Token token, ExprSequence::sequence_type items)
+  ExprSequence::ExprSequence(Token token, ExprSequence::sequence_type items)
     : token_(token), items_(items)
   {
   }
@@ -78,7 +78,7 @@ namespace dauw
   }
 
   // Return the location of the sequence expression
-  frontend::Location& ExprSequence::location()
+  Location& ExprSequence::location()
   {
     return token_.location();
   }
@@ -92,7 +92,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a record expression
-  ExprRecord::ExprRecord(frontend::Token token, ExprRecord::record_type items)
+  ExprRecord::ExprRecord(Token token, ExprRecord::record_type items)
     : token_(token), items_(items)
   {
   }
@@ -114,7 +114,7 @@ namespace dauw
   }
 
   // Return the location of the record expression
-  frontend::Location& ExprRecord::location()
+  Location& ExprRecord::location()
   {
     return token_.location();
   }
@@ -129,7 +129,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a name expression
-  ExprName::ExprName(frontend::Token name)
+  ExprName::ExprName(Token name)
     : name_(name)
   {
   }
@@ -141,7 +141,7 @@ namespace dauw
   }
 
   // Return the location of the expression
-  frontend::Location& ExprName::location()
+  Location& ExprName::location()
   {
     return name_.location();
   }
@@ -155,7 +155,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a function definition expression
-  ExprFunction::ExprFunction(frontend::Token token, ExprFunction::parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body)
+  ExprFunction::ExprFunction(Token token, ExprFunction::parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body)
     : token_(token), parameters_(parameters), return_type_(return_type), body_(body)
   {
   }
@@ -185,7 +185,7 @@ namespace dauw
   }
 
   // Return the location of the function expression
-  frontend::Location& ExprFunction::location()
+  Location& ExprFunction::location()
   {
     return token_.location();
   }
@@ -199,7 +199,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a function parameter expression
-  ExprFunctionParameter::ExprFunctionParameter(frontend::Token name, type_expr_ptr type)
+  ExprFunctionParameter::ExprFunctionParameter(Token name, type_expr_ptr type)
     : name_(name), type_(type)
   {
   }
@@ -217,7 +217,7 @@ namespace dauw
   }
 
   // Return the location of the function parameter expression
-  frontend::Location& ExprFunctionParameter::location()
+  Location& ExprFunctionParameter::location()
   {
     return name_.location();
   }
@@ -243,7 +243,7 @@ namespace dauw
   }
 
   // Return the location of the grouped expression
-  frontend::Location& ExprGrouped::location()
+  Location& ExprGrouped::location()
   {
     return expr_->location();
   }
@@ -257,7 +257,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a call expression
-  ExprCall::ExprCall(expr_ptr callee, frontend::Token token, expr_sequence_ptr arguments)
+  ExprCall::ExprCall(expr_ptr callee, Token token, expr_sequence_ptr arguments)
     : callee_(callee), token_(token), arguments_(arguments)
   {
   }
@@ -275,7 +275,7 @@ namespace dauw
   }
 
   // Return the location of the call expression
-  frontend::Location& ExprCall::location()
+  Location& ExprCall::location()
   {
     return token_.location();
   }
@@ -289,7 +289,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a get expression
-  ExprGet::ExprGet(expr_ptr object, frontend::Token name)
+  ExprGet::ExprGet(expr_ptr object, Token name)
     : object_(object), name_(name)
   {
   }
@@ -307,7 +307,7 @@ namespace dauw
   }
 
   // Return the location of the get expression
-  frontend::Location& ExprGet::location()
+  Location& ExprGet::location()
   {
     return name_.location();
   }
@@ -322,13 +322,13 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an unary expression
-  ExprUnary::ExprUnary(frontend::Token op, expr_ptr right)
+  ExprUnary::ExprUnary(Token op, expr_ptr right)
     : op_(op), right_(right)
   {
   }
 
   // Return the operator of the unary expression
-  frontend::TokenKind ExprUnary::op()
+  TokenKind ExprUnary::op()
   {
     return op_.kind();
   }
@@ -346,7 +346,7 @@ namespace dauw
   }
 
   // Return the location of the unary expression
-  frontend::Location& ExprUnary::location()
+  Location& ExprUnary::location()
   {
     return op_.location();
   }
@@ -360,13 +360,13 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a binary expression
-  ExprBinary::ExprBinary(expr_ptr left, frontend::Token op, expr_ptr right)
+  ExprBinary::ExprBinary(expr_ptr left, Token op, expr_ptr right)
     : left_(left), op_(op), right_(right)
   {
   }
 
   // Return the operator of the binary expression
-  frontend::TokenKind ExprBinary::op()
+  TokenKind ExprBinary::op()
   {
     return op_.kind();
   }
@@ -388,7 +388,7 @@ namespace dauw
   }
 
   // Return the location of the binary expression
-  frontend::Location& ExprBinary::location()
+  Location& ExprBinary::location()
   {
     return op_.location();
   }
@@ -402,7 +402,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an echo expression
-  ExprEcho::ExprEcho(frontend::Token keyword, expr_ptr expr)
+  ExprEcho::ExprEcho(Token keyword, expr_ptr expr)
     : keyword_(keyword), expr_(expr)
   {
   }
@@ -414,7 +414,7 @@ namespace dauw
   }
 
   // Return the location of the echo expression
-  frontend::Location& ExprEcho::location()
+  Location& ExprEcho::location()
   {
     return keyword_.location();
   }
@@ -428,7 +428,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an if expression
-  ExprIf::ExprIf(frontend::Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch)
+  ExprIf::ExprIf(Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch)
     : keyword_(keyword), condition_(condition), true_branch_(true_branch), false_branch_(false_branch)
   {
   }
@@ -458,7 +458,7 @@ namespace dauw
   }
 
   // Return the location of the if expression
-  frontend::Location& ExprIf::location()
+  Location& ExprIf::location()
   {
     return keyword_.location();
   }
@@ -472,7 +472,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a for expression
-  ExprFor::ExprFor(frontend::Token keyword, frontend::Token name, expr_ptr iterable, expr_ptr body)
+  ExprFor::ExprFor(Token keyword, Token name, expr_ptr iterable, expr_ptr body)
     : keyword_(keyword), name_(name), iterable_(iterable), body_(body)
   {
   }
@@ -496,7 +496,7 @@ namespace dauw
   }
 
   // Return the location of the for expression
-  frontend::Location& ExprFor::location()
+  Location& ExprFor::location()
   {
     return keyword_.location();
   }
@@ -510,7 +510,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a while expression
-  ExprWhile::ExprWhile(frontend::Token keyword, expr_ptr condition, expr_ptr body)
+  ExprWhile::ExprWhile(Token keyword, expr_ptr condition, expr_ptr body)
     : keyword_(keyword), condition_(condition), body_(body)
   {
   }
@@ -528,7 +528,7 @@ namespace dauw
   }
 
   // Return the location of the while expression
-  frontend::Location& ExprWhile::location()
+  Location& ExprWhile::location()
   {
     return keyword_.location();
   }
@@ -542,7 +542,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for an until expression
-  ExprUntil::ExprUntil(frontend::Token keyword, expr_ptr condition, expr_ptr body)
+  ExprUntil::ExprUntil(Token keyword, expr_ptr condition, expr_ptr body)
     : keyword_(keyword), condition_(condition), body_(body)
   {
   }
@@ -560,7 +560,7 @@ namespace dauw
   }
 
   // Return the location of the until expression
-  frontend::Location& ExprUntil::location()
+  Location& ExprUntil::location()
   {
     return keyword_.location();
   }
@@ -596,7 +596,7 @@ namespace dauw
   }
 
   // Return the location of the block expression
-  frontend::Location& ExprBlock::location()
+  Location& ExprBlock::location()
   {
     // TODO: Possibly use the indent token for the block location
 
@@ -612,7 +612,7 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Constructor for a def expression
-  ExprDef::ExprDef(frontend::Token name, std::optional<type_expr_ptr> type, expr_ptr value)
+  ExprDef::ExprDef(Token name, std::optional<type_expr_ptr> type, expr_ptr value)
     : name_(name), type_(type), value_(value)
   {
   }
@@ -642,7 +642,7 @@ namespace dauw
   }
 
   // Return the location of the def expression
-  frontend::Location& ExprDef::location()
+  Location& ExprDef::location()
   {
     return name_.location();
   }

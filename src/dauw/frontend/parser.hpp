@@ -14,7 +14,7 @@
 #include <functional>
 
 
-namespace dauw::frontend
+namespace dauw
 {
   // Class that defines a parser that converts a deque of tokens into an expression
   class Parser : public ReporterAware

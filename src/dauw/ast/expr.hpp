@@ -119,18 +119,18 @@ namespace dauw
       internals::Value value_;
 
       // The location of the literal expression
-      frontend::Location location_;
+      Location location_;
 
 
     public:
       // Constructor
-      ExprLiteral(internals::Value value, frontend::Location location);
+      ExprLiteral(internals::Value value, Location location);
 
       // Return the value of the literal expression
       internals::Value& value();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -145,7 +145,7 @@ namespace dauw
 
     private:
       // The token of the sequence expression
-      frontend::Token token_;
+      Token token_;
 
       // The items of the sequence expression
       sequence_type items_;
@@ -153,7 +153,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprSequence(frontend::Token token, sequence_type items);
+      ExprSequence(Token token, sequence_type items);
 
       // Return the items of the sequence expression
       sequence_type items();
@@ -163,7 +163,7 @@ namespace dauw
       sequence_type::const_iterator end();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -178,7 +178,7 @@ namespace dauw
 
     private:
       // The token of the record expression
-      frontend::Token token_;
+      Token token_;
 
       // The items of the record expression
       record_type items_;
@@ -186,7 +186,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprRecord(frontend::Token token, record_type items);
+      ExprRecord(Token token, record_type items);
 
       // Return the items of the record expression
       record_type items();
@@ -196,7 +196,7 @@ namespace dauw
       record_type::const_iterator end();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -211,7 +211,7 @@ namespace dauw
 
     private:
       // The token of the function expression
-      frontend::Token token_;
+      Token token_;
 
       // The parameters of the function expression
       parameters_type parameters_;
@@ -225,7 +225,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprFunction(frontend::Token token, parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body);
+      ExprFunction(Token token, parameters_type parameters, std::optional<type_expr_ptr> return_type, expr_ptr body);
 
       // Return the parameters of the function expression
       parameters_type parameters();
@@ -240,7 +240,7 @@ namespace dauw
       expr_ptr body();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
 
 
@@ -255,7 +255,7 @@ namespace dauw
   {
     private:
       // The name token of the function parameter expression
-      frontend::Token name_;
+      Token name_;
 
       // The type of the function parameter expression
       type_expr_ptr type_;
@@ -263,7 +263,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprFunctionParameter(frontend::Token name, type_expr_ptr type);
+      ExprFunctionParameter(Token name, type_expr_ptr type);
 
       // Return the name of the function parameter expression
       string_t name();
@@ -272,7 +272,7 @@ namespace dauw
       type_expr_ptr type();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -282,18 +282,18 @@ namespace dauw
   {
     private:
       // The name token of the name expression
-      frontend::Token name_;
+      Token name_;
 
 
     public:
       // Constructor
-      ExprName(frontend::Token name);
+      ExprName(Token name);
 
       // Return the name of the name expression
       string_t name();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -314,7 +314,7 @@ namespace dauw
       expr_ptr expr();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -327,7 +327,7 @@ namespace dauw
       expr_ptr callee_;
 
       // The token of the call expression
-      frontend::Token token_;
+      Token token_;
 
       // The arguments of the call expression
       expr_sequence_ptr arguments_;
@@ -335,7 +335,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprCall(expr_ptr callee, frontend::Token token, expr_sequence_ptr arguments);
+      ExprCall(expr_ptr callee, Token token, expr_sequence_ptr arguments);
 
       // Return the callee of the call expression
       expr_ptr callee();
@@ -344,7 +344,7 @@ namespace dauw
       expr_sequence_ptr arguments();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -357,12 +357,12 @@ namespace dauw
       expr_ptr object_;
 
       // The name token of the get expression
-      frontend::Token name_;
+      Token name_;
 
 
     public:
       // Constructor
-      ExprGet(expr_ptr object, frontend::Token name);
+      ExprGet(expr_ptr object, Token name);
 
       // Return the object of the get expression
       expr_ptr object();
@@ -371,7 +371,7 @@ namespace dauw
       string_t name();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -381,7 +381,7 @@ namespace dauw
   {
     private:
       // The operator token of the unary expression
-      frontend::Token op_;
+      Token op_;
 
       // The operand of the unary expression
       expr_ptr right_;
@@ -389,10 +389,10 @@ namespace dauw
 
     public:
       // Constructor
-      ExprUnary(frontend::Token op, expr_ptr right);
+      ExprUnary(Token op, expr_ptr right);
 
       // Return the operator of the unary expression
-      frontend::TokenKind op();
+      TokenKind op();
 
       // Return the operand of the unary expression
       expr_ptr right();
@@ -401,7 +401,7 @@ namespace dauw
       bool check_operand_type(internals::Type right_type);
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -411,7 +411,7 @@ namespace dauw
   {
     private:
       // The operator token of the binary expression
-      frontend::Token op_;
+      Token op_;
 
       // The operands of the binary expression
       expr_ptr left_;
@@ -420,10 +420,10 @@ namespace dauw
 
     public:
       // Constructor
-      ExprBinary(expr_ptr left, frontend::Token op, expr_ptr right);
+      ExprBinary(expr_ptr left, Token op, expr_ptr right);
 
       // Return the operator of the unary expression
-      frontend::TokenKind op();
+      TokenKind op();
 
       // Return the operands of the unary expression
       expr_ptr left();
@@ -433,7 +433,7 @@ namespace dauw
       bool check_operand_type(internals::Type left_type, internals::Type right_type);
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -443,7 +443,7 @@ namespace dauw
   {
     private:
       // The keyword token of the echo expression
-      frontend::Token keyword_;
+      Token keyword_;
 
       // The nested expression of the echo expression
       expr_ptr expr_;
@@ -451,13 +451,13 @@ namespace dauw
 
     public:
       // Constructor
-      ExprEcho(frontend::Token keyword, expr_ptr expr);
+      ExprEcho(Token keyword, expr_ptr expr);
 
       // Return the nested expression of the echo expression
       expr_ptr expr();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -467,7 +467,7 @@ namespace dauw
   {
     private:
       // The keyword token of the if expression
-      frontend::Token keyword_;
+      Token keyword_;
 
       // The condition of the if expression
       expr_ptr condition_;
@@ -481,7 +481,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprIf(frontend::Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch);
+      ExprIf(Token keyword, expr_ptr condition, expr_ptr true_branch, std::optional<expr_ptr> false_branch);
 
       // Return the condition of the if expression
       expr_ptr condition();
@@ -496,7 +496,7 @@ namespace dauw
       bool has_false_branch();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -506,10 +506,10 @@ namespace dauw
   {
     private:
       // The keyword token of the for expression
-      frontend::Token keyword_;
+      Token keyword_;
 
       // The name token of the for expression
-      frontend::Token name_;
+      Token name_;
 
       // The iterable of the for expression
       expr_ptr iterable_;
@@ -520,7 +520,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprFor(frontend::Token keyword, frontend::Token name, expr_ptr iterable, expr_ptr body);
+      ExprFor(Token keyword, Token name, expr_ptr iterable, expr_ptr body);
 
       // Return the name of the for expression
       string_t name();
@@ -532,7 +532,7 @@ namespace dauw
       expr_ptr body();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -542,7 +542,7 @@ namespace dauw
   {
     private:
       // The keyword token of the while expression
-      frontend::Token keyword_;
+      Token keyword_;
 
       // The condition of the while expression
       expr_ptr condition_;
@@ -553,7 +553,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprWhile(frontend::Token keyword, expr_ptr condition, expr_ptr body);
+      ExprWhile(Token keyword, expr_ptr condition, expr_ptr body);
 
       // Return the condition of the while expression
       expr_ptr condition();
@@ -562,7 +562,7 @@ namespace dauw
       expr_ptr body();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -572,7 +572,7 @@ namespace dauw
   {
     private:
       // The keyword token of the until expression
-      frontend::Token keyword_;
+      Token keyword_;
 
       // The condition of the until expression
       expr_ptr condition_;
@@ -583,7 +583,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprUntil(frontend::Token keyword, expr_ptr condition, expr_ptr body);
+      ExprUntil(Token keyword, expr_ptr condition, expr_ptr body);
 
       // Return the condition of the until expression
       expr_ptr condition();
@@ -592,7 +592,7 @@ namespace dauw
       expr_ptr body();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -617,7 +617,7 @@ namespace dauw
       std::vector<expr_ptr>::const_iterator end();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 
@@ -627,7 +627,7 @@ namespace dauw
   {
     private:
       // The name token of the def expression
-      frontend::Token name_;
+      Token name_;
 
       // The type of the def expression
       std::optional<type_expr_ptr> type_;
@@ -638,7 +638,7 @@ namespace dauw
 
     public:
       // Constructor
-      ExprDef(frontend::Token name, std::optional<type_expr_ptr> type, expr_ptr value);
+      ExprDef(Token name, std::optional<type_expr_ptr> type, expr_ptr value);
 
       // Return the name of the def expression
       string_t name();
@@ -653,7 +653,7 @@ namespace dauw
       expr_ptr value();
 
       // Expression implementation
-      virtual frontend::Location& location() override;
+      virtual Location& location() override;
       virtual void accept(const expr_visitor_ptr& visitor) override;
   };
 }

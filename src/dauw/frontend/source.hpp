@@ -9,7 +9,7 @@
 #include <fstream>
 
 
-namespace dauw::frontend
+namespace dauw
 {
   // Forward declarations
   class Source;

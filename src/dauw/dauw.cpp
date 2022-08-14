@@ -9,7 +9,7 @@ namespace dauw
   }
 
   // Run code from a source file
-  int Dauw::run(frontend::source_ptr source)
+  int Dauw::run(source_ptr source)
   {
     // TODO: Create a global reporter and VM
 
@@ -17,7 +17,7 @@ namespace dauw
     auto reporter = std::make_shared<Reporter>(source);
 
     // Tokenize the source string
-    auto tokens = frontend::Lexer(reporter.get(), source).tokenize();
+    auto tokens = Lexer(reporter.get(), source).tokenize();
     if (reporter->has_errors())
     {
       reporter->print_errors();
@@ -26,7 +26,7 @@ namespace dauw
     }
 
     // Parse the tokens and exit the application if a parser error occurred
-    auto expr = frontend::Parser(reporter.get(), tokens).parse();
+    auto expr = Parser(reporter.get(), tokens).parse();
     if (reporter->has_errors())
     {
       reporter->print_errors();
@@ -75,7 +75,7 @@ namespace dauw
       linenoise::AddHistory(line.c_str());
 
       // Run the line
-      auto source = frontend::Source::create("<prompt>", line);
+      auto source = Source::create("<prompt>", line);
   		run(source);
   	}
 
@@ -89,10 +89,10 @@ namespace dauw
     try
     {
       // Run the source from the specified file
-      auto source = frontend::Source::create_read(file);
+      auto source = Source::create_read(file);
   	  return run(source);
     }
-    catch (frontend::SourceException& ex)
+    catch (SourceException& ex)
     {
       fmt::print(fmt::fg(fmt::color::crimson), "{}\n", ex.message());
       return DAUW_EXIT_IOERR;

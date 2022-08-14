@@ -14,16 +14,16 @@ namespace dauw
   {
     private:
       // The location where the error occurred
-      frontend::Location location_;
+      Location location_;
 
 
     public:
       // Constructor
-      inline Error(frontend::Location location, string_t message, Exception* previous) : Exception(message, previous), location_(location) {}
-      inline Error(frontend::Location location, string_t message)  : Error(location, message, nullptr) {}
+      inline Error(Location location, string_t message, Exception* previous) : Exception(message, previous), location_(location) {}
+      inline Error(Location location, string_t message)  : Error(location, message, nullptr) {}
 
       // Return the location where the error occurred
-      inline frontend::Location& location() { return location_; }
+      inline Location& location() { return location_; }
 
       // Return the type of the error as a string
       inline virtual string_t type() { return "Error"; }
@@ -34,8 +34,8 @@ namespace dauw
   class CompilerError : public Error
   {
     public:
-      inline CompilerError(frontend::Location location, string_t message, Exception* previous) : Error(location, message, previous) {}
-      inline CompilerError(frontend::Location location, string_t message) : Error(location, message, nullptr) {}
+      inline CompilerError(Location location, string_t message, Exception* previous) : Error(location, message, previous) {}
+      inline CompilerError(Location location, string_t message) : Error(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "CompilerError"; }
   };
@@ -44,8 +44,8 @@ namespace dauw
   class SyntaxError : public CompilerError
   {
     public:
-      inline SyntaxError(frontend::Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
-      inline SyntaxError(frontend::Location location, string_t message) : CompilerError(location, message, nullptr) {}
+      inline SyntaxError(Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
+      inline SyntaxError(Location location, string_t message) : CompilerError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "SyntaxError"; }
   };
@@ -55,8 +55,8 @@ namespace dauw
   {
     public:
       // Constructor
-      inline TypeError(frontend::Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
-      inline TypeError(frontend::Location location, string_t message) : CompilerError(location, message, nullptr) {}
+      inline TypeError(Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
+      inline TypeError(Location location, string_t message) : CompilerError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "TypeError"; }
   };
@@ -65,8 +65,8 @@ namespace dauw
   class TypeUnresolvedError : public TypeError
   {
     public:
-      inline TypeUnresolvedError(frontend::Location location, string_t message, Exception* previous) : TypeError(location, message, previous) {}
-      inline TypeUnresolvedError(frontend::Location location, string_t message) : TypeError(location, message, nullptr) {}
+      inline TypeUnresolvedError(Location location, string_t message, Exception* previous) : TypeError(location, message, previous) {}
+      inline TypeUnresolvedError(Location location, string_t message) : TypeError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "TypeUnresolvedError"; }
   };
@@ -75,8 +75,8 @@ namespace dauw
   class TypeMismatchError : public TypeError
   {
     public:
-      inline TypeMismatchError(frontend::Location location, string_t message, Exception* previous) : TypeError(location, message, previous) {}
-      inline TypeMismatchError(frontend::Location location, string_t message) : TypeError(location, message, nullptr) {}
+      inline TypeMismatchError(Location location, string_t message, Exception* previous) : TypeError(location, message, previous) {}
+      inline TypeMismatchError(Location location, string_t message) : TypeError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "TypeMismatchError"; }
   };
@@ -85,8 +85,8 @@ namespace dauw
   class ValueError : public CompilerError
   {
     public:
-      inline ValueError(frontend::Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
-      inline ValueError(frontend::Location location, string_t message) : CompilerError(location, message, nullptr) {}
+      inline ValueError(Location location, string_t message, Exception* previous) : CompilerError(location, message, previous) {}
+      inline ValueError(Location location, string_t message) : CompilerError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "ValueError"; }
   };
@@ -95,8 +95,8 @@ namespace dauw
   class ValueMismatchError : public ValueError
   {
     public:
-      inline ValueMismatchError(frontend::Location location, string_t message, Exception* previous) : ValueError(location, message, previous) {}
-      inline ValueMismatchError(frontend::Location location, string_t message) : ValueError(location, message, nullptr) {}
+      inline ValueMismatchError(Location location, string_t message, Exception* previous) : ValueError(location, message, previous) {}
+      inline ValueMismatchError(Location location, string_t message) : ValueError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "ValueMismatchError"; }
   };
@@ -105,8 +105,8 @@ namespace dauw
   class ValueOverflowError : public ValueError
   {
     public:
-      inline ValueOverflowError(frontend::Location location, string_t message, Exception* previous) : ValueError(location, message, previous) {}
-      inline ValueOverflowError(frontend::Location location, string_t message) : ValueError(location, message, nullptr) {}
+      inline ValueOverflowError(Location location, string_t message, Exception* previous) : ValueError(location, message, previous) {}
+      inline ValueOverflowError(Location location, string_t message) : ValueError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "ValueOverflowError"; }
   };
@@ -115,8 +115,8 @@ namespace dauw
   class RuntimeError : public Error
   {
     public:
-      inline RuntimeError(frontend::Location location, string_t message, Exception* previous) : Error(location, message, previous) {}
-      inline RuntimeError(frontend::Location location, string_t message) : Error(location, message, nullptr) {}
+      inline RuntimeError(Location location, string_t message, Exception* previous) : Error(location, message, previous) {}
+      inline RuntimeError(Location location, string_t message) : Error(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "RuntimeError"; }
   };
@@ -125,8 +125,8 @@ namespace dauw
   class ArithmeticError : public RuntimeError
   {
     public:
-      inline ArithmeticError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
-      inline ArithmeticError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+      inline ArithmeticError(Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline ArithmeticError(Location location, string_t message) : RuntimeError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "ArithmeticError"; }
   };
@@ -135,8 +135,8 @@ namespace dauw
   class DivisionByZeroError : public ArithmeticError
   {
     public:
-      inline DivisionByZeroError(frontend::Location location, string_t message, Exception* previous) : ArithmeticError(location, message, previous) {}
-      inline DivisionByZeroError(frontend::Location location, string_t message) : ArithmeticError(location, message, nullptr) {}
+      inline DivisionByZeroError(Location location, string_t message, Exception* previous) : ArithmeticError(location, message, previous) {}
+      inline DivisionByZeroError(Location location, string_t message) : ArithmeticError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "DivisionByZeroError"; }
   };
@@ -145,8 +145,8 @@ namespace dauw
   class ConversionError : public ArithmeticError
   {
     public:
-      inline ConversionError(frontend::Location location, string_t message, Exception* previous) : ArithmeticError(location, message, previous) {}
-      inline ConversionError(frontend::Location location, string_t message) : ArithmeticError(location, message, nullptr) {}
+      inline ConversionError(Location location, string_t message, Exception* previous) : ArithmeticError(location, message, previous) {}
+      inline ConversionError(Location location, string_t message) : ArithmeticError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "ConversionError"; }
   };
@@ -155,8 +155,8 @@ namespace dauw
   class StackOverflowError : public RuntimeError
   {
     public:
-      inline StackOverflowError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
-      inline StackOverflowError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+      inline StackOverflowError(Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline StackOverflowError(Location location, string_t message) : RuntimeError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "StackOverflowError"; }
   };
@@ -165,8 +165,8 @@ namespace dauw
   class StackUnderflowError : public RuntimeError
   {
     public:
-      inline StackUnderflowError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
-      inline StackUnderflowError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+      inline StackUnderflowError(Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline StackUnderflowError(Location location, string_t message) : RuntimeError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "StackUnderflowError"; }
   };
@@ -175,8 +175,8 @@ namespace dauw
   class UnimplementedError : public RuntimeError
   {
     public:
-      inline UnimplementedError(frontend::Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
-      inline UnimplementedError(frontend::Location location, string_t message) : RuntimeError(location, message, nullptr) {}
+      inline UnimplementedError(Location location, string_t message, Exception* previous) : RuntimeError(location, message, previous) {}
+      inline UnimplementedError(Location location, string_t message) : RuntimeError(location, message, nullptr) {}
 
       inline virtual string_t type() override { return "UnimplementedError"; }
   };
@@ -187,7 +187,7 @@ namespace dauw
   {
     private:
       // The source file which errors are reported for
-      frontend::source_ptr source_;
+      source_ptr source_;
 
       // The list of reported errors
       std::vector<Error> errors_;
@@ -195,10 +195,10 @@ namespace dauw
 
     public:
       // Constructor
-      Reporter(frontend::source_ptr source);
+      Reporter(source_ptr source);
 
       // Return the source file which errors are reported for
-      frontend::source_ptr source();
+      source_ptr source();
 
       // Return the reported errors
       std::vector<Error> errors();
@@ -217,7 +217,7 @@ namespace dauw
 
       // Report an error
       template <typename T, typename std::enable_if<std::is_base_of<Error, T>::value>::type* = nullptr>
-      inline T report(frontend::Location location, string_t message, Exception* previous = nullptr)
+      inline T report(Location location, string_t message, Exception* previous = nullptr)
       {
         T error(location, message, previous);
         errors_.push_back(error);
@@ -240,7 +240,7 @@ namespace dauw
 
       // Report an error
       template <typename T, typename std::enable_if<std::is_base_of<Error, T>::value>::type* = nullptr>
-      inline T report(frontend::Location location, string_t message, Exception* previous = nullptr)
+      inline T report(Location location, string_t message, Exception* previous = nullptr)
       {
         return reporter_->report<T>(location, message, previous);
       }

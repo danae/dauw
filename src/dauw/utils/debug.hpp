@@ -12,5 +12,5 @@ namespace dauw::debug
   void print_indent(size_t indent);
 
   // Print a list of tokens
-  void print_tokens(frontend::Lexer::token_list_type tokens);
+  void print_tokens(Lexer::token_list_type tokens);
 }
