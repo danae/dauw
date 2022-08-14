@@ -39,6 +39,9 @@ namespace dauw::internals
 
       // Return the type of the object
       Type& type();
+
+      // Return a string representation of the object
+      virtual string_t str();
   };
 }
 
@@ -52,15 +55,10 @@ namespace fmt
   template <>
   struct formatter<Obj> : formatter<string_view_t>
   {
-    inline string_t stringify(Obj object)
-    {
-      return fmt::format("<object {} at {:#012x}>", object.type(), (uintptr_t)(&object));
-    }
-
     template <typename FormatContext>
     auto format(Obj object, FormatContext& ctx)
     {
-      return formatter<string_view_t>::format(stringify(object), ctx);
+      return formatter<string_view_t>::format(object.str(), ctx);
     }
   };
 }

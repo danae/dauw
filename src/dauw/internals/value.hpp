@@ -14,17 +14,16 @@ using value_t = uint64_t;
 #define BITMASK_SNAN        ((value_t)0x7ff0'0000'0000'0000)
 #define BITMASK_QNAN        ((value_t)0x7ff8'0000'0000'0000)
 #define BITMASK_TAG         ((value_t)0x0007'0000'0000'0000)
+#define BITMASK_QUIET       ((value_t)0x0008'0000'0000'0000)
 #define BITMASK_SIGNATURE   ((value_t)0xffff'0000'0000'0000)
 #define BITMASK_VALUE       ((value_t)0x0000'ffff'ffff'ffff)
 
 // Defines for tags of primitives
-#define TAG_NOTHING         ((value_t)0x0001'0000'0000'0000)
-#define TAG_FALSE           ((value_t)0x0002'0000'0000'0000)
-#define TAG_TRUE            ((value_t)0x0003'0000'0000'0000)
-#define TAG_INT             ((value_t)0x0004'0000'0000'0000)
-#define TAG_RUNE            ((value_t)0x0005'0000'0000'0000)
-#define TAG_UNUSED1         ((value_t)0x0006'0000'0000'0000)
-#define TAG_UNUSED2         ((value_t)0x0007'0000'0000'0000)
+#define TAG_NOTHING         ((value_t)0x0000'0000'0000'0001)
+#define TAG_FALSE           ((value_t)0x0000'0000'0000'0002)
+#define TAG_TRUE            ((value_t)0x0000'0000'0000'0003)
+#define TAG_INT             ((value_t)0x0001'0000'0000'0000)
+#define TAG_RUNE            ((value_t)0x0002'0000'0000'0000)
 
 // Defines for values of constant types
 #define VAL_NOTHING         ((value_t)(BITMASK_QNAN | TAG_NOTHING))

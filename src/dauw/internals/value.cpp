@@ -164,7 +164,7 @@ namespace dauw::internals
   // Return if the value represents a not-a-number real value
   bool Value::is_nan() const
   {
-    return value_ == VAL_NAN;
+    return (value_ & BITMASK_QNAN) == BITMASK_SNAN;
   }
 
   // Convert a value to a real type
@@ -240,16 +240,17 @@ namespace dauw::internals
       return fmt::format("'{}'", dauw::utils::rune_pack_to_str(as_rune()));
     else if (is_real())
     {
-      switch (value_)
-      {
-        case VAL_INF_POSITIVE: return "infinity";
-        case VAL_INF_NEGATIVE: return "-infinity";
-        case VAL_NAN: return "nan";
-        default: return fmt::format("{:#}", as_real());
-      }
+      if (value_ == VAL_INF_POSITIVE)
+        return "infinity";
+      else if (value_ == VAL_INF_NEGATIVE)
+        return "-infinity";
+      else if (is_nan())
+        return "nan";
+      else
+        return fmt::format("{:#}", as_real());
     }
     else if (is_obj())
-      return fmt::format("{}", *as_obj());
+      return as_obj()->str();
     else
       return fmt::format("<invalid value>");
   }

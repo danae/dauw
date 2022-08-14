@@ -165,4 +165,10 @@ namespace dauw::internals
 
     return 0;
   }
+
+  // Return a string representation of the string
+  string_t String::str()
+  {
+    return string_t((const char*)bytes_);
+  }
 }
