@@ -35,7 +35,7 @@ namespace dauw
     }
 
     // Resolve the types of the expression
-    auto type_resolver = std::make_shared<backend::TypeResolver>(reporter.get());
+    auto type_resolver = std::make_shared<TypeResolver>(reporter.get());
     type_resolver->resolve(expr);
     if (reporter->has_errors())
     {
@@ -45,7 +45,7 @@ namespace dauw
     }
 
     // Evaluate the expression and exit the application if a runtime error occurred
-    auto interpreter = std::make_shared<backend::Interpreter>(reporter.get());
+    auto interpreter = std::make_shared<Interpreter>(reporter.get());
     interpreter->evaluate(expr);
     if (reporter->has_errors())
     {

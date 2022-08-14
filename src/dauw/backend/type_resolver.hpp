@@ -9,7 +9,7 @@
 #include <dauw/internals/value.hpp>
 
 
-namespace dauw::backend
+namespace dauw
 {
   // Class that defines the type resolver
   class TypeResolver : public ExprVisitor, public TypeExprVisitor, public ReporterAware, public std::enable_shared_from_this<TypeResolver>

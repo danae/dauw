@@ -1,6 +1,6 @@
 #include "type_resolver.hpp"
 
-namespace dauw::backend
+namespace dauw
 {
   // Constructor for the type resolver
   TypeResolver::TypeResolver(Reporter* reporter)

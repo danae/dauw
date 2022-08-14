@@ -14,7 +14,7 @@
 #include <type_traits>
 
 
-namespace dauw::backend
+namespace dauw
 {
   // Class that defines the interpreter
   class Interpreter : public ExprVisitor, public TypeExprVisitor, public ReporterAware, public std::enable_shared_from_this<Interpreter>

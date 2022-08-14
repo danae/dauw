@@ -1,6 +1,6 @@
 #include "interpreter.hpp"
 
-namespace dauw::backend
+namespace dauw
 {
   // Constructor for the interpreter
   Interpreter::Interpreter(Reporter* reporter)
