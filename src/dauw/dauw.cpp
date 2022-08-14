@@ -16,9 +16,6 @@ namespace dauw
     // Create the error reporter
     auto reporter = std::make_shared<Reporter>(source);
 
-    // Create the virtual machine
-    auto vm = std::make_shared<backend::VM>(reporter.get());
-
     // Tokenize the source string
     auto tokens = frontend::Lexer(reporter.get(), source).tokenize();
     if (reporter->has_errors())
@@ -29,7 +26,7 @@ namespace dauw
     }
 
     // Parse the tokens and exit the application if a parser error occurred
-    auto expr = frontend::Parser(reporter.get(), vm.get(), tokens).parse();
+    auto expr = frontend::Parser(reporter.get(), tokens).parse();
     if (reporter->has_errors())
     {
       reporter->print_errors();
@@ -47,19 +44,9 @@ namespace dauw
       return DAUW_EXIT_SOFTWAREERR;
     }
 
-    // Execute the expression and exit the application if a runtime error occurred
-    auto code = std::make_shared<backend::Code>();
-    auto compiler = std::make_shared<backend::Compiler>(reporter.get(), code.get());
-    compiler->compile(expr);
-    if (reporter->has_errors())
-    {
-      reporter->print_errors();
-      reporter->clear_errors();
-      return DAUW_EXIT_SOFTWAREERR;
-    }
-
-    // Run the compiled code
-    vm->run(code.get());
+    // Evaluate the expression and exit the application if a runtime error occurred
+    auto interpreter = std::make_shared<backend::Interpreter>(reporter.get());
+    interpreter->evaluate(expr);
     if (reporter->has_errors())
     {
       reporter->print_errors();

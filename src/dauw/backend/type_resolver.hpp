@@ -14,18 +14,6 @@ namespace dauw::backend
   // Class that defines the type resolver
   class TypeResolver : public ast::ExprVisitor, public ast::TypeExprVisitor, public ReporterAware, public std::enable_shared_from_this<TypeResolver>
   {
-    private:
-      // Helper functions for operators
-      void visit_unary_negate(const ast::expr_unary_ptr& expr);
-      void visit_binary_multiply(const ast::expr_binary_ptr& expr);
-      void visit_binary_divide(const ast::expr_binary_ptr& expr);
-      void visit_binary_quotient(const ast::expr_binary_ptr& expr);
-      void visit_binary_remainder(const ast::expr_binary_ptr& expr);
-      void visit_binary_add(const ast::expr_binary_ptr& expr);
-      void visit_binary_subtract(const ast::expr_binary_ptr& expr);
-      void visit_binary_range(const ast::expr_binary_ptr& expr);
-
-
     public:
       // Constructor
       TypeResolver(Reporter* reporter);

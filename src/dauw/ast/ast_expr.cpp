@@ -2,6 +2,33 @@
 
 namespace dauw::ast
 {
+  // Return the computed value of the expression
+  internals::Value Expr::computed_value()
+  {
+    return computed_value_.value();
+  }
+
+  // Return if the expression has a computed value
+  bool Expr::has_computed_value()
+  {
+    return computed_value_.has_value();
+  }
+
+  // Set the computed value of the expression
+  void Expr::set_computed_value(internals::Value value)
+  {
+    computed_value_ = std::make_optional(value);
+  }
+
+  // Set the computed value of the expression to that of another expression
+  void Expr::set_computed_value_from(expr_ptr expr)
+  {
+    if (expr->has_computed_value())
+      set_computed_value(expr->computed_value());
+  }
+
+  // --------------------------------------------------------------------------
+
   // Constructor for a literal expression
   ExprLiteral::ExprLiteral(internals::Value value, frontend::Location location)
     : value_(value), location_(location)

@@ -4,64 +4,41 @@
 #include <dauw/errors.hpp>
 #include <dauw/ast/ast_expr.hpp>
 #include <dauw/ast/ast_type_expr.hpp>
-#include <dauw/backend/code.hpp>
-#include <dauw/backend/vm.hpp>
 #include <dauw/frontend/location.hpp>
+#include <dauw/internals/string_object.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
+#include <dauw/utils/math.hpp>
 
-#include <initializer_list>
+#include <forward_list>
 #include <type_traits>
 
 
 namespace dauw::backend
 {
-  // Class that defines the compiler
-  class Compiler : public ast::ExprVisitor, public ast::TypeExprVisitor, public ReporterAware, public std::enable_shared_from_this<Compiler>
+  // Class that defines the interpreter
+  class Interpreter : public ast::ExprVisitor, public ast::TypeExprVisitor, public ReporterAware, public std::enable_shared_from_this<Interpreter>
   {
     private:
-      // The code that is being emitted by the compiler
-      Code* code_;
+      // Return the result of comparing two values
+      dauw_int_t op_compare(frontend::Location& location, internals::Value left, internals::Value right);
 
+      // Return the result of checking if two values match
+      dauw_bool_t op_match(frontend::Location& location, internals::Value left, internals::Value right);
 
-      // Emit a byte to the code
-      void emit(Code::byte_type byte, frontend::Location location);
-      void emit(std::initializer_list<Code::byte_type> bytes, frontend::Location location);
-
-      // Emit an instruction to the code
-      void emit(Instruction instruction, frontend::Location location);
-      void emit(Instruction instruction, Code::byte_type byte, frontend::Location location);
-      void emit(Instruction instruction, std::initializer_list<Code::byte_type> bytes, frontend::Location location);
-
-      // Emit a specialized instruction to the code
-      void emit_constant(internals::Value value, frontend::Location location);
-
-      // Helper functions for operators
-      void visit_unary_negate(const ast::expr_unary_ptr& expr);
-      void visit_unary_length(const ast::expr_unary_ptr& expr);
-      void visit_unary_string(const ast::expr_unary_ptr& expr);
-      void visit_binary_multiply(const ast::expr_binary_ptr& expr);
-      void visit_binary_divide(const ast::expr_binary_ptr& expr);
-      void visit_binary_quotient(const ast::expr_binary_ptr& expr);
-      void visit_binary_remainder(const ast::expr_binary_ptr& expr);
-      void visit_binary_add(const ast::expr_binary_ptr& expr);
-      void visit_binary_subtract(const ast::expr_binary_ptr& expr);
-      void visit_binary_range(const ast::expr_binary_ptr& expr);
-      void visit_binary_compare(const ast::expr_binary_ptr& expr);
-      void visit_binary_match(const ast::expr_binary_ptr& expr);
-      void visit_binary_equal(const ast::expr_binary_ptr& expr);
-      void visit_binary_identical(const ast::expr_binary_ptr& expr);
+      // Return the result of checking if two values are equal
+      dauw_bool_t op_equals(frontend::Location& location, internals::Value left, internals::Value right);
 
 
     public:
       // Constructor
-      Compiler(Reporter* reporter, Code* code);
+      Interpreter(Reporter* reporter);
 
-      // Compile an expression
-      void compile(const ast::expr_ptr& expr);
+      // Evaluate an expression
+      internals::Value evaluate(const ast::expr_ptr& expr);
 
-      // Compile a type expression
-      void compile(const ast::type_expr_ptr& expr);
+      // Evaluate a type expression
+      internals::Type evaluate(const ast::type_expr_ptr& expr);
 
       // Expression visitor implementation
       virtual void visit_literal(const ast::expr_literal_ptr& expr) override;

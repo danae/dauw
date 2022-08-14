@@ -4,10 +4,10 @@
 #include <dauw/errors.hpp>
 #include <dauw/ast/ast_expr.hpp>
 #include <dauw/ast/ast_type_expr.hpp>
-#include <dauw/backend/vm.hpp>
 #include <dauw/frontend/lexer.hpp>
 #include <dauw/frontend/location.hpp>
 #include <dauw/frontend/token.hpp>
+#include <dauw/internals/string_object.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 
@@ -29,9 +29,6 @@ namespace dauw::frontend
 
       // The index of the token that is currently being parsed
       size_t index_;
-
-      // Reference to the virtual machine
-      backend::VM* vm_;
 
       // The last full line comment that has been parsed
       string_t line_comment_;
@@ -106,7 +103,7 @@ namespace dauw::frontend
 
     public:
       // Constructor
-      Parser(Reporter* reporter, backend::VM* vm, Lexer::token_list_type tokens);
+      Parser(Reporter* reporter, Lexer::token_list_type tokens);
 
       // Parse a deque of tokens into an expression
       ast::expr_ptr parse();

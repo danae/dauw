@@ -88,9 +88,23 @@ namespace dauw::ast
   // Base class thet defines an expression
   class Expr : public Node
   {
+    private:
+      // The computed value of the expression
+      std::optional<internals::Value> computed_value_ = std::nullopt;
+
     public:
       // Destructor
       virtual ~Expr() = default;
+
+      // Return the computed value of the expression
+      internals::Value computed_value();
+
+      // Return if the expression has a computed value
+      bool has_computed_value();
+
+      // Set the computed value of the expression
+      void set_computed_value(internals::Value value);
+      void set_computed_value_from(expr_ptr expr);
 
       // Accept a visitor on the expression
       virtual void accept(const expr_visitor_ptr& visitor) = 0;

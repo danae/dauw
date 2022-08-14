@@ -137,7 +137,10 @@ namespace dauw::backend
     {
       // Known unary operators
       case frontend::TokenKind::OPERATOR_SUBTRACT:
-        visit_unary_negate(expr);
+        if (expr->check_operand_type(internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
         break;
 
       case frontend::TokenKind::OPERATOR_LENGTH:
@@ -180,31 +183,51 @@ namespace dauw::backend
     switch (expr->op())
     {
       case frontend::TokenKind::OPERATOR_MULTIPLY:
-        visit_binary_multiply(expr);
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
         break;
 
       case frontend::TokenKind::OPERATOR_DIVIDE:
-        visit_binary_divide(expr);
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_real);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
         break;
 
       case frontend::TokenKind::OPERATOR_QUOTIENT:
-        visit_binary_quotient(expr);
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
         break;
 
       case frontend::TokenKind::OPERATOR_REMAINDER:
-        visit_binary_remainder(expr);
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
         break;
 
       case frontend::TokenKind::OPERATOR_ADD:
-        visit_binary_add(expr);
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
+        else if (expr->check_operand_type(internals::Type::type_string, internals::Type::type_string))
+          expr->set_type(internals::Type::type_string);
         break;
 
       case frontend::TokenKind::OPERATOR_SUBTRACT:
-        visit_binary_subtract(expr);
+        if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
+          expr->set_type(internals::Type::type_int);
+        else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
+          expr->set_type(internals::Type::type_real);
         break;
 
       case frontend::TokenKind::OPERATOR_RANGE:
-        visit_binary_range(expr);
+        report<UnimplementedError>(expr->location(), "TODO: Implement resolving range operator");
         break;
 
       case frontend::TokenKind::OPERATOR_COMPARE:
@@ -365,81 +388,5 @@ namespace dauw::backend
   {
     // TODO: Implement resolving union type expression
     report<UnimplementedError>(expr->location(), "TODO: Implement resolving union type expression");
-  }
-
-  // --------------------------------------------------------------------------
-  // HELPER FUNCTIONS FOR OPERATORS
-  // --------------------------------------------------------------------------
-
-  // Resolve the negate operator
-  void TypeResolver::visit_unary_negate(const ast::expr_unary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int))
-      expr->set_type(internals::Type::type_int);
-    else if (expr->check_operand_type(internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-  }
-
-  // Resolve the multiply operator
-  void TypeResolver::visit_binary_multiply(const ast::expr_binary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_type(internals::Type::type_int);
-    else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-  }
-
-  // Resolve the divide operator
-  void TypeResolver::visit_binary_divide(const ast::expr_binary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_type(internals::Type::type_real);
-    else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-  }
-
-  // Resolve the quotient operator
-  void TypeResolver::visit_binary_quotient(const ast::expr_binary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_type(internals::Type::type_int);
-    else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-  }
-
-  // Resolve the remainder operator
-  void TypeResolver::visit_binary_remainder(const ast::expr_binary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_type(internals::Type::type_int);
-    else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-  }
-
-  // Resolve the add operator
-  void TypeResolver::visit_binary_add(const ast::expr_binary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_type(internals::Type::type_int);
-    else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-    else if (expr->check_operand_type(internals::Type::type_string, internals::Type::type_string))
-      expr->set_type(internals::Type::type_string);
-  }
-
-  // Resolve the subtract operator
-  void TypeResolver::visit_binary_subtract(const ast::expr_binary_ptr& expr)
-  {
-    if (expr->check_operand_type(internals::Type::type_int, internals::Type::type_int))
-      expr->set_type(internals::Type::type_int);
-    else if (expr->check_operand_type(internals::Type::type_real, internals::Type::type_real))
-      expr->set_type(internals::Type::type_real);
-  }
-
-  // Resolve the range operator
-  void TypeResolver::visit_binary_range(const ast::expr_binary_ptr& expr)
-  {
-    // TODO: Implement resolving range operator
-    report<UnimplementedError>(expr->location(), "TODO: Implement resolving range operator");
   }
 }
