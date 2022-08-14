@@ -6,7 +6,7 @@ namespace dauw
   Type Type::type_nothing = Type(TypeKind::NOTHING, "Nothing");
   Type Type::type_bool = Type(TypeKind::BOOL, "Bool");
   Type Type::type_int = Type(TypeKind::INT, "Int");
-  Type Type::type_real = Type(TypeKind::REAL, "Real");
+  Type Type::type_float = Type(TypeKind::FLOAT, "Real");
   Type Type::type_rune = Type(TypeKind::RUNE, "Rune");
   Type Type::type_string = Type(TypeKind::STRING, "String");
   Type Type::type_sequence = Type(TypeKind::SEQUENCE, "Sequence");

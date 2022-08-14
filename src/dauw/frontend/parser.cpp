@@ -598,7 +598,7 @@ namespace dauw
 
   // Parse an atom expression
   // atom → literal | name | list | record | lambda | grouped
-  // literal → 'nothing' | 'false' | 'true' | INT | REAL | STRING
+  // literal → 'nothing' | 'false' | 'true' | INT | FLOAT | STRING
   // name → IDENTIFIER
   expr_ptr Parser::parse_atom()
   {
@@ -611,8 +611,8 @@ namespace dauw
       return std::make_shared<ExprLiteral>(Value::value_true, current().location());
     if (match(TokenKind::LITERAL_INT))
       return parse_int();
-    if (match(TokenKind::LITERAL_REAL))
-      return parse_real();
+    if (match(TokenKind::LITERAL_FLOAT))
+      return parse_float();
     if (match(TokenKind::LITERAL_RUNE))
       return parse_rune();
     if (match(TokenKind::LITERAL_STRING))
@@ -665,13 +665,13 @@ namespace dauw
     }
   }
 
-  // Parse a real literal
-  expr_ptr Parser::parse_real()
+  // Parse a float literal
+  expr_ptr Parser::parse_float()
   {
     try
     {
-      auto real_value = utils::parse_real(current().value());
-      auto value = Value::of_real(real_value);
+      auto float_value = utils::parse_float(current().value());
+      auto value = Value::of_float(float_value);
       return std::make_shared<ExprLiteral>(value, current().location());
     }
     catch (ValueMismatchException& ex)

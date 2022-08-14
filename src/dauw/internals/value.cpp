@@ -145,35 +145,35 @@ namespace dauw
     return rune_value;
   }
 
-  // Convert a real type to a value
-  Value Value::of_real(dauw_real_t real_value)
+  // Convert a float type to a value
+  Value Value::of_float(dauw_float_t float_value)
   {
-    value_t value = *(value_t*)(&real_value);
+    value_t value = *(value_t*)(&float_value);
     if ((value & BITMASK_QNAN) == BITMASK_QNAN)
       value = VAL_NAN;
 
     return Value(value);
   }
 
-  // Return if the value represents a real type
-  bool Value::is_real() const
+  // Return if the value represents a float type
+  bool Value::is_float() const
   {
     return (value_ & BITMASK_QNAN) != BITMASK_QNAN;
   }
 
-  // Return if the value represents a not-a-number real value
+  // Return if the value represents a not-a-number float value
   bool Value::is_nan() const
   {
     return (value_ & BITMASK_QNAN) == BITMASK_SNAN;
   }
 
-  // Convert a value to a real type
-  dauw_real_t Value::as_real() const
+  // Convert a value to a float type
+  dauw_float_t Value::as_float() const
   {
-    if (!is_real())
-      throw ValueMismatchException(fmt::format("The value {:#16x} does not represent a valid real value", value_));
+    if (!is_float())
+      throw ValueMismatchException(fmt::format("The value {:#16x} does not represent a valid float value", value_));
 
-    return *(dauw_real_t*)(&value_);
+    return *(dauw_float_t*)(&value_);
   }
 
   // Convert an object type to a value
@@ -206,8 +206,8 @@ namespace dauw
       return Type::type_bool;
     else if (is_int())
       return Type::type_int;
-    else if (is_real())
-      return Type::type_real;
+    else if (is_float())
+      return Type::type_float;
     else if (is_rune())
       return Type::type_rune;
     else
@@ -217,8 +217,8 @@ namespace dauw
   // Return if the value equals another value
   bool Value::operator==(const Value& other)
   {
-    if (is_real() && other.is_real())
-      return as_real() == other.as_real();
+    if (is_float() && other.is_float())
+      return as_float() == other.as_float();
     else
       return value_ == other.value_;
   }
@@ -238,7 +238,7 @@ namespace dauw
       return fmt::format("{}", as_int());
     else if (is_rune())
       return fmt::format("'{}'", dauw::utils::rune_pack_to_str(as_rune()));
-    else if (is_real())
+    else if (is_float())
     {
       if (value_ == VAL_INF_POSITIVE)
         return "infinity";
@@ -247,7 +247,7 @@ namespace dauw
       else if (is_nan())
         return "nan";
       else
-        return fmt::format("{:#}", as_real());
+        return fmt::format("{:#}", as_float());
     }
     else if (is_obj())
       return as_obj()->str();

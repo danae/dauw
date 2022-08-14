@@ -8,8 +8,8 @@ namespace dauw::utils
     return (n > 0) ? 1 : ((n < 0) ? -1 : 0);
   }
 
-  // Return the sign of a real
-  dauw_real_t sign(dauw_real_t n)
+  // Return the sign of a float
+  dauw_float_t sign(dauw_float_t n)
   {
     if (std::isnan(n))
       return n;
@@ -33,8 +33,8 @@ namespace dauw::utils
     return numerator - quotient * denominator;
   }
 
-  // Return the floor division of two reals
-  dauw_real_t floordiv(dauw_real_t numerator, dauw_real_t denominator)
+  // Return the floor division of two floats
+  dauw_float_t floordiv(dauw_float_t numerator, dauw_float_t denominator)
   {
     if (std::isnan(numerator))
       return numerator;
@@ -44,8 +44,8 @@ namespace dauw::utils
       return std::floor(numerator / denominator);
   }
 
-  // Return the floor remainder of two reals
-  dauw_real_t floormod(dauw_real_t numerator, dauw_real_t denominator)
+  // Return the floor remainder of two floats
+  dauw_float_t floormod(dauw_float_t numerator, dauw_float_t denominator)
   {
     auto quotient = floordiv(numerator, denominator);
     return numerator - quotient * denominator;

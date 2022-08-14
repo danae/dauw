@@ -79,7 +79,7 @@ namespace dauw
 
     // Literals
     LITERAL_INT,
-    LITERAL_REAL,
+    LITERAL_FLOAT,
     LITERAL_RUNE,
     LITERAL_STRING,
     LITERAL_REGEX,
@@ -191,7 +191,7 @@ namespace fmt
         case TokenKind::KEYWORD_WHILE: return "'while'";
         case TokenKind::IDENTIFIER: return "identifier";
         case TokenKind::LITERAL_INT: return "int literal";
-        case TokenKind::LITERAL_REAL: return "real literal";
+        case TokenKind::LITERAL_FLOAT: return "float literal";
         case TokenKind::LITERAL_RUNE: return "rune literal";
         case TokenKind::LITERAL_STRING: return "string literal";
         case TokenKind::LITERAL_REGEX: return "regex literal";

@@ -11,7 +11,7 @@ namespace dauw
     NOTHING,
     BOOL,
     INT,
-    REAL,
+    FLOAT,
     RUNE,
     STRING,
     SEQUENCE,
@@ -60,7 +60,7 @@ namespace dauw
       static Type type_nothing;
       static Type type_bool;
       static Type type_int;
-      static Type type_real;
+      static Type type_float;
       static Type type_rune;
       static Type type_string;
       static Type type_sequence;

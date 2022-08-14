@@ -139,8 +139,8 @@ namespace dauw
       case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(Type::type_int))
           expr->set_computed_value(Value::of_int(-right.as_int()));
-        else if (expr->check_operand_type(Type::type_real))
-          expr->set_computed_value(Value::of_real(-right.as_real()));
+        else if (expr->check_operand_type(Type::type_float))
+          expr->set_computed_value(Value::of_float(-right.as_float()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for unary operator -");
         break;
@@ -191,8 +191,8 @@ namespace dauw
       case TokenKind::OPERATOR_MULTIPLY:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_computed_value(Value::of_int(left.as_int() * right.as_int()));
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_computed_value(Value::of_real(left.as_real() * right.as_real()));
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_computed_value(Value::of_float(left.as_float() * right.as_float()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator *");
         break;
@@ -200,9 +200,9 @@ namespace dauw
       // Divide operator
       case TokenKind::OPERATOR_DIVIDE:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
-          expr->set_computed_value(Value::of_real(static_cast<dauw_real_t>(left.as_int()) / static_cast<dauw_real_t>(left.as_real())));
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_computed_value(Value::of_real(left.as_real() / right.as_real()));
+          expr->set_computed_value(Value::of_float(static_cast<dauw_float_t>(left.as_int()) / static_cast<dauw_float_t>(left.as_float())));
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_computed_value(Value::of_float(left.as_float() / right.as_float()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator /");
         break;
@@ -211,8 +211,8 @@ namespace dauw
       case TokenKind::OPERATOR_QUOTIENT:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_computed_value(Value::of_int(utils::floordiv(left.as_int(), right.as_int())));
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_computed_value(Value::of_real(utils::floordiv(left.as_real(), right.as_real())));
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_computed_value(Value::of_float(utils::floordiv(left.as_float(), right.as_float())));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator //");
         break;
@@ -221,8 +221,8 @@ namespace dauw
       case TokenKind::OPERATOR_REMAINDER:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_computed_value(Value::of_int(utils::floormod(left.as_int(), right.as_int())));
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_computed_value(Value::of_real(utils::floormod(left.as_real(), right.as_real())));
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_computed_value(Value::of_float(utils::floormod(left.as_float(), right.as_float())));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator %");
         break;
@@ -232,8 +232,8 @@ namespace dauw
       case TokenKind::OPERATOR_ADD:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_computed_value(Value::of_int(left.as_int() + right.as_int()));
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_computed_value(Value::of_real(left.as_real() + right.as_real()));
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_computed_value(Value::of_float(left.as_float() + right.as_float()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator +");
         break;
@@ -242,8 +242,8 @@ namespace dauw
       case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_computed_value(Value::of_int(left.as_int() - right.as_int()));
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_computed_value(Value::of_real(left.as_real() - right.as_real()));
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_computed_value(Value::of_float(left.as_float() - right.as_float()));
         else
           report<UnimplementedError>(expr->location(), "TODO: Type mismatch for binary operator -");
         break;

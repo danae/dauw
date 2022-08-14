@@ -52,20 +52,20 @@ namespace dauw::utils
     return int_value;
   }
 
-  // Parse a string as a real
-  dauw_real_t parse_real(string_t string)
+  // Parse a string as a float
+  dauw_float_t parse_float(string_t string)
   {
     // Remove thousand separators from the string
     string = Regex("_").substitute(string, "");
 
-    // Parse the string as a real
+    // Parse the string as a float
     size_t end_index;
-    double real_value = (dauw_real_t)std::stod(string, &end_index);
+    double float_value = (dauw_float_t)std::stod(string, &end_index);
     if (end_index != string.length())
-      throw std::invalid_argument(fmt::format("Unexpected character '{}' in real", string.substr(end_index, 1)));
+      throw std::invalid_argument(fmt::format("Unexpected character '{}' in float", string.substr(end_index, 1)));
 
-    // Return the parsed real
-    return real_value;
+    // Return the parsed float
+    return float_value;
   }
 
   // Parse a string as a rune

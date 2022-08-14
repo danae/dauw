@@ -139,8 +139,8 @@ namespace dauw
       case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(Type::type_int))
           expr->set_type(Type::type_int);
-        else if (expr->check_operand_type(Type::type_real))
-          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_float))
+          expr->set_type(Type::type_float);
         break;
 
       case TokenKind::OPERATOR_LENGTH:
@@ -185,36 +185,36 @@ namespace dauw
       case TokenKind::OPERATOR_MULTIPLY:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_type(Type::type_int);
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_type(Type::type_float);
         break;
 
       case TokenKind::OPERATOR_DIVIDE:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
-          expr->set_type(Type::type_real);
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_type(Type::type_real);
+          expr->set_type(Type::type_float);
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_type(Type::type_float);
         break;
 
       case TokenKind::OPERATOR_QUOTIENT:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_type(Type::type_int);
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_type(Type::type_float);
         break;
 
       case TokenKind::OPERATOR_REMAINDER:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_type(Type::type_int);
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_type(Type::type_float);
         break;
 
       case TokenKind::OPERATOR_ADD:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_type(Type::type_int);
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_type(Type::type_float);
         else if (expr->check_operand_type(Type::type_string, Type::type_string))
           expr->set_type(Type::type_string);
         break;
@@ -222,8 +222,8 @@ namespace dauw
       case TokenKind::OPERATOR_SUBTRACT:
         if (expr->check_operand_type(Type::type_int, Type::type_int))
           expr->set_type(Type::type_int);
-        else if (expr->check_operand_type(Type::type_real, Type::type_real))
-          expr->set_type(Type::type_real);
+        else if (expr->check_operand_type(Type::type_float, Type::type_float))
+          expr->set_type(Type::type_float);
         break;
 
       case TokenKind::OPERATOR_RANGE:

@@ -50,7 +50,7 @@ namespace dauw
   // Type definitions for internal values
   using dauw_bool_t = bool;
   using dauw_int_t = int64_t;
-  using dauw_real_t = double;
+  using dauw_float_t = double;
   using dauw_rune_t = uint32_t;
 
 

@@ -79,11 +79,11 @@ namespace dauw
       bool is_rune() const;
       dauw_rune_t as_rune() const;
 
-      // Value that represents a real type
-      static Value of_real(dauw_real_t real_value);
-      bool is_real() const;
+      // Value that represents a float type
+      static Value of_float(dauw_float_t float_value);
+      bool is_float() const;
       bool is_nan() const;
-      dauw_real_t as_real() const;
+      dauw_float_t as_float() const;
 
       // Value that represents an object type
       static Value of_obj(Obj* object_value);

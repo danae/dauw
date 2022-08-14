@@ -78,7 +78,7 @@ namespace dauw
       expr_ptr parse_primary();
       expr_ptr parse_atom();
       expr_ptr parse_int();
-      expr_ptr parse_real();
+      expr_ptr parse_float();
       expr_ptr parse_rune();
       expr_ptr parse_string();
       expr_ptr parse_regex();

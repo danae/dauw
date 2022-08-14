@@ -23,7 +23,7 @@ namespace dauw::utils
 
   // Parse a string as another value type
   dauw_int_t parse_int(string_t string);
-  dauw_real_t parse_real(string_t string);
+  dauw_float_t parse_float(string_t string);
   dauw_rune_t parse_rune(string_t string);
   const char* parse_string(string_t string);
   //Regex parse_regex(string_t string);

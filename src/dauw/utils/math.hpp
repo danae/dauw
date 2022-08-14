@@ -7,13 +7,13 @@ namespace dauw::utils
 {
   // Return the sign of a number
   dauw_int_t sign(dauw_int_t n);
-  dauw_real_t sign(dauw_real_t n);
+  dauw_float_t sign(dauw_float_t n);
 
   // Return the floor division quotient and remainder of two numbers
   dauw_int_t floordiv(dauw_int_t numerator, dauw_int_t denominator);
   dauw_int_t floormod(dauw_int_t numerator, dauw_int_t denominator);
-  dauw_real_t floordiv(dauw_real_t numerator, dauw_real_t denominator);
-  dauw_real_t floormod(dauw_real_t numerator, dauw_real_t denominator);
+  dauw_float_t floordiv(dauw_float_t numerator, dauw_float_t denominator);
+  dauw_float_t floormod(dauw_float_t numerator, dauw_float_t denominator);
 
 
   // Exception thrown when an aritmethic operation fails
