@@ -18,7 +18,7 @@
 namespace dauw
 {
   // Class that defines the high-level code of the application
-  class Dauw : public std::enable_shared_from_this<Dauw>
+  class Dauw
   {
     public:
       // Constructor

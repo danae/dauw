@@ -5,6 +5,7 @@
 #include <dauw/ast/expr.hpp>
 #include <dauw/ast/type_expr.hpp>
 #include <dauw/frontend/location.hpp>
+#include <dauw/internals/format.hpp>
 #include <dauw/internals/string_object.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
@@ -21,13 +22,16 @@ namespace dauw
   {
     private:
       // Return the result of comparing two values
-      dauw_int_t op_compare(Location& location, Value left, Value right);
+      dauw_int_t compare(Location& location, Value left, Value right);
 
       // Return the result of checking if two values match
-      dauw_bool_t op_match(Location& location, Value left, Value right);
+      dauw_bool_t match(Location& location, Value left, Value right);
 
       // Return the result of checking if two values are equal
-      dauw_bool_t op_equals(Location& location, Value left, Value right);
+      dauw_bool_t equals(Location& location, Value left, Value right);
+
+      // Print a value
+      void print(Value value);
 
 
     public:

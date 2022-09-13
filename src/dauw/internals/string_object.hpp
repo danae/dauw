@@ -80,9 +80,6 @@ namespace dauw
       inline bool operator>(ObjString& other) { return compare(other) > 0; }
       inline bool operator>=(ObjString& other) { return compare(other) >= 0; }
 
-      // Return a string representation of the string
-      virtual string_t str() override;
-
 
       // Convert an iterable of code points to a C-string
       template <typename C>

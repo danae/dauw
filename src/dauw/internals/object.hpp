@@ -25,25 +25,5 @@ namespace dauw
 
       // Return the type of the object
       Type& type();
-
-      // Return a string representation of the object
-      virtual string_t str();
-  };
-}
-
-
-namespace fmt
-{
-  using namespace dauw;
-
-  // Class that defines a formatter for an object
-  template <>
-  struct formatter<Obj> : formatter<string_view_t>
-  {
-    template <typename FormatContext>
-    auto format(Obj object, FormatContext& ctx)
-    {
-      return formatter<string_view_t>::format(object.str(), ctx);
-    }
   };
 }

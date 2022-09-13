@@ -233,32 +233,4 @@ namespace dauw
   {
     return !(*this == other);
   }
-
-  // Return a string representation of the value
-  string_t Value::str()
-  {
-    if (is_nothing())
-      return "nothing";
-    else if (is_bool())
-      return fmt::format("{}", as_bool() ? "true" : "false");
-    else if (is_int())
-      return fmt::format("{}", as_int());
-    else if (is_rune())
-      return fmt::format("'{}'", dauw::utils::rune_pack_to_str(as_rune()));
-    else if (is_float())
-    {
-      if (value_ == VAL_INF_POSITIVE)
-        return "infinity";
-      else if (value_ == VAL_INF_NEGATIVE)
-        return "-infinity";
-      else if (is_nan())
-        return "nan";
-      else
-        return fmt::format("{:#}", as_float());
-    }
-    else if (is_obj())
-      return as_obj()->str();
-    else
-      return fmt::format("<invalid value>");
-  }
 }

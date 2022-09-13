@@ -255,47 +255,47 @@ namespace dauw
 
       // Compare operator
       case TokenKind::OPERATOR_COMPARE:
-        expr->set_computed_value(Value::of_int(op_compare(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_int(compare(expr->location(), left, right)));
         break;
 
       // Less than operator
       case TokenKind::OPERATOR_LESS:
-        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) < 0));
+        expr->set_computed_value(Value::of_bool(compare(expr->location(), left, right) < 0));
         break;
 
       // Less than or equal operator
       case TokenKind::OPERATOR_LESS_EQUAL:
-        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) <= 0));
+        expr->set_computed_value(Value::of_bool(compare(expr->location(), left, right) <= 0));
         break;
 
       // Greater than operator
       case TokenKind::OPERATOR_GREATER:
-        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) > 0));
+        expr->set_computed_value(Value::of_bool(compare(expr->location(), left, right) > 0));
         break;
 
       // Greater than or equal operator
       case TokenKind::OPERATOR_GREATER_EQUAL:
-        expr->set_computed_value(Value::of_bool(op_compare(expr->location(), left, right) >= 0));
+        expr->set_computed_value(Value::of_bool(compare(expr->location(), left, right) >= 0));
         break;
 
       // Match operator
       case TokenKind::OPERATOR_MATCH:
-        expr->set_computed_value(Value::of_bool(op_match(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(match(expr->location(), left, right)));
         break;
 
       // Not match operator
       case TokenKind::OPERATOR_NOT_MATCH:
-        expr->set_computed_value(Value::of_bool(!op_match(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(!match(expr->location(), left, right)));
         break;
 
       // Equal operator
       case TokenKind::OPERATOR_EQUAL:
-        expr->set_computed_value(Value::of_bool(op_equals(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(equals(expr->location(), left, right)));
         break;
 
       // Not equal operator
       case TokenKind::OPERATOR_NOT_EQUAL:
-        expr->set_computed_value(Value::of_bool(!op_equals(expr->location(), left, right)));
+        expr->set_computed_value(Value::of_bool(!equals(expr->location(), left, right)));
         break;
 
       // Identical operator
@@ -322,7 +322,7 @@ namespace dauw
     auto value = evaluate(expr->expr());
 
     // Print
-    fmt::print("{}\n", value);
+    print(value);
   }
 
   // Visit an if expression
@@ -424,23 +424,44 @@ namespace dauw
   // --------------------------------------------------------------------------
 
   // Return the result of comparing two values
-  dauw_int_t Interpreter::op_compare(Location& location, Value left, Value right)
+  dauw_int_t Interpreter::compare(Location& location, Value left, Value right)
   {
     // TODO: Implement comparison of strings
     // TODO: Better type checking
-    report<UnimplementedError>(location, "TODO: Implement compare operation function");
-    return 0;
+    if (left.is_int() && right.is_int())
+      return utils::sign(left.as_int() - right.as_int());
+    else if (left.is_float() && right.is_float())
+    {
+      if (left.is_nan() && right.is_nan())
+        return 0;
+      else if (left.is_nan())
+        return 1;
+      else if (right.is_nan())
+        return -1;
+      else if (left.as_float() < right.as_float())
+        return -1;
+      else if (left.as_float() > right.as_float())
+        return 1;
+      else
+        return 0;
+    }
+
+    else
+    {
+      report<UnimplementedError>(location, "TODO: Implement compare operation function");
+      return 0;
+    }
   }
 
   // Return the result of checking if two values match
-  dauw_bool_t Interpreter::op_match(Location& location, Value left, Value right)
+  dauw_bool_t Interpreter::match(Location& location, Value left, Value right)
   {
     report<UnimplementedError>(location, "TODO: Implement match operation function");
     return false;
   }
 
   // Return the result of checking if two values are equal
-  dauw_bool_t Interpreter::op_equals(Location& location, Value left, Value right)
+  dauw_bool_t Interpreter::equals(Location& location, Value left, Value right)
   {
     // First check for reference equality
     if (left == right)
@@ -448,5 +469,11 @@ namespace dauw
 
     // Otherwise the values are not equal
     return false;
+  }
+
+  // Print a value
+  void Interpreter::print(Value value)
+  {
+    fmt::print("{}\n", value);
   }
 }

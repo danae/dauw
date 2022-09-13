@@ -13,10 +13,4 @@ namespace dauw
   {
     return type_;
   }
-
-  // Return a string representation of the object
-  string_t Obj::str()
-  {
-    return fmt::format("<object {} at {:#018x}>", type(), (uintptr_t)(this));
-  }
 }

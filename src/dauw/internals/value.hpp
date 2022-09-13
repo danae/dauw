@@ -100,9 +100,6 @@ namespace dauw
       bool operator==(const Value& other);
       bool operator!=(const Value& other);
 
-      // Return a string representation of the value
-      string_t str();
-
 
       // Definitions for global values
       static Value value_nothing;
@@ -133,22 +130,5 @@ namespace dauw
     public:
       inline ValueOverflowException(string_t message, Exception* previous) : ValueException(message, previous) {}
       inline ValueOverflowException(string_t message) : ValueException(message, nullptr) {}
-  };
-}
-
-
-namespace fmt
-{
-  using namespace dauw;
-
-  // Class that defines a formatter for a value
-  template <>
-  struct formatter<Value> : formatter<string_view_t>
-  {
-    template <typename FormatContext>
-    auto format(Value value, FormatContext& ctx)
-    {
-      return formatter<string_view_t>::format(value.str(), ctx);
-    }
   };
 }

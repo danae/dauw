@@ -711,7 +711,8 @@ namespace dauw
     try
     {
       auto string_value = utils::parse_string(current().value());
-      auto value = Value::of_obj(std::make_shared<ObjString>(string_value).get());
+      // TODO: Pointer leak
+      auto value = Value::of_obj(new ObjString(string_value));
       return std::make_shared<ExprLiteral>(value, current().location());
     }
     catch (...)
