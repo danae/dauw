@@ -236,7 +236,7 @@ namespace dauw
         // if there is more than one matched token, then sort the current matched tokens
         if (matched_tokens.size() > 1)
         {
-          std::sort(matched_tokens.begin(), matched_tokens.end(), [](std::tuple<Token, size_t> a, std::tuple<Token, size_t> b)->bool {
+          std::sort(matched_tokens.begin(), matched_tokens.end(), [](std::tuple<Token, size_t>& a, std::tuple<Token, size_t>& b)->bool {
             return std::get<0>(a) < std::get<0>(b) || std::get<1>(a) > std::get<1>(b);
           });
         }

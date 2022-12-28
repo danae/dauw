@@ -36,7 +36,7 @@ namespace dauw
   }
 
   // Return the value of the literal expression
-  Value& ExprLiteral::value()
+  Value ExprLiteral::value()
   {
     return value_;
   }

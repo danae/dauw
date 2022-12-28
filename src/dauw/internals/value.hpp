@@ -54,11 +54,6 @@ namespace dauw
     public:
       // Constructor
       Value(value_t value);
-      Value(const Value& other);
-      Value(Value&& other);
-
-      Value operator=(const Value& other);
-      Value operator=(Value&& other);
 
       // Value that represents a constant type
       static Value of_nothing();

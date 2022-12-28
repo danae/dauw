@@ -10,7 +10,7 @@ namespace dauw
 
   // Constructor for a location at the begin of a source string
   Location::Location()
-    : Location(0, 0)
+    : line_(0), col_(0)
   {
   }
 

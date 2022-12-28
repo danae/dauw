@@ -7,8 +7,10 @@ namespace dauw
     : kind_(kind), value_(value), location_(location)
   {
   }
+
+  // Constructor for a token without a value
   Token::Token(TokenKind kind, Location location)
-    : Token(kind, "", location)
+    : kind_(kind), value_(""), location_(location)
   {
   }
 

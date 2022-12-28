@@ -127,7 +127,7 @@ namespace dauw
       ExprLiteral(Value value, Location location);
 
       // Return the value of the literal expression
-      Value& value();
+      Value value();
 
       // Expression implementation
       virtual Location& location() override;

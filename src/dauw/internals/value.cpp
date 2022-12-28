@@ -14,34 +14,6 @@ namespace dauw
   {
   }
 
-  // Constructor for a value from copying another value
-  Value::Value(const Value& other)
-    : value_(other.value_)
-  {
-  }
-
-  // Constructor for a value from moving another value
-  Value::Value(Value&& other)
-    : value_(std::move(other.value_))
-  {
-  }
-
-  // Assignment from a value from copying another value
-  Value Value::operator=(const Value& other)
-  {
-    if (this != &other)
-      value_ = other.value_;
-    return *this;
-  }
-
-  // Assignment from a value from moving another value
-  Value Value::operator=(Value&& other)
-  {
-    if (this != &other)
-      value_ = std::move(other.value_);
-    return *this;
-  }
-
   // Convert a nothing type to a value
   Value Value::of_nothing()
   {
