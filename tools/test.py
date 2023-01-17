@@ -11,23 +11,10 @@ import time
 from argparse import ArgumentParser
 from colorama import Fore, Back, Style
 
-
-# Function that prints a plural s if applicable
-def plural(num):
-  return "s" if num != 1 else ""
-
-# Function that prints a horizontal divider
-def divider():
-  print("─" * 79)
-def divider_half():
-  print("─ " * 39 + "─")
-
-# Function that removes ANSI escape codes from a string
-def unescape(string):
-  return re.sub(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])", "", string)
+from utils import s, ansi_unescape, divider, divider_dashed,
 
 
-# Tuple that defines a test expectation
+# Class that defines a test expectation
 class Expectation:
   # Constructor
   def __init__(self, type, message, line):
@@ -101,7 +88,7 @@ class Test:
   # Return a string representation for the test
   def __str__(self):
     expectations = len(self.expectations)
-    return f"{expectations} test{plural(expectations)} in file " + Style.BRIGHT + self.path + Style.NORMAL;
+    return f"{expectations} test{s(expectations)} in file " + Style.BRIGHT + self.path + Style.NORMAL;
 
   # Run the test and validate the expectations
   def __call__(self, interpreter_path):
@@ -111,11 +98,10 @@ class Test:
       return
 
     # Run the test
-    self.run = TestRun(interpreter_path, self.path)
-    yield Result("info", f"Tests were run in {self.run.duration * 1000:.0f} ms resulting in exit code {self.run.code}")
+    duration, code, lines = self.run(interpreter_path)
+    yield Result("info", f"Tests were run in {duration * 1000:.0f} ms resulting in exit code {code}")
 
     # Iterate over the expectations
-    lines = self.run.output
     line_num = 0
     for expectation in self.expectations:
       # Check if there is a line to match
@@ -141,26 +127,25 @@ class Test:
     if line_num < len(lines):
       yield Result("warn", f"Abundant output where none was expected")
 
-
-# Class that defines a test run
-class TestRun:
-  # Constructor
-  def __init__(self, interpreter_path, path):
+  # Run the test
+  def run(self, interpreter_path):
     # Run the subprocess and measure the time it takes to execute
     start = time.time()
     result = subprocess.run([interpreter_path, path], stdout = subprocess.PIPE, stderr = subprocess.STDOUT, text = True)
     end = time.time()
 
     # Accumulate the result
-    self.duration = end - start
-    self.code = result.returncode
-    self.output = [unescape(line) for line in result.stdout.splitlines()]
-    if len(self.output) > 0 and self.output[-1] == "":
-      del self.output[-1]
+    duration = end - start
+    code = result.returncode
+    lines = [ansi_unescape(line) for line in result.stdout.splitlines()]
+    if len(lines) > 0 and lines[-1] == "":
+      del lines[-1]
+
+    return duration, code, lines
 
 
 # Class that runs a test suite
-class TestRunner:
+class Runner:
   # Constructor
   def __init__(self, interpreter_path, less = False):
     self.interpreter_path = interpreter_path
@@ -193,7 +178,7 @@ class TestRunner:
       self.warnings += 1 if result.type == "warn" else 0
 
     if not test_passed and test.run.output:
-      divider_half()
+      divider_dashed()
       print(Style.BRIGHT + f"Console output for {os.path.abspath(path)}:")
       for i, line in enumerate(test.run.output):
         print(f"{i + 1:>3d} │ " + Style.DIM + line)
@@ -244,12 +229,12 @@ def main(args):
 
   # Create a test runner and run the tests in the suite
   runner_path = os.path.abspath(args.suite)
-  runner = TestRunner(args.path, args.less).test(runner_path)
+  runner = Runner(args.path, args.less).test(runner_path)
 
   print(f"Test results for {runner_path}:")
-  print(Fore.GREEN + Style.BRIGHT + f"{runner.passes}" + Style.RESET_ALL + f" test{plural(runner.passes)} passed", end = ", ")
-  print(Fore.RED + Style.BRIGHT + f"{runner.fails}" + Style.RESET_ALL + f" test{plural(runner.fails)} failed", end = ", ")
-  print(Fore.YELLOW + Style.BRIGHT + f"{runner.warnings}" + Style.RESET_ALL + f" warning{plural(runner.warnings)}")
+  print(Fore.GREEN + Style.BRIGHT + f"{runner.passes}" + Style.RESET_ALL + f" test{s(runner.passes)} passed", end = ", ")
+  print(Fore.RED + Style.BRIGHT + f"{runner.fails}" + Style.RESET_ALL + f" test{s(runner.fails)} failed", end = ", ")
+  print(Fore.YELLOW + Style.BRIGHT + f"{runner.warnings}" + Style.RESET_ALL + f" warning{s(runner.warnings)}")
 
   if runner.fails > 0:
     sys.exit(1)
