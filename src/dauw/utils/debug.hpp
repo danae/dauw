@@ -1,8 +1,8 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/frontend/lexer.hpp>
-#include <dauw/frontend/token.hpp>
+#include <dauw/code/lexer.hpp>
+#include <dauw/code/token.hpp>
 #include <dauw/utils/string.hpp>
 
 

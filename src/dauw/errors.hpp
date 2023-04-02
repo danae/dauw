@@ -1,8 +1,8 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/frontend/location.hpp>
-#include <dauw/frontend/source.hpp>
+#include <dauw/code/location.hpp>
+#include <dauw/code/source.hpp>
 
 #include <utility>
 

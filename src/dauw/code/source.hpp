@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dauw/common.hpp>
-#include <dauw/frontend/location.hpp>
+#include <dauw/code/location.hpp>
 #include <dauw/utils/regex.hpp>
 #include <dauw/utils/string.hpp>
 

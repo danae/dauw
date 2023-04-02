@@ -1,4 +1,4 @@
-#include "node.hpp"
+#include "ast_node.hpp"
 
 namespace dauw
 {

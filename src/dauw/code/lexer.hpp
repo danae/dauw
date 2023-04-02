@@ -2,9 +2,9 @@
 
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
-#include <dauw/frontend/location.hpp>
-#include <dauw/frontend/source.hpp>
-#include <dauw/frontend/token.hpp>
+#include <dauw/code/location.hpp>
+#include <dauw/code/source.hpp>
+#include <dauw/code/token.hpp>
 #include <dauw/utils/regex.hpp>
 
 #include <algorithm>

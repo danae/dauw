@@ -2,9 +2,9 @@
 
 #include <dauw/common.hpp>
 #include <dauw/errors.hpp>
-#include <dauw/ast/expr.hpp>
-#include <dauw/ast/type_expr.hpp>
-#include <dauw/frontend/location.hpp>
+#include <dauw/code/ast_expr.hpp>
+#include <dauw/code/ast_type_expr.hpp>
+#include <dauw/code/location.hpp>
 #include <dauw/internals/type.hpp>
 #include <dauw/internals/value.hpp>
 

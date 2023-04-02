@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dauw/ast/node.hpp>
-#include <dauw/frontend/location.hpp>
-#include <dauw/frontend/token.hpp>
+#include <dauw/code/ast_node.hpp>
+#include <dauw/code/location.hpp>
+#include <dauw/code/token.hpp>
 
 
 namespace dauw
