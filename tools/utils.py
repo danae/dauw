@@ -1,3 +1,6 @@
+import re
+
+
 # Function that prints a plural s if applicable
 def s(num):
   return "s" if num != 1 else ""

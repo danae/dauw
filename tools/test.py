@@ -11,7 +11,7 @@ import time
 from argparse import ArgumentParser
 from colorama import Fore, Back, Style
 
-from utils import s, ansi_unescape, divider, divider_dashed,
+from utils import s, ansi_unescape, divider, divider_dashed
 
 
 # Class that defines a test expectation
@@ -68,8 +68,10 @@ class Test:
   def __init__(self, path):
     self.path = path
 
-    self.run = None
     self.expectations = []
+    self.duration = None
+    self.code = None
+    self.lines = None
 
     # Read the file at the test path
     with open(self.path, mode = "r", encoding = "utf-8") as file:
@@ -98,18 +100,18 @@ class Test:
       return
 
     # Run the test
-    duration, code, lines = self.run(interpreter_path)
-    yield Result("info", f"Tests were run in {duration * 1000:.0f} ms resulting in exit code {code}")
+    self.duration, self.code, self.lines = self.run(interpreter_path)
+    yield Result("info", f"Tests were run in {self.duration * 1000:.0f} ms resulting in exit code {self.code}")
 
     # Iterate over the expectations
     line_num = 0
     for expectation in self.expectations:
       # Check if there is a line to match
-      if line_num >= len(lines):
+      if line_num >= len(self.lines):
         yield Result("fail", f"Missing expected {expectation}")
         continue
 
-      line = lines[line_num]
+      line = self.lines[line_num]
 
       # Validate the expectation
       if expectation(line):
@@ -124,14 +126,14 @@ class Test:
         line_num += 1
 
     # Check abundant lines
-    if line_num < len(lines):
+    if line_num < len(self.lines):
       yield Result("warn", f"Abundant output where none was expected")
 
   # Run the test
   def run(self, interpreter_path):
     # Run the subprocess and measure the time it takes to execute
     start = time.time()
-    result = subprocess.run([interpreter_path, path], stdout = subprocess.PIPE, stderr = subprocess.STDOUT, text = True)
+    result = subprocess.run([interpreter_path, self.path], stdout = subprocess.PIPE, stderr = subprocess.STDOUT, text = True)
     end = time.time()
 
     # Accumulate the result
@@ -177,10 +179,10 @@ class Runner:
       self.fails += 1 if result.type == "fail" else 0
       self.warnings += 1 if result.type == "warn" else 0
 
-    if not test_passed and test.run.output:
+    if not test_passed and test.lines:
       divider_dashed()
       print(Style.BRIGHT + f"Console output for {os.path.abspath(path)}:")
-      for i, line in enumerate(test.run.output):
+      for i, line in enumerate(test.lines):
         print(f"{i + 1:>3d} │ " + Style.DIM + line)
 
     divider()
