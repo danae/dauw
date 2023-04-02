@@ -89,22 +89,22 @@ namespace dauw
   class Expr : public Node
   {
     private:
-      // The computed value of the expression
-      std::optional<Value> computed_value_ = std::nullopt;
+      // The interpreted value of the expression
+      std::optional<Value> interpreted_value_ = std::nullopt;
 
     public:
       // Destructor
       virtual ~Expr() = default;
 
-      // Return the computed value of the expression
-      Value computed_value();
+      // Return the interpreted value of the expression
+      Value interpreted_value();
 
-      // Return if the expression has a computed value
-      bool has_computed_value();
+      // Return if the expression has a interpreted value
+      bool has_interpreted_value();
 
-      // Set the computed value of the expression
-      void set_computed_value(Value value);
-      void set_computed_value_from(expr_ptr expr);
+      // Set the interpreted value of the expression
+      void set_interpreted_value(Value value);
+      void set_interpreted_value_from(expr_ptr expr);
 
       // Accept a visitor on the expression
       virtual void accept(const expr_visitor_ptr& visitor) = 0;

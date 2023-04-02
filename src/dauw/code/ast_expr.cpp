@@ -3,28 +3,28 @@
 namespace dauw
 {
   // Return the computed value of the expression
-  Value Expr::computed_value()
+  Value Expr::interpreted_value()
   {
-    return computed_value_.value();
+    return interpreted_value_.value();
   }
 
   // Return if the expression has a computed value
-  bool Expr::has_computed_value()
+  bool Expr::has_interpreted_value()
   {
-    return computed_value_.has_value();
+    return interpreted_value_.has_value();
   }
 
   // Set the computed value of the expression
-  void Expr::set_computed_value(Value value)
+  void Expr::set_interpreted_value(Value value)
   {
-    computed_value_ = std::make_optional(value);
+    interpreted_value_ = std::make_optional(value);
   }
 
   // Set the computed value of the expression to that of another expression
-  void Expr::set_computed_value_from(expr_ptr expr)
+  void Expr::set_interpreted_value_from(expr_ptr expr)
   {
-    if (expr->has_computed_value())
-      set_computed_value(expr->computed_value());
+    if (expr->has_interpreted_value())
+      set_interpreted_value(expr->interpreted_value());
   }
 
   // --------------------------------------------------------------------------
