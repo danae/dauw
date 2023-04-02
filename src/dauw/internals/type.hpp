@@ -12,7 +12,6 @@ namespace dauw
     BOOL,
     INT,
     FLOAT,
-    RUNE,
     STRING,
     SEQUENCE,
     RECORD,
@@ -61,7 +60,6 @@ namespace dauw
       static Type type_bool;
       static Type type_int;
       static Type type_float;
-      static Type type_rune;
       static Type type_string;
       static Type type_sequence;
       static Type type_record;

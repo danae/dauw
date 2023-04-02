@@ -23,9 +23,6 @@ namespace dauw
   // Format an int value
   string_t format_int(dauw_int_t value, bool repr = false);
 
-  // Format a rune value
-  string_t format_rune(dauw_rune_t value, bool repr = false);
-
   // Format a float value
   string_t format_float(dauw_float_t value, bool repr = false);
 

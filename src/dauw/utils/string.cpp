@@ -4,33 +4,33 @@
 
 namespace dauw::utils
 {
-  // Pack a list of runes into a string
-  string_t rune_pack_to_str(std::vector<dauw_rune_t> rune_values)
+  // Convert a vector of codepoints to a string
+  string_t codepoints_to_string(std::vector<uint32_t> codepoints)
   {
     string_t string;
-    utf8::utf32to8(rune_values.cbegin(), rune_values.cend(), std::back_inserter(string));
+    utf8::utf32to8(codepoints.cbegin(), codepoints.cend(), std::back_inserter(string));
     return string;
   }
-  string_t rune_pack_to_str(std::initializer_list<dauw_rune_t> rune_values)
+  string_t codepoints_to_string(std::initializer_list<uint32_t> codepoints)
   {
-    std::vector<dauw_rune_t> runes(rune_values);
-    return rune_pack_to_str(runes);
+    std::vector<uint32_t> codepoints_vector(codepoints);
+    return codepoints_to_string(codepoints_vector);
   }
-  string_t rune_pack_to_str(dauw_rune_t rune_value)
+  string_t codepoints_to_string(uint32_t codepoint)
   {
-    std::vector<dauw_rune_t> runes({rune_value});
-    return rune_pack_to_str(runes);
+    std::vector<uint32_t> codepoints_vector({codepoint});
+    return codepoints_to_string(codepoints_vector);
   }
 
-  // Unpack a string into a list of runes
-  std::vector<dauw_rune_t> rune_unpack_from_str(string_t string)
+  // Convert a string to a vector of codepoints
+  std::vector<uint32_t> string_to_codepoints(string_t string)
   {
     if (!utf8::is_valid(string.cbegin(), string.cend()))
       throw std::out_of_range(fmt::format("Invalid UTF-8 encoded string '{}'", string));
 
-    std::vector<dauw_rune_t> runes;
-    utf8::utf8to32(string.cbegin(), string.cend(), std::back_inserter(runes));
-    return runes;
+    std::vector<uint32_t> codepoints;
+    utf8::utf8to32(string.cbegin(), string.cend(), std::back_inserter(codepoints));
+    return codepoints;
   }
 
   // Parse a string as an integer
@@ -68,24 +68,6 @@ namespace dauw::utils
     return float_value;
   }
 
-  // Parse a string as a rune
-  dauw_rune_t parse_rune(string_t string)
-  {
-    // Unescape the string
-    string = unescape(string, StringEscapeType::SINGLE_QUOTED);
-
-    // Parse the rune literal
-    auto runes = rune_unpack_from_str(string);
-    if (runes.size() < 1)
-      throw std::invalid_argument("Missing code point in rune");
-    if (runes.size() > 1)
-      throw std::invalid_argument("Unexpected extra code point(s) in rune");
-    auto rune_value = runes.front();
-
-    // Return the parsed rune
-    return rune_value;
-  }
-
   // Parse a string a a C-string
   const char* parse_string(string_t string)
   {
@@ -119,30 +101,28 @@ namespace dauw::utils
   {
     string_t result;
 
-    auto runes = rune_unpack_from_str(string);
-    for (auto i = 0; i < runes.size(); i ++)
+    auto codepoints = string_to_codepoints(string);
+    for (auto i = 0; i < codepoints.size(); i ++)
     {
-      auto rune = runes[i];
-      if (rune == 0x5C)
+      auto codepoint = codepoints[i];
+      if (codepoint == 0x5C)
         result.append("\\\\");
-      else if (type == StringEscapeType::DOUBLE_QUOTED && rune == 0x22)
+      else if (codepoint == 0x22)
         result.append("\\\"");
-      else if (type == StringEscapeType::SINGLE_QUOTED && rune == 0x27)
-        result.append("\\'");
-      else if (rune == 0x08)
+      else if (codepoint == 0x08)
         result.append("\\b");
-      else if (rune == 0x09)
+      else if (codepoint == 0x09)
         result.append("\\t");
-      else if (rune == 0x0A)
+      else if (codepoint == 0x0A)
         result.append("\\n");
-      else if (rune == 0x0C)
+      else if (codepoint == 0x0C)
         result.append("\\f");
-      else if (rune == 0x0D)
+      else if (codepoint == 0x0D)
         result.append("\\r");
-      else if (rune <= 0x1F || (rune >= 0x7F && rune <= 0x9F) || (ascii_only && rune >= 0xA0))
-        result.append(fmt::format("\\u{{{}}}"), rune);
+      else if (codepoint <= 0x1F || (codepoint >= 0x7F && codepoint <= 0x9F) || (ascii_only && codepoint >= 0xA0))
+        result.append(fmt::format("\\u{{{}}}"), codepoint);
       else
-        utf8::append(rune, std::back_inserter(result));
+        utf8::append(codepoint, std::back_inserter(result));
     }
 
     return result;
@@ -159,7 +139,8 @@ namespace dauw::utils
     {
       string_t result;
       if (match.group(1).success())
-        result = rune_pack_to_str(parse_rune(match.group(2).value()));
+        // TODO: Convert unicode value to string
+        result = match.group(2).value();
       else if (match.group(3).success() && type == StringEscapeType::DOUBLE_QUOTED)
         result = match.group(3).value();
       else if (match.group(4).success() && type == StringEscapeType::SINGLE_QUOTED)

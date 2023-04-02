@@ -613,8 +613,6 @@ namespace dauw
       return parse_int();
     if (match(TokenKind::LITERAL_FLOAT))
       return parse_float();
-    if (match(TokenKind::LITERAL_RUNE))
-      return parse_rune();
     if (match(TokenKind::LITERAL_STRING))
       return parse_string();
     if (match(TokenKind::LITERAL_REGEX))
@@ -681,27 +679,6 @@ namespace dauw
     catch (ValueOverflowException& ex)
     {
       throw report<ValueOverflowError>(current().location(), ex.message());
-    }
-  }
-
-  // Parse a rune literal
-  expr_ptr Parser::parse_rune()
-  {
-    try
-    {
-      auto rune_value = utils::parse_rune(current().value());
-      auto value = Value::of_rune(rune_value);
-      return std::make_shared<ExprLiteral>(value, current().location());
-    }
-    catch (ValueMismatchException& ex)
-    {
-      report<ValueMismatchError>(current().location(), ex.message());
-      return nullptr;
-    }
-    catch (ValueOverflowException& ex)
-    {
-      report<ValueOverflowError>(current().location(), ex.message());
-      return nullptr;
     }
   }
 

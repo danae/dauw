@@ -61,7 +61,6 @@ namespace dauw
       static utils::Regex stropped_identifier_pattern_;
       static utils::Regex int_pattern_;
       static utils::Regex float_pattern_;
-      static utils::Regex rune_pattern_;
       static utils::Regex string_pattern_;
       static utils::Regex regex_pattern_;
 

@@ -51,7 +51,6 @@ namespace dauw
   using dauw_bool_t = bool;
   using dauw_int_t = int64_t;
   using dauw_float_t = double;
-  using dauw_rune_t = uint32_t;
 
 
   // Class that defines a base for all exceptions and errors

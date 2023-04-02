@@ -42,7 +42,6 @@ namespace dauw
   utils::Regex Lexer::stropped_identifier_pattern_("`((?:[^\\\\`]|\\\\.)+)`");
   utils::Regex Lexer::int_pattern_("0[Xx][0-9A-Fa-f][0-9A-Fa-f_]*|-?(?:0|[1-9][0-9_]*)");
   utils::Regex Lexer::float_pattern_("-?(?:0|[1-9][0-9_]*)(?:\\.[0-9][0-9_]*(?:[Ee][+-]?(?:0|[1-9][0-9_]*))?|[Ee][+-]?(?:0|[1-9][0-9_]*))");
-  utils::Regex Lexer::rune_pattern_("'((?:[^\\\\']|\\\\.)*)'");
   utils::Regex Lexer::string_pattern_("\"((?:[^\\\\\"]|\\\\.)*)\"");
   utils::Regex Lexer::regex_pattern_("/((?:[^\\\\/]|\\\\.)*)/[A-Za-z]*");
 
@@ -113,7 +112,6 @@ namespace dauw
     // Literals
     LexerRule(TokenKind::LITERAL_INT, int_pattern_, 0),
     LexerRule(TokenKind::LITERAL_FLOAT, float_pattern_, 0),
-    LexerRule(TokenKind::LITERAL_RUNE, rune_pattern_, 1),
     LexerRule(TokenKind::LITERAL_STRING, string_pattern_, 1),
     LexerRule(TokenKind::LITERAL_REGEX, regex_pattern_, 0),
   });

@@ -93,37 +93,6 @@ namespace dauw
     return int_value;
   }
 
-  // Convert a rune type to a value
-  Value Value::of_rune(dauw_rune_t rune_value)
-  {
-    if (rune_value > RUNE_MAX)
-      throw ValueOverflowException(fmt::format("The rune U+{:06X} exceeds the valid rune range because it specifies a non-existing code point", rune_value));
-    if (rune_value >= RUNE_SURROGATE_MIN && rune_value <= RUNE_SURROGATE_MAX)
-      throw ValueOverflowException(fmt::format("The rune U+{:06X} exceeds the valid rune range because it specifies a surrogate code point", rune_value));
-
-    return Value((value_t)(BITMASK_QNAN | TAG_RUNE | ((value_t)rune_value & BITMASK_VALUE)));
-  }
-
-  // Return if the value represents an rune type
-  bool Value::is_rune() const
-  {
-    return (value_ & (BITMASK_QNAN | BITMASK_TAG)) == (BITMASK_QNAN | TAG_RUNE);
-  }
-
-  // Convert a value to an rune type
-  dauw_rune_t Value::as_rune() const
-  {
-    if (!is_rune())
-      throw ValueMismatchException(fmt::format("The value {:#18x} does not represent a valid rune value", value_));
-
-    dauw_rune_t rune_value = (dauw_rune_t)(value_ & BITMASK_VALUE);
-    if (rune_value > RUNE_MAX)
-      throw ValueOverflowException(fmt::format("The rune U+{:06X} exceeds the valid rune range because it specifies a non-existing code point", rune_value));
-    if (rune_value >= RUNE_SURROGATE_MIN && rune_value <= RUNE_SURROGATE_MAX)
-      throw ValueOverflowException(fmt::format("The rune U+{:06X} exceeds the valid rune range because it specifies a surrogate code point", rune_value));
-    return rune_value;
-  }
-
   // Convert a float type to a value
   Value Value::of_float(dauw_float_t float_value)
   {
@@ -187,8 +156,6 @@ namespace dauw
       return Type::type_int;
     else if (is_float())
       return Type::type_float;
-    else if (is_rune())
-      return Type::type_rune;
     else
       return as_obj()->type();
   }

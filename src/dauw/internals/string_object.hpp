@@ -19,7 +19,7 @@ namespace dauw
   {
     public:
       // Type definitions
-      using value_type = dauw_rune_t;
+      using value_type = uint32_t;
       using iterator_type = utf8::iterator<char*>;
 
 
@@ -96,7 +96,7 @@ namespace dauw
         }
         catch (utf8::invalid_code_point& ex)
         {
-          throw StringException("The provided array of runes is not a valid UTF-32 encoded string");
+          throw StringException("The provided array of code points is not a valid UTF-32 encoded string");
         }
       }
   };

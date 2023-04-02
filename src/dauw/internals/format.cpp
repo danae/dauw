@@ -11,8 +11,6 @@ namespace dauw
       return format_bool(value.as_bool(), repr);
     else if (value.is_int())
       return format_int(value.as_int(), repr);
-    else if (value.is_rune())
-      return format_rune(value.as_rune(), repr);
     else if (value.is_float())
       return format_float(value.as_float(), repr);
     else if (value.is_obj())
@@ -37,12 +35,6 @@ namespace dauw
   string_t format_int(dauw_int_t value, bool repr)
   {
     return fmt::format("{}", value);
-  }
-
-  // Format a rune value
-  string_t format_rune(dauw_rune_t value, bool repr)
-  {
-    return fmt::format("{}", dauw::utils::rune_pack_to_str(value));
   }
 
   // Format a float value

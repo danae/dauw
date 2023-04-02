@@ -19,7 +19,6 @@ using value_t = uint64_t;
 // Defines for tags of primitives
 #define TAG_CONST           ((value_t)0x0000'0000'0000'0000)
 #define TAG_INT             ((value_t)0x0001'0000'0000'0000)
-#define TAG_RUNE            ((value_t)0x0002'0000'0000'0000)
 
 // Defines for constants of primitives
 #define CONST_NOTHING       ((value_t)0x0000'0000'0000'0001)
@@ -34,11 +33,6 @@ using value_t = uint64_t;
 #define VAL_INF_POSITIVE    ((value_t)0x7ff0'0000'0000'0000)
 #define VAL_INF_NEGATIVE    ((value_t)0xfff0'0000'0000'0000)
 #define VAL_NAN             ((value_t)0x7ff0'ffff'ffff'ffff)
-
-// Defines for allowed value ranges
-#define RUNE_MAX            ((uint32_t)0x10ffff)
-#define RUNE_SURROGATE_MIN  ((uint32_t)0x00d800)
-#define RUNE_SURROGATE_MAX  ((uint32_t)0x00dfff)
 
 
 namespace dauw
@@ -71,11 +65,6 @@ namespace dauw
       static Value of_int(dauw_int_t int_value);
       bool is_int() const;
       dauw_int_t as_int() const;
-
-      // Value that represents a rune type
-      static Value of_rune(dauw_rune_t rune_value);
-      bool is_rune() const;
-      dauw_rune_t as_rune() const;
 
       // Value that represents a float type
       static Value of_float(dauw_float_t float_value);
